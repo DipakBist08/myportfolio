@@ -1,0 +1,1018 @@
+<!--This is my portfolio website -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Software QA Professional Portfolio - 3 years of experience in Python, Selenium, Playwright, API Testing, and more.">
+    <title>Dipak Bist | QA Professional</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="index.css">
+</head>
+
+<body>
+    <!-- Header & Navigation -->
+    <header class="header">
+        <nav class="nav container">
+            <a href="#" class="nav__logo">
+                <span class="logo-bracket">&lt;</span>Deepak<span class="logo-dot">.</span>Beest<span
+                    class="logo-bracket">/&gt;</span>
+            </a>
+            <button class="nav__toggle" id="nav-toggle" aria-label="Toggle navigation">
+                <span class="hamburger"></span>
+            </button>
+            <ul class="nav__menu" id="nav-menu">
+                <li class="nav__item"><a href="#home" class="nav__link">Home</a></li>
+                <li class="nav__item"><a href="#skills" class="nav__link">Skills</a></li>
+                <li class="nav__item"><a href="#tools" class="nav__link">Tools</a></li>
+
+                <li class="nav__item"><a href="#projects" class="nav__link">Projects</a></li>
+                <li class="nav__item"><a href="#contact" class="nav__link nav__link--cta">Get in Touch</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <!-- Hero Section -->
+        <section class="hero" id="home">
+            <div class="hero__bg-gradient"></div>
+            <div class="hero__particles" id="particles"></div>
+            <!-- Antigravity-style floating orbs -->
+            <div class="floating-orbs" id="floating-orbs">
+                <div class="orb orb--1"></div>
+                <div class="orb orb--2"></div>
+                <div class="orb orb--3"></div>
+                <div class="orb orb--4"></div>
+                <div class="orb orb--5"></div>
+            </div>
+            <!-- Grid lines background -->
+            <div class="grid-lines"></div>
+            <!-- Mouse follower -->
+            <div class="mouse-follower" id="mouse-follower"></div>
+            <div class="container hero__container">
+                <div class="hero__content">
+                    <span class="hero__greeting animate-fade-in">Hello, I'm</span>
+                    <h1 class="hero__title animate-fade-in-delay-1">
+                        <span class="gradient-text">Dipak Bist</span>
+                        <br>QA Professional
+                    </h1>
+                    <p class="hero__subtitle animate-fade-in-delay-2">
+                        <span class="typing-text" id="typing-text"></span>
+                        <span class="typing-cursor">|</span>
+                    </p>
+                    <p class="hero__description animate-fade-in-delay-3">
+                        With <strong>3+ years of experience</strong> ensuring software excellence through comprehensive
+                        testing strategies,
+                        automation frameworks, and meticulous attention to detail.
+                    </p>
+                    <div class="hero__buttons animate-fade-in-delay-4">
+                        <a href="#projects" class="btn btn--primary">
+                            <span>View My Work</span>
+                            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M5 12h14M12 5l7 7-7 7" />
+                            </svg>
+                        </a>
+                        <a href="#contact" class="btn btn--outline">
+                            <span>Contact Me</span>
+                        </a>
+                    </div>
+                </div>
+                <div class="hero__visual animate-fade-in-delay-2">
+                    <div class="hero__code-window">
+                        <div class="code-window__header">
+                            <span class="code-dot code-dot--red"></span>
+                            <span class="code-dot code-dot--yellow"></span>
+                            <span class="code-dot code-dot--green"></span>
+                            <span class="code-window__title">test_suite.py</span>
+                        </div>
+                        <div class="code-window__body">
+                            <pre><code><span class="code-keyword">import</span> pytest
+<span class="code-keyword">from</span> selenium <span class="code-keyword">import</span> webdriver
+
+<span class="code-decorator">@pytest.fixture</span>
+<span class="code-keyword">def</span> <span class="code-function">browser</span>():
+    driver = webdriver.Chrome()
+    <span class="code-keyword">yield</span> driver
+    driver.quit()
+
+<span class="code-keyword">def</span> <span class="code-function">test_login</span>(browser):
+    browser.get(<span class="code-string">"https://app.com"</span>)
+    <span class="code-keyword">assert</span> <span class="code-string">"Dashboard"</span> <span class="code-keyword">in</span> browser.title
+    <span class="code-comment"># ✓ Test passed!</span></code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <a href="#skills" class="hero__scroll-indicator">
+                <span>Scroll Down</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 5v14M5 12l7 7 7-7" />
+                </svg>
+            </a>
+        </section>
+
+        <!-- Skills Section -->
+        <section class="section skills" id="skills">
+            <div class="container">
+                <div class="section__header">
+                    <span class="section__tag">What I Do</span>
+                    <h2 class="section__title">Skills & Technologies</h2>
+                    <p class="section__subtitle">Specialized in test automation and quality assurance across multiple
+                        platforms and technologies.</p>
+                </div>
+                <div class="skills__grid">
+                    <!-- Manual Testing -->
+                    <article class="skill-card" data-animate>
+                        <div class="skill-card__icon">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"
+                                    stroke="#22c55e" stroke-width="2" stroke-linecap="round" />
+                                <path d="M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke="#22c55e"
+                                    stroke-width="2" stroke-linecap="round" />
+                                <path d="M9 12l2 2 4-4" stroke="#22c55e" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" />
+                            </svg>
+                        </div>
+                        <h3 class="skill-card__title">Manual Testing</h3>
+                        <p class="skill-card__description">Exploratory testing, test case design, regression testing,
+                            and user acceptance testing with keen attention to detail.</p>
+                        <div class="skill-card__level">
+                            <span class="skill-level" style="--level: 95%"></span>
+                        </div>
+
+                        <!-- Enhanced bullet points section -->
+                        <ul class="skill-card__features">
+                            <li class="feature-item">
+                                <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                                <span>Executing test cases to identify defects and ensure software quality</span>
+                            </li>
+                            <li class="feature-item">
+                                <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                                <span>Functional, regression, integration, and system testing</span>
+                            </li>
+                            <li class="feature-item">
+                                <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                                <span>Exploratory testing and creating test plans/test cases</span>
+                            </li>
+                            <li class="feature-item">
+                                <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                                <span>UI/UX testing and black box testing techniques</span>
+                            </li>
+                        </ul>
+
+                        <div class="skill-card__level">
+                            <span class="skill-level" style="--level: 90%"></span>
+                        </div>
+                    </article>
+
+
+
+
+                    <!-- Automation Testing -->
+                    <article class="skill-card" data-animate>
+                        <div class="skill-card__icon">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <rect x="4" y="4" width="16" height="16" rx="2" stroke="#6366f1" stroke-width="2" />
+                                <circle cx="9" cy="10" r="1.5" fill="#6366f1" />
+                                <circle cx="15" cy="10" r="1.5" fill="#6366f1" />
+                                <path d="M8 15h8" stroke="#6366f1" stroke-width="2" stroke-linecap="round" />
+                                <path d="M2 8h2M20 8h2M2 16h2M20 16h2M8 2v2M16 2v2M8 20v2M16 20v2" stroke="#6366f1"
+                                    stroke-width="2" stroke-linecap="round" />
+                            </svg>
+                        </div>
+                        <h3 class="skill-card__title">Automation Testing</h3>
+                        <p class="skill-card__description">Building robust test frameworks with Selenium, Playwright,
+                            pytest, and custom automation scripts.</p>
+
+                        <!-- Enhanced bullet points section -->
+                        <ul class="skill-card__features">
+                            <li class="feature-item">
+                                <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                                <span>End-to-end test automation</span>
+                            </li>
+                            <li class="feature-item">
+                                <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                                <span>API & integration testing</span>
+                            </li>
+                            <li class="feature-item">
+                                <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                                <span>Page Object Model (POM) design pattern</span>
+                            </li>
+                            <li class="feature-item">
+                                <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                                <span>Custom framework development</span>
+                            </li>
+
+                            <li class="feature-item">
+                                <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                                <span>Implementing BDD framework using Behave/Pytest-BDD</span>
+                            </li>
+
+                            <li class="feature-item">
+                                <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                                <span></span>
+                            </li>
+                        </ul>
+
+                        <div class="skill-card__level">
+                            <span class="skill-level" style="--level: 90%"></span>
+                        </div>
+                    </article>
+
+
+
+
+                    <!-- API Testing -->
+                    <article class="skill-card" data-animate>
+                        <div class="skill-card__icon">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <path d="M12 2v4M8 6v4M16 6v4" stroke="#8b5cf6" stroke-width="2"
+                                    stroke-linecap="round" />
+                                <rect x="6" y="10" width="12" height="8" rx="2" stroke="#8b5cf6" stroke-width="2" />
+                                <path d="M12 18v4" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round" />
+                            </svg>
+                        </div>
+                        <h3 class="skill-card__title">API Testing</h3>
+                        <p class="skill-card__description">REST API testing using Postman, requests library, and
+                            automated API test suites with schema validation.</p>
+                        <div class="skill-card__level">
+                            <span class="skill-level" style="--level: 88%"></span>
+                        </div>
+
+                        <!-- Enhanced bullet points section -->
+                        <ul class="skill-card__features">
+                            <li class="feature-item">
+                                <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                                <span>Testing RESTful APIs with Postman</span>
+                            </li>
+                            <li class="feature-item">
+                                <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                                <span>Validating responses, status codes, and headers</span>
+                            </li>
+                            <li class="feature-item">
+                                <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                                <span>Python Requests library for API automation</span>
+                            </li>
+                            <li class="feature-item">
+                                <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                                <span>Custom framework development</span>
+                            </li>
+                        </ul>
+
+                        <div class="skill-card__level">
+                            <span class="skill-level" style="--level: 90%"></span>
+                        </div>
+                    </article>
+
+
+
+
+
+
+                    <!-- Performance Testing -->
+                    <article class="skill-card" data-animate>
+                        <div class="skill-card__icon">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke="#f59e0b" stroke-width="2"
+                                    stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                        </div>
+                        <h3 class="skill-card__title">Performance Testing</h3>
+                        <p class="skill-card__description">Testing application performance using JMeter.</p>
+
+                        <!-- Enhanced bullet points section -->
+                        <ul class="skill-card__features">
+                            <li class="feature-item">
+                                <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                                <span>Load testing to simulate multiple concurrent users</span>
+                            </li>
+                            <li class="feature-item">
+                                <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                                <span>Spike testing to validate system behavior under sudden traffic surges</span>
+                            </li>
+                            <li class="feature-item">
+                                <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                                <span>Analyzing response times, throughput, and error rates</span>
+                            </li>
+                            <li class="feature-item">
+                                <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                                <span>Generating performance reports and graphs</span>
+                            </li>
+                        </ul>
+
+                        <div class="skill-card__level">
+                            <span class="skill-level" style="--level: 90%"></span>
+                        </div>
+
+                    </article>
+
+                    <!-- Version Control & Collaboration -->
+                    <article class="skill-card" data-animate>
+                        <div class="skill-card__icon">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <circle cx="6" cy="6" r="3" stroke="#ec4899" stroke-width="2" />
+                                <circle cx="6" cy="18" r="3" stroke="#ec4899" stroke-width="2" />
+                                <circle cx="18" cy="18" r="3" stroke="#ec4899" stroke-width="2" />
+                                <path d="M6 9v6M18 15a9 9 0 00-9-9" stroke="#ec4899" stroke-width="2"
+                                    stroke-linecap="round" />
+                            </svg>
+                        </div>
+                        <h3 class="skill-card__title">Version Control</h3>
+                        <p class="skill-card__description">Git workflows, GitHub/GitLab collaboration, branching
+                            strategies, and code review best practices.</p>
+                        <div class="skill-card__level">
+                            <span class="skill-level" style="--level: 85%"></span>
+                        </div>
+
+
+                        <!-- Enhanced bullet points section -->
+                        <ul class="skill-card__features">
+                            <li class="feature-item">
+                                <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                                <span>Git for version control</span>
+                            </li>
+                            <li class="feature-item">
+                                <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                                <span>GitHub/GitLab for collaboration</span>
+                            </li>
+                            <li class="feature-item">
+                                <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                                <span>Branching, merging, and pull requests</span>
+                            </li>
+
+
+                            <div class="skill-card__level">
+                                <span class="skill-level" style="--level: 90%"></span>
+                            </div>
+                    </article>
+
+                    <!-- Agile & DevOps -->
+                    <article class="skill-card" data-animate>
+                        <div class="skill-card__icon">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <rect x="3" y="3" width="18" height="18" rx="2" stroke="#06b6d4" stroke-width="2" />
+                                <path d="M3 9h18M9 3v18" stroke="#06b6d4" stroke-width="2" />
+                                <rect x="5" y="11" width="2" height="3" fill="#06b6d4" rx="0.5" />
+                                <rect x="5" y="15" width="2" height="2" fill="#06b6d4" rx="0.5" />
+                                <rect x="11" y="11" width="2" height="4" fill="#06b6d4" rx="0.5" />
+                                <rect x="11" y="16" width="2" height="2" fill="#06b6d4" rx="0.5" />
+                                <rect x="17" y="11" width="2" height="2" fill="#06b6d4" rx="0.5" />
+                            </svg>
+                        </div>
+                        <h3 class="skill-card__title">Agile & DevOps</h3>
+                        <p class="skill-card__description">Scrum, Kanban methodologies, CI/CD pipelines, sprint
+                            planning, and continuous testing practices.</p>
+
+                        <!-- Enhanced bullet points section -->
+                        <ul class="skill-card__features">
+                            <li class="feature-item">
+                                <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                                <span>Scrum framework and sprint workflows</span>
+                            </li>
+                            <li class="feature-item">
+                                <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                                <span>Daily stand-ups, sprint planning, retrospectives</span>
+                            </li>
+                            <li class="feature-item">
+                                <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                                <span>Story grooming and backlog refinement</span>
+                            </li>
+                            <li class="feature-item">
+                                <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                                <span>Custom framework development</span>
+                            </li>
+                        </ul>
+
+                        <div class="skill-card__level">
+                            <span class="skill-level" style="--level: 90%"></span>
+                        </div>
+                    </article>
+
+                    <!-- Bug Tracking & Test Management -->
+                    <article class="skill-card" data-animate>
+                        <div class="skill-card__icon">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <path d="M8 2v4M16 2v4M9 18H7M17 18h-2M3 8h4M17 8h4M3 16h4M17 16h4" stroke="#ef4444"
+                                    stroke-width="2" stroke-linecap="round" />
+                                <ellipse cx="12" cy="11" rx="5" ry="6" stroke="#ef4444" stroke-width="2" />
+                                <circle cx="10" cy="9" r="1" fill="#ef4444" />
+                                <circle cx="14" cy="9" r="1" fill="#ef4444" />
+                                <circle cx="18" cy="18" r="3" stroke="#ef4444" stroke-width="2" />
+                                <path d="M20.5 20.5l1.5 1.5" stroke="#ef4444" stroke-width="2" stroke-linecap="round" />
+                            </svg>
+                        </div>
+                        <h3 class="skill-card__title">Bug Tracking</h3>
+                        <p class="skill-card__description">Expert in Jira, Azure DevOps Board, TestRail, and creating
+                            comprehensive bug reports with proper severity classification.</p>
+
+                        <!-- Enhanced bullet points section -->
+                        <ul class="skill-card__features">
+                            <li class="feature-item">
+                                <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                                <span>Jira, Bugzilla, Azure DevOps for bug tracking</span>
+                            </li>
+                            <li class="feature-item">
+                                <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                                <span>Detailed bug reporting with severity/priority</span>
+                            </li>
+                            <li class="feature-item">
+                                <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                                <span>Test case management using TestRail/Zephyr</span>
+                            </li>
+                            <li class="feature-item">
+                                <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                                <span>Effective lifecycle tracking and status reporting</span>
+                            </li>
+                        </ul>
+
+                        <div class="skill-card__level">
+                            <span class="skill-level" style="--level: 90%"></span>
+                        </div>
+                    </article>
+
+                    <!-- Cross-Browser & Cross-Platform -->
+                    <article class="skill-card" data-animate>
+                        <div class="skill-card__icon">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <rect x="2" y="3" width="13" height="10" rx="1" stroke="#14b8a6" stroke-width="2" />
+                                <path d="M2 6h13" stroke="#14b8a6" stroke-width="2" />
+                                <circle cx="5" cy="4.5" r="0.5" fill="#14b8a6" />
+                                <circle cx="7" cy="4.5" r="0.5" fill="#14b8a6" />
+                                <circle cx="9" cy="4.5" r="0.5" fill="#14b8a6" />
+                                <rect x="9" y="11" width="13" height="10" rx="1" stroke="#14b8a6" stroke-width="2" />
+                                <path d="M9 14h13" stroke="#14b8a6" stroke-width="2" />
+                                <circle cx="12" cy="12.5" r="0.5" fill="#14b8a6" />
+                                <circle cx="14" cy="12.5" r="0.5" fill="#14b8a6" />
+                                <circle cx="16" cy="12.5" r="0.5" fill="#14b8a6" />
+                            </svg>
+                        </div>
+                        <h3 class="skill-card__title">Cross-Browser Testing</h3>
+                        <p class="skill-card__description">Testing across Chrome, Firefox, Safari, Edge, and mobile
+                            platforms ensuring consistent user experience.</p>
+
+                        <!-- Enhanced bullet points section -->
+                        <ul class="skill-card__features">
+                            <li class="feature-item">
+                                <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                                <span>Testing web applications across multiple browsers (Chrome, Firefox, Safari,Edge)
+                                </span>
+                            </li>
+                            <li class="feature-item">
+                                <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                                <span>Ensuring consistent functionality and UI/UX across all browsers</span>
+                            </li>
+                            <li class="feature-item">
+                                <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                                <span>Testing across different browser versions and operating systems</span>
+                            </li>
+                            <li class="feature-item">
+                                <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                                <span>Identifying and resolving browser-specific issues and rendering
+                                    inconsistencies</span>
+                            </li>
+
+                            <li class="feature-item">
+                                <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                                <span>Using Selenium/Playwright Grid for parallel cross-browser testing</span>
+                            </li>
+                        </ul>
+
+                        <div class="skill-card__level">
+                            <span class="skill-level" style="--level: 90%"></span>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tools Section -->
+        <section class="section tools" id="tools">
+            <div class="container">
+                <div class="section__header">
+                    <span class="section__tag">My Toolkit</span>
+                    <h2 class="section__title">Tools & Bug Tracking</h2>
+                    <p class="section__subtitle">Proficient in industry-standard tools for bug tracking, version
+                        control, and project management.</p>
+                </div>
+                <div class="tools__grid">
+
+
+                    <article class="tool-card" data-animate>
+                        <div class="tool-card__icon">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <path d="M7 3a4 4 0 00-4 4v6a4 4 0 004 4h10a4 4 0 004-4V7a4 4 0 00-4-4H7z"
+                                    stroke="#2dd4bf" stroke-width="2" />
+                                <circle cx="9" cy="9" r="1.5" fill="#2dd4bf" />
+                                <circle cx="15" cy="9" r="1.5" fill="#2dd4bf" />
+                                <path d="M7 13a5 5 0 0010 0" stroke="#2dd4bf" stroke-width="2" stroke-linecap="round" />
+                                <path d="M12 17v4M8 21h8" stroke="#2dd4bf" stroke-width="2" stroke-linecap="round" />
+                            </svg>
+                        </div>
+                        <h3 class="tool-card__title">Playwright</h3>
+                        <p class="tool-card__description">Modern end-to-end testing framework with cross-browser
+                            automation, reliable auto-wait, and powerful debugging capabilities.</p>
+                    </article>
+
+                    <article class="tool-card" data-animate>
+                        <div class="tool-card__icon">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <circle cx="12" cy="12" r="2" fill="#43b02a" />
+                                <ellipse cx="12" cy="12" rx="10" ry="4" stroke="#43b02a" stroke-width="2"
+                                    transform="rotate(0 12 12)" />
+                                <ellipse cx="12" cy="12" rx="10" ry="4" stroke="#43b02a" stroke-width="2"
+                                    transform="rotate(60 12 12)" />
+                                <ellipse cx="12" cy="12" rx="10" ry="4" stroke="#43b02a" stroke-width="2"
+                                    transform="rotate(120 12 12)" />
+                            </svg>
+                        </div>
+                        <h3 class="tool-card__title">Selenium</h3>
+                        <p class="tool-card__description">Industry-standard browser automation tool supporting multiple
+                            languages and platforms for comprehensive web testing.</p>
+                    </article>
+
+
+
+
+
+                    <article class="tool-card" data-animate>
+                        <div class="tool-card__icon">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <path d="M12 2L2 12l10 10 10-10L12 2z" stroke="#0052cc" stroke-width="2"
+                                    stroke-linecap="round" stroke-linejoin="round" />
+                                <path d="M12 2v20" stroke="#0052cc" stroke-width="2" stroke-linecap="round" />
+                                <path d="M2 12h20" stroke="#0052cc" stroke-width="2" stroke-linecap="round" />
+                                <circle cx="12" cy="12" r="3" fill="#0052cc" />
+                            </svg>
+                        </div>
+                        <h3 class="tool-card__title">Jira</h3>
+                        <p class="tool-card__description">Expert in Jira for bug tracking, sprint planning, and agile
+                            project management workflows.</p>
+                    </article>
+
+
+                    <article class="tool-card" data-animate>
+                        <div class="tool-card__icon">
+                            <svg viewBox="0 0 128 128">
+                                <path fill="#0078D4"
+                                    d="M64 8L8 38v52l56 30 56-30V38L64 8zm0 12l44 23.5v41L64 108 20 84.5v-41L64 20z" />
+                                <path fill="#0078D4" d="M64 42L40 54v24l24 12 24-12V54L64 42z" />
+                            </svg>
+                        </div>
+                        <h3 class="tool-card__title">Azure DevOps Board</h3>
+                        <p class="tool-card__description">Managing test pipelines, work items, and CI/CD workflows in
+                            Azure DevOps Board.</p>
+                    </article>
+
+                    <article class="tool-card" data-animate>
+                        <div class="tool-card__icon">
+                            <svg viewBox="0 0 128 128">
+                                <path fill="#F05032"
+                                    d="M124.742 58.378L69.625 3.264c-3.172-3.174-8.32-3.174-11.497 0L46.685 14.71l14.518 14.518c3.375-1.139 7.243-.375 9.932 2.314 2.703 2.706 3.462 6.607 2.293 9.993L87.42 55.529c3.385-1.167 7.292-.413 9.994 2.295 3.78 3.777 3.78 9.9 0 13.679-3.78 3.78-9.901 3.78-13.683 0-2.842-2.844-3.545-7.019-2.105-10.521L68.578 47.933l-.002 34.341c.922.455 1.791 1.063 2.559 1.828 3.778 3.777 3.778 9.898 0 13.683-3.779 3.777-9.904 3.777-13.679 0-3.778-3.784-3.778-9.905 0-13.683.934-.933 2.014-1.638 3.167-2.11V47.333c-1.153-.472-2.231-1.172-3.167-2.111-2.862-2.86-3.551-7.06-2.083-10.576L41.056 20.333 3.264 58.123c-3.174 3.174-3.174 8.324 0 11.499l55.117 55.114c3.174 3.174 8.322 3.174 11.499 0l54.858-54.858c3.174-3.176 3.174-8.327.004-11.5z" />
+                            </svg>
+                        </div>
+                        <h3 class="tool-card__title">Git</h3>
+                        <p class="tool-card__description">Version control expertise with branching strategies, code
+                            reviews, and collaborative workflows.</p>
+                    </article>
+
+                    <article class="tool-card" data-animate>
+                        <div class="tool-card__icon">
+                            <svg viewBox="0 0 128 128">
+                                <path fill-rule="evenodd" clip-rule="evenodd" fill="#ffffff"
+                                    d="M64 5.103c-33.347 0-60.388 27.035-60.388 60.388 0 26.682 17.303 49.317 41.297 57.303 3.017.56 4.125-1.31 4.125-2.905 0-1.44-.056-6.197-.082-11.243-16.8 3.653-20.345-7.125-20.345-7.125-2.747-6.98-6.705-8.836-6.705-8.836-5.48-3.748.413-3.67.413-3.67 6.063.425 9.257 6.223 9.257 6.223 5.386 9.23 14.127 6.562 17.573 5.02.542-3.903 2.107-6.568 3.834-8.076-13.413-1.525-27.514-6.704-27.514-29.843 0-6.593 2.36-11.98 6.223-16.21-.628-1.52-2.695-7.662.584-15.98 0 0 5.07-1.623 16.61 6.19C53.7 35 58.867 34.327 64 34.304c5.13.023 10.3.694 15.127 2.033 11.526-7.813 16.59-6.19 16.59-6.19 3.287 8.317 1.22 14.46.593 15.98 3.872 4.23 6.215 9.617 6.215 16.21 0 23.194-14.127 28.3-27.574 29.796 2.167 1.874 4.097 5.55 4.097 11.183 0 8.08-.07 14.583-.07 16.572 0 1.607 1.088 3.49 4.148 2.897 23.98-7.994 41.263-30.622 41.263-57.294C124.388 32.14 97.35 5.104 64 5.104z" />
+                            </svg>
+                        </div>
+                        <h3 class="tool-card__title">GitHub</h3>
+                        <p class="tool-card__description">Managing repositories, pull requests, GitHub Actions for
+                            automated test pipelines.</p>
+                    </article>
+
+
+                    <article class="tool-card" data-animate>
+                        <div class="tool-card__icon">
+                            <svg viewBox="0 0 128 128">
+                                <linearGradient id="python-original-a" gradientUnits="userSpaceOnUse" x1="70.252"
+                                    y1="1237.476" x2="170.659" y2="1151.089"
+                                    gradientTransform="matrix(.563 0 0 -.568 -29.215 707.817)">
+                                    <stop offset="0" stop-color="#5A9FD4" />
+                                    <stop offset="1" stop-color="#306998" />
+                                </linearGradient>
+                                <linearGradient id="python-original-b" gradientUnits="userSpaceOnUse" x1="209.474"
+                                    y1="1098.811" x2="173.62" y2="1149.537"
+                                    gradientTransform="matrix(.563 0 0 -.568 -29.215 707.817)">
+                                    <stop offset="0" stop-color="#FFD43B" />
+                                    <stop offset="1" stop-color="#FFE873" />
+                                </linearGradient>
+                                <path fill="url(#python-original-a)"
+                                    d="M63.391 1.988c-4.222.02-8.252.379-11.8 1.007-10.45 1.846-12.346 5.71-12.346 12.837v9.411h24.693v3.137H29.977c-7.176 0-13.46 4.313-15.426 12.521-2.268 9.405-2.368 15.275 0 25.096 1.755 7.311 5.947 12.519 13.124 12.519h8.491V67.234c0-8.151 7.051-15.34 15.426-15.34h24.665c6.866 0 12.346-5.654 12.346-12.548V15.833c0-6.693-5.646-11.72-12.346-12.837-4.244-.706-8.645-1.027-12.866-1.008zM50.037 9.557c2.55 0 4.634 2.117 4.634 4.721 0 2.593-2.083 4.69-4.634 4.69-2.56 0-4.633-2.097-4.633-4.69-.001-2.604 2.073-4.721 4.633-4.721z"
+                                    transform="translate(0 10.26)" />
+                                <path fill="url(#python-original-b)"
+                                    d="M91.682 28.38v10.966c0 8.5-7.208 15.655-15.426 15.655H51.591c-6.756 0-12.346 5.783-12.346 12.549v23.515c0 6.691 5.818 10.628 12.346 12.547 7.816 2.297 15.312 2.713 24.665 0 6.216-1.801 12.346-5.423 12.346-12.547v-9.412H63.938v-3.138h37.012c7.176 0 9.852-5.005 12.348-12.519 2.578-7.735 2.467-15.174 0-25.096-1.774-7.145-5.161-12.521-12.348-12.521h-9.268zM77.809 87.927c2.561 0 4.634 2.097 4.634 4.692 0 2.602-2.074 4.719-4.634 4.719-2.55 0-4.633-2.117-4.633-4.719 0-2.595 2.083-4.692 4.633-4.692z"
+                                    transform="translate(0 10.26)" />
+                                <radialGradient id="python-original-c" cx="1825.678" cy="444.45" r="26.743"
+                                    gradientTransform="matrix(0 -.24 -1.055 0 532.979 557.576)"
+                                    gradientUnits="userSpaceOnUse">
+                                    <stop offset="0" stop-color="#B8B8B8" stop-opacity=".498" />
+                                    <stop offset="1" stop-color="#7F7F7F" stop-opacity="0" />
+                                </radialGradient>
+                                <path opacity=".444" fill="url(#python-original-c)"
+                                    d="M97.309 119.597c0 3.543-14.816 6.416-33.091 6.416-18.276 0-33.092-2.873-33.092-6.416 0-3.544 14.815-6.417 33.092-6.417 18.275 0 33.091 2.872 33.091 6.417z" />
+                            </svg>
+                        </div>
+                        <h3 class="tool-card__title">Python</h3>
+                        <p class="tool-card__description">Versatile programming language perfect for automation, data
+                            analysis, web development, and scripting tasks.</p>
+                    </article>
+
+
+                    <article class="tool-card" data-animate>
+                        <div class="tool-card__icon">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <circle cx="12" cy="12" r="10" stroke="#ff6c37" stroke-width="2" />
+                                <path d="M13 2l-8 11h7l-1 9 8-11h-7l1-9z" fill="#ff6c37" />
+                            </svg>
+                        </div>
+                        <h3 class="tool-card__title">Postman</h3>
+                        <p class="tool-card__description">API development platform for designing, testing, documenting,
+                            and monitoring RESTful APIs and web services.</p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+
+
+        <!-- Projects Section -->
+        <section class="section projects" id="projects">
+            <div class="container">
+                <div class="section__header">
+                    <span class="section__tag">Portfolio</span>
+                    <h2 class="section__title">Featured Projects</h2>
+                    <p class="section__subtitle">A selection of QA projects showcasing testing expertise and measurable
+                        improvements.</p>
+                </div>
+                <div class="projects__grid">
+                    <article class="project-card" data-animate>
+                        <div class="project-card__image">
+                            <div class="project-card__overlay">
+                                <span class="project-card__tag">SaaS Platform</span>
+                            </div>
+                            <div class="project-logo">
+                                <img src="assets/figsflow-logo.png" alt="Figsflow Logo" class="project-logo__img">
+                            </div>
+                        </div>
+                        <div class="project-card__content">
+                            <h3 class="project-card__title">Figsflow</h3>
+                            <p class="project-card__description">Currently leading QA efforts for a SaaS platform
+                                serving accountancy firms, bookkeeping practices, and tax advisors. Focused on proposal
+                                generation, compliance features, and client onboarding workflows.</p>
+                            <div class="project-card__tech">
+                                <span class="tech-tag">Automation-Playwright</span>
+                                <span class="tech-tag">Manual Testing</span>
+                                <span class="tech-tag">API Testing</span>
+                                <span class="tech-tag">DevOPs Board</span>
+                                <span class="tech-tag">UAT</span>
+                            </div>
+                            <div class="project-card__results">
+                                <div class="result">
+                                    <span class="result__value">Active</span>
+                                    <span class="result__label">Current Project</span>
+                                </div>
+                                <div class="result">
+                                    <span class="result__value">E2E</span>
+                                    <span class="result__label">Full Coverage</span>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="project-card" data-animate>
+                        <div class="project-card__image">
+                            <div class="project-card__overlay">
+                                <span class="project-card__tag">API Testing</span>
+                            </div>
+                            <div class="project-placeholder project-placeholder--2">
+                                <svg viewBox="0 0 24 24" fill="none">
+                                    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"
+                                        stroke="currentColor" stroke-width="2" />
+                                    <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" stroke="currentColor" stroke-width="2"
+                                        stroke-linecap="round" />
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="project-card__content">
+                            <h3 class="project-card__title">REST API Testing Framework</h3>
+                            <p class="project-card__description">Developed a robust, reusable API testing framework
+                                using Python (Requests) and Postman, covering authentication, CRUD operations, and data
+                                validation with JSON Schema for API response consistency.</p>
+                            <div class="project-card__tech">
+                                <span class="tech-tag">Postman</span>
+                                <span class="tech-tag">Python</span>
+                                <span class="tech-tag">Requests</span>
+                                <span class="tech-tag">JSON Schema</span>
+                            </div>
+                            <div class="project-card__results">
+                                <div class="result">
+                                    <span class="result__value">500+</span>
+                                    <span class="result__label">API Endpoints Tested</span>
+                                </div>
+                                <div class="result">
+                                    <span class="result__value">99.5%</span>
+                                    <span class="result__label">Test Coverage</span>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="project-card" data-animate>
+                        <div class="project-card__image">
+                            <div class="project-card__overlay">
+                                <span class="project-card__tag">Mobile Testing</span>
+                            </div>
+                            <div class="project-placeholder project-placeholder--3">
+                                <svg viewBox="0 0 24 24" fill="none">
+                                    <rect x="5" y="2" width="14" height="20" rx="2" stroke="currentColor"
+                                        stroke-width="2" />
+                                    <path d="M12 18h.01" stroke="currentColor" stroke-width="2"
+                                        stroke-linecap="round" />
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="project-card__content">
+                            <h3 class="project-card__title">Cross-Platform Mobile QA</h3>
+                            <p class="project-card__description">Led the QA efforts for a fintech mobile application,
+                                utilizing Appium to ensure robust, seamless functionality across both iOS
+                                and Android platforms.</p>
+                            <div class="project-card__tech">
+                                <span class="tech-tag">Playwright</span>
+                                <span class="tech-tag">Appium</span>
+                                <span class="tech-tag">CI/CD</span>
+                            </div>
+                            <div class="project-card__results">
+                                <div class="result">
+                                    <span class="result__value">Zero</span>
+                                    <span class="result__label">Critical Bugs</span>
+                                </div>
+                                <div class="result">
+                                    <span class="result__value">4.8★</span>
+                                    <span class="result__label">App Rating</span>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section class="section contact" id="contact">
+            <div class="container">
+                <div class="contact__wrapper">
+                    <div class="contact__content" data-animate>
+                        <span class="section__tag">Let's Connect</span>
+                        <h2 class="section__title">Get in Touch</h2>
+                        <p class="contact__description">
+                            Looking for a dedicated QA professional to ensure your software quality?
+                            I'm always open to discussing new opportunities and exciting projects.
+                        </p>
+                        <div class="contact__buttons">
+                            <a href="mailto:dipakbeest@gmail.com" class="btn btn--primary btn--large">
+                                <svg class="btn-icon btn-icon--left" viewBox="0 0 24 24" fill="none">
+                                    <path
+                                        d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"
+                                        stroke="currentColor" stroke-width="2" />
+                                    <path d="M22 6l-10 7L2 6" stroke="currentColor" stroke-width="2"
+                                        stroke-linecap="round" />
+                                </svg>
+                                <span>Send Email</span>
+                            </a>
+                            <a href="https://www.linkedin.com/in/dipakbist08/" target="_blank" rel="noopener noreferrer"
+                                class="btn btn--linkedin btn--large">
+                                <svg class="btn-icon btn-icon--left" viewBox="0 0 24 24" fill="currentColor">
+                                    <path
+                                        d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+                                </svg>
+                                <span>Connect on LinkedIn</span>
+                            </a>
+                        </div>
+                    </div>
+
+
+                    <div class="contact__visual" data-animate>
+                        <div class="contact-card">
+                            <div class="contact-card__avatar">
+                                <img src="assets/profile.png" alt="Dipak Bist">
+                            </div>
+                            <h3 class="contact-card__name">Dipak Bist</h3>
+                            <p class="contact-card__title">Software Quality Assurance Engineer</p>
+                            <div class="contact-card__info">
+                                <div class="info-item">
+                                    <svg viewBox="0 0 24 24" fill="none">
+                                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" stroke="currentColor"
+                                            stroke-width="2" />
+                                        <circle cx="12" cy="10" r="3" stroke="currentColor" stroke-width="2" />
+                                    </svg>
+                                    <span>Available Worldwide (Remote)</span>
+                                </div>
+                                <div class="info-item">
+                                    <svg viewBox="0 0 24 24" fill="none">
+                                        <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor"
+                                            stroke-width="2" />
+                                        <path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" stroke-width="2"
+                                            stroke-linecap="round" />
+                                    </svg>
+                                    <span>3+ Years Experience</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container footer__container">
+            <div class="footer__brand">
+                <a href="#" class="nav__logo">
+                    <span class="logo-bracket">&lt;</span>QA<span class="logo-dot">.</span>Pro<span
+                        class="logo-bracket">/&gt;</span>
+                </a>
+                <p class="footer__tagline">Ensuring software excellence, one test at a time.</p>
+            </div>
+            <div class="footer__links">
+                <a href="https://www.linkedin.com/in/dipakbist08/" target="_blank" rel="noopener noreferrer"
+                    class="footer__social" aria-label="LinkedIn">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                            d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+                    </svg>
+                </a>
+                <a href="https://github.com/DipakBist08" target="_blank" rel="noopener noreferrer"
+                    class="footer__social" aria-label="GitHub">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                            d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z" />
+                    </svg>
+                </a>
+            </div>
+            <div class="footer__copyright">
+                <p>&copy; <span id="current-year"></span> QA Professional. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
