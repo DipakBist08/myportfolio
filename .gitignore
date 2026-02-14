@@ -1,3 +1,36 @@
- .vscode/
- .idea/
+.vscode/
+.idea/
+
+# Build and dependency files
+node_modules/
+dist/
+build/
+*.min.js
+*.min.css
+
+# Configuration files (generated/local)
+_config.yml
+.htaccess
+
+# System and OS files
+.DS_Store
+Thumbs.db
+.env
+.env.local
+
+# Temporary and log files
+*.log
+*.tmp
+.cache/
+.temp/
+
+# IDE and editor files
+*.swp
+*.swo
+*~
+.project
+.classpath
+
+# OS-specific
+._*
  .DS_Store 
