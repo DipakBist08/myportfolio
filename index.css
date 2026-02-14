@@ -145,6 +145,7 @@
 [data-theme="light"] .project-card__tag {
     background: rgba(15, 23, 42, 0.2);
     color: rgba(255, 255, 255, 0.95);
+    text-align: center;
 }
 
 [data-theme="light"] .skill-card:hover,
@@ -343,7 +344,8 @@ body {
     line-height: 1.6;
     color: var(--text-primary);
     background: var(--gradient-bg);
-    background-attachment: fixed;
+    /* background-attachment: fixed can cause expensive repaints; use scroll for better performance */
+    background-attachment: scroll;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     transition: background var(--transition-base), color var(--transition-base);
@@ -571,6 +573,15 @@ h3 {
 .theme-toggle:hover {
     background: rgba(99, 102, 241, 0.2);
     border-color: rgba(255, 255, 255, 0.2);
+}
+
+.theme-toggle.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.theme-toggle.disabled:hover {
+    background: rgba(99, 102, 241, 0.1);
 }
 
 [data-theme="light"] .theme-toggle {
@@ -1730,12 +1741,15 @@ h3 {
 .project-card__tag {
     background: var(--gradient-primary);
     color: white;
+
     font-size: 0.75rem;
     font-weight: 600;
     padding: var(--spacing-xs) var(--spacing-md);
     border-radius: var(--radius-full);
     text-transform: uppercase;
+    text-align: center;
     letter-spacing: 0.05em;
+   
 }
 
 .project-placeholder {
@@ -2083,6 +2097,7 @@ h3 {
     opacity: 0;
     transform: translateY(30px);
     transition: opacity 0.6s ease, transform 0.6s ease;
+   
 }
 
 [data-animate].animated {
@@ -2272,9 +2287,11 @@ h3 {
 .orb {
     position: absolute;
     border-radius: 50%;
-    filter: blur(60px);
+    /* reduce blur to lower GPU compositing cost */
+    filter: blur(20px);
     opacity: 0.6;
     animation: orbFloat 20s ease-in-out infinite;
+    animation-play-state: paused;
 }
 
 .orb--1 {
@@ -2376,15 +2393,17 @@ h3 {
 /* ----- Mouse Follower ----- */
 .mouse-follower {
     position: fixed;
-    width: 300px;
-    height: 300px;
+    /* smaller follower reduces paint area */
+    width: 120px;
+    height: 120px;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.12) 0%, transparent 70%);
     pointer-events: none;
     z-index: 0;
     transform: translate(-50%, -50%);
     transition: transform 0.1s ease-out, opacity 0.3s ease;
-    filter: blur(40px);
+    /* reduce blur for cheaper compositing */
+    filter: blur(12px);
     opacity: 0;
 }
 
@@ -2683,4 +2702,27 @@ h3 {
     .mouse-follower {
         display: none;
     }
+}
+
+/* ----- Edge Browser Optimizations ----- */
+html.is-edge .header {
+    backdrop-filter: blur(6px) !important;
+    -webkit-backdrop-filter: blur(6px) !important;
+}
+
+html.is-edge .skill-card,
+html.is-edge .tool-card,
+html.is-edge .project-card {
+    backdrop-filter: blur(4px) !important;
+    -webkit-backdrop-filter: blur(4px) !important;
+}
+
+html.is-edge .skill-card::before,
+html.is-edge .tool-card::before,
+html.is-edge .project-card::before {
+    display: none !important;
+}
+
+html.is-edge .mouse-follower {
+    display: none !important;
 }

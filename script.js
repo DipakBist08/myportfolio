@@ -21,19 +21,99 @@
 })();
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Detect and optimize for Edge browser
+    const isEdge = /Edg/.test(navigator.userAgent);
+    if (isEdge) {
+        document.documentElement.classList.add('is-edge');
+        document.documentElement.setAttribute('data-browser', 'edge');
+    }
+    
     // Initialize all features
     initMobileNav();
     initScrollAnimations();
     initTypingEffect();
     initSmoothScroll();
     initCurrentYear();
-    initGalaxyBackground();
     initBackToTop();
-    initMouseFollower();
-    initParallaxOrbs();
     initMagneticButtons();
     initThemeToggle();
+    // Lazy-init heavy visual effects (galaxy canvas, mouse follower, parallax orbs)
+    lazyInitHeavyEffects();
+    initPerfToggle();
 });
+
+/* =====================================================
+   PERFORMANCE MODE TOGGLE
+   ===================================================== */
+function initPerfToggle() {
+    const perfToggle = document.getElementById('perf-toggle');
+    if (!perfToggle) return;
+
+    const PERF_KEY = 'portfolio-disable-effects';
+    const areEffectsDisabled = localStorage.getItem(PERF_KEY) === 'true';
+
+    perfToggle.classList.toggle('disabled', areEffectsDisabled);
+    perfToggle.addEventListener('click', () => {
+        const currentState = localStorage.getItem(PERF_KEY) === 'true';
+        const newState = !currentState;
+        localStorage.setItem(PERF_KEY, newState);
+        perfToggle.classList.toggle('disabled', newState);
+        // Refresh to apply change
+        location.reload();
+    });
+}
+
+function lazyInitHeavyEffects() {
+    const prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const hwConcurrency = navigator.hardwareConcurrency || 4;
+    const deviceMemory = navigator.deviceMemory || 4;
+
+    // Detect Edge browser (has slower canvas rendering)
+    const isEdge = /Edg/.test(navigator.userAgent);
+    
+    // Galaxy canvas disabled by default for performance; user can enable via localStorage
+    // For Edge, always disable canvas by default due to Chromium rendering quirks
+    const enableGalaxyDefault = localStorage.getItem('portfolio-disable-effects') !== 'true' && hwConcurrency > 4 && !prefersReduced && !isEdge;
+
+    function runHeavyInits() {
+        if (prefersReduced) return; // user prefers reduced motion: skip heavy effects
+
+        // For very low-end devices, reduce work: only init lightweight parallax
+        if (hwConcurrency <= 2 || deviceMemory <= 1) {
+            try { initParallaxOrbs(); } catch (e) {}
+            return;
+        }
+
+        // Galaxy background disabled by default; only init if device is capable and user hasn't opted out
+        if (enableGalaxyDefault) {
+            try { initGalaxyBackground(); } catch (e) {}
+        }
+        try { initMouseFollower(); } catch (e) {}
+        try { initParallaxOrbs(); } catch (e) {}
+    }
+
+    let triggered = false;
+    function trigger() {
+        if (triggered) return;
+        triggered = true;
+        runHeavyInits();
+    }
+
+    // Run when browser is idle or on first user interaction
+    // Edge needs longer timeout due to slower event loop
+    const idleTimeout = isEdge ? 4000 : 3000;
+    const fallbackTimeout = isEdge ? 3500 : 2500;
+    
+    if ('requestIdleCallback' in window) {
+        requestIdleCallback(() => { if (!triggered) trigger(); }, { timeout: idleTimeout });
+    } else {
+        setTimeout(() => { if (!triggered) trigger(); }, fallbackTimeout);
+    }
+
+    ['mousemove','touchstart','scroll','keydown'].forEach(ev => {
+        document.addEventListener(ev, trigger, { passive: true, once: true });
+    });
+}
 
 /* ----- Mobile Navigation ----- */
 function initMobileNav() {
@@ -87,6 +167,8 @@ function initScrollAnimations() {
                 const delay = entry.target.dataset.delay || 0;
                 setTimeout(() => {
                     entry.target.classList.add('animated');
+                    // Resume CSS animations when element comes into view
+                    entry.target.style.animationPlayState = 'running';
                 }, delay);
 
                 observer.unobserve(entry.target);
@@ -255,7 +337,7 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
-/* ----- Header Scroll Effect ----- */
+/* ----- Header Scroll Effect (Debounced) ----- */
 let lastScroll = 0;
 const header = document.querySelector('.header');
 
@@ -271,17 +353,8 @@ function handleScrollBatch() {
     // update active nav link (previously on its own listener)
     highlightNavLink();
 
-    // update parallax orbs vertical position (light-weight)
-    const orbs = document.querySelectorAll('.orb');
-    if (orbs && orbs.length) {
-        const scrollY = currentScroll;
-        orbs.forEach((orb, index) => {
-            const speed = (index + 1) * 0.05;
-            const y = scrollY * speed;
-            orb.style.transform = `translateY(${-y}px)`;
-        });
-    }
-
+    // Parallax orbs disabled in scroll handler to reduce load; enable via animation-play-state when desired
+    
     lastScroll = currentScroll;
     scrollTicking = false;
 }
@@ -384,7 +457,7 @@ function initParallaxOrbs() {
     const orbs = document.querySelectorAll('.orb');
     if (!orbs.length) return;
 
-    // Throttle mouse move + scroll updates via rAF for smoother performance
+    // Throttle mouse move updates via rAF for smoother performance
     let orbMouseX = 0, orbMouseY = 0;
     let orbTick = false;
 
@@ -396,7 +469,7 @@ function initParallaxOrbs() {
                 const centerX = window.innerWidth / 2;
                 const centerY = window.innerHeight / 2;
                 orbs.forEach((orb, index) => {
-                    const speed = (index + 1) * 0.02;
+                    const speed = (index + 1) * 0.01; // reduced speed for perf
                     const x = (orbMouseX - centerX) * speed;
                     const y = (orbMouseY - centerY) * speed;
                     orb.style.transform = `translate(${x}px, ${y}px)`;
@@ -406,23 +479,6 @@ function initParallaxOrbs() {
             orbTick = true;
         }
     }, { passive: true });
-
-    // Parallax on scroll (batched by global scroll handler)
-    // We'll update vertical position when the global scroll handler runs (handleScrollBatch)
-    // but ensure initial state
-    function updateOrbsOnScroll() {
-        const scrollY = window.scrollY;
-        orbs.forEach((orb, index) => {
-            const speed = (index + 1) * 0.05;
-            const y = scrollY * speed;
-            const prev = orb.style.transform || '';
-            // Keep any translateX while setting translateY
-            orb.style.transform = prev.includes('translate(') ? prev : `translateY(${-y}px)`;
-        });
-    }
-
-    // call once to set positions
-    updateOrbsOnScroll();
 }
 
 /* ----- Magnetic Buttons ----- */
@@ -545,8 +601,10 @@ function initGalaxyBackground() {
     const CELL_SIZE = 80;
     const CONNECT_DIST = 70;
     const MAX_CONNECTIONS = 2;
-    const PREF_MIN_PARTICLES = 200; // for reduced motion or very small screens
-    const PREF_MAX_PARTICLES = 2000;
+    const PREF_MIN_PARTICLES = 150; // tuned lower for responsiveness
+    // For Edge, further reduce particles to avoid canvas bottleneck
+    const isEdgeBrowser = /Edg/.test(navigator.userAgent);
+    const PREF_MAX_PARTICLES = isEdgeBrowser ? 300 : 800; // reduce even more for Edge
 
     const prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const hwConcurrency = navigator.hardwareConcurrency || 4;
@@ -566,6 +624,12 @@ function initGalaxyBackground() {
 
     let particles = [];
     let grid = {};
+
+    // Adaptive performance controls
+    let movingAvgFrame = 16; // ms
+    const FRAME_ALPHA = 0.05;
+    let isOverloaded = false;
+    let targetParticleCount = 0;
 
     let isUserScrolling = false;
     let scrollTimeout = null;
@@ -596,17 +660,23 @@ function initGalaxyBackground() {
         grid = {};
         const area = Math.max(1, width * height);
         const density = densitySelector; // adaptive density
-        const count = Math.min(MAX_PARTICLES, Math.max(MIN_PARTICLES, Math.floor(area / density)));
+        // target count tuned per-device; start conservatively to avoid freeze
+        const calculated = Math.min(MAX_PARTICLES, Math.max(MIN_PARTICLES, Math.floor(area / density)));
+        targetParticleCount = Math.max(MIN_PARTICLES, Math.min(calculated, Math.floor(MAX_PARTICLES * (navigator.hardwareConcurrency && navigator.hardwareConcurrency > 4 ? 1 : 0.6))));
 
-        for (let i = 0; i < count; i++) {
-            particles.push({
-                x: Math.random() * width,
-                y: Math.random() * height,
-                vx: (Math.random() - 0.5) * 0.3,
-                vy: (Math.random() - 0.5) * 0.3,
-                r: Math.random() * 1.2 + 0.6,
-                hue: 200 + Math.random() * 120, // bluish -> purple
-            });
+        // Start with a smaller initial set, ramp later if device is healthy
+        const initial = Math.max(MIN_PARTICLES, Math.floor(targetParticleCount * 0.35));
+        for (let i = 0; i < initial; i++) {
+            particles.push({ x: Math.random() * width, y: Math.random() * height, vx: (Math.random() - 0.5) * 0.3, vy: (Math.random() - 0.5) * 0.3, r: Math.random() * 1.2 + 0.6, hue: 200 + Math.random() * 120 });
+        }
+    }
+
+    // Try to gradually increase particles when idle
+    function rampParticles() {
+        if (particles.length >= targetParticleCount) return;
+        const add = Math.min(50, targetParticleCount - particles.length);
+        for (let i = 0; i < add; i++) {
+            particles.push({ x: Math.random() * width, y: Math.random() * height, vx: (Math.random() - 0.5) * 0.3, vy: (Math.random() - 0.5) * 0.3, r: Math.random() * 1.2 + 0.6, hue: 200 + Math.random() * 120 });
         }
     }
 
@@ -626,7 +696,7 @@ function initGalaxyBackground() {
 
     function step(dt) {
         // update positions
-        for (let i = 0; i < particles.length; i++) {
+        for (let i = 0, len = particles.length; i < len; i++) {
             const p = particles[i];
 
             // mouse repulsion
@@ -671,7 +741,9 @@ function initGalaxyBackground() {
             ctx.fillStyle = `rgba(${Math.floor(60 + (p.hue - 200) * 0.6)}, ${Math.floor(140 + (p.hue - 200) * 0.5)}, ${220}, 0.85)`;
             ctx.shadowColor = `hsla(${p.hue}, 90%, 60%, 0.12)`;
             // reduce blur while user is scrolling to avoid expensive compositing
-            ctx.shadowBlur = isUserScrolling ? (hwConcurrency <= 2 ? 1 : 2) : (hwConcurrency <= 2 ? 2 : 8);
+            // Edge needs even lower blur to prevent freezing
+            const edgeBlurReduction = isEdgeBrowser ? 0.4 : 1;
+            ctx.shadowBlur = (isUserScrolling ? (hwConcurrency <= 2 ? 1 : 2) : (hwConcurrency <= 2 ? 2 : 8)) * edgeBlurReduction;
             ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
             ctx.fill();
         }
@@ -684,37 +756,52 @@ function initGalaxyBackground() {
             return;
         }
 
+        // Adaptive overload handling: if moving average frame > 28ms, mark overloaded
+        const overloadThreshold = 28; // ms
+        isOverloaded = movingAvgFrame > overloadThreshold;
+
+        // If overloaded, skip connection drawing entirely and reduce rebuild frequency
+        const effectiveRebuild = isOverloaded ? Math.max(REBUILD_INTERVAL, 6) : REBUILD_INTERVAL;
+
+        // attempt to ramp particles slowly when not overloaded
+        if (!isOverloaded && particles.length < targetParticleCount && frameCount % 30 === 0) {
+            rampParticles();
+        }
+
         // rebuild grid only every few frames to save CPU on lower-end devices
-        if (frameCount % REBUILD_INTERVAL === 0) rebuildGrid();
+        if (frameCount % effectiveRebuild === 0) rebuildGrid();
         const maxConn2 = CONNECT_DIST * CONNECT_DIST;
         ctx.lineWidth = 0.6;
-        for (let i = 0; i < particles.length; i++) {
-            const p = particles[i];
-            const cx = Math.floor(p.x / CELL_SIZE);
-            const cy = Math.floor(p.y / CELL_SIZE);
-            let connections = 0;
+        // Skip connection drawing when overloaded to avoid O(n^2) work
+        if (!isOverloaded) {
+            for (let i = 0; i < particles.length; i++) {
+                const p = particles[i];
+                const cx = Math.floor(p.x / CELL_SIZE);
+                const cy = Math.floor(p.y / CELL_SIZE);
+                let connections = 0;
 
-            for (let ox = -1; ox <= 1; ox++) {
-                for (let oy = -1; oy <= 1; oy++) {
-                    const key = hashCell(cx + ox, cy + oy);
-                    const cell = grid[key];
-                    if (!cell) continue;
+                for (let ox = -1; ox <= 1; ox++) {
+                    for (let oy = -1; oy <= 1; oy++) {
+                        const key = hashCell(cx + ox, cy + oy);
+                        const cell = grid[key];
+                        if (!cell) continue;
 
-                    for (let j = 0; j < cell.length; j++) {
-                        const idx = cell[j];
-                        if (idx <= i) continue; // avoid double work
-                        const q = particles[idx];
-                        const dx = p.x - q.x;
-                        const dy = p.y - q.y;
-                        const d2 = dx * dx + dy * dy;
-                        if (d2 <= maxConn2 && connections < MAX_CONNECTIONS) {
-                            const alpha = 1 - d2 / maxConn2;
-                            ctx.beginPath();
-                            ctx.strokeStyle = `rgba(150,160,255,${alpha * 0.12})`;
-                            ctx.moveTo(p.x, p.y);
-                            ctx.lineTo(q.x, q.y);
-                            ctx.stroke();
-                            connections++;
+                        for (let j = 0; j < cell.length; j++) {
+                            const idx = cell[j];
+                            if (idx <= i) continue; // avoid double work
+                            const q = particles[idx];
+                            const dx = p.x - q.x;
+                            const dy = p.y - q.y;
+                            const d2 = dx * dx + dy * dy;
+                            if (d2 <= maxConn2 && connections < MAX_CONNECTIONS) {
+                                const alpha = 1 - d2 / maxConn2;
+                                ctx.beginPath();
+                                ctx.strokeStyle = `rgba(150,160,255,${alpha * 0.12})`;
+                                ctx.moveTo(p.x, p.y);
+                                ctx.lineTo(q.x, q.y);
+                                ctx.stroke();
+                                connections++;
+                            }
                         }
                     }
                 }
@@ -731,9 +818,20 @@ function initGalaxyBackground() {
             requestAnimationFrame(loop);
             return;
         }
-        const dt = Math.min(40, now - last) / 16.6667; // normalized to ~60fps steps
-        step(dt);
-        draw();
+        const frameMs = now - last;
+        // update moving average
+        movingAvgFrame = movingAvgFrame * (1 - FRAME_ALPHA) + frameMs * FRAME_ALPHA;
+
+        const dt = Math.min(40, frameMs) / 16.6667; // normalized to ~60fps steps
+        // If single frame is excessively long, do minimal updates to avoid jank
+        if (frameMs > 200) {
+            // drop some expensive steps
+            step(dt * 0.5);
+        } else {
+            step(dt);
+        }
+
+        try { draw(); } catch (e) { /* swallow draw errors to avoid freeze */ }
         last = now;
         requestAnimationFrame(loop);
     }
