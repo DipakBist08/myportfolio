@@ -2,6 +2,24 @@
    QA PORTFOLIO - JavaScript
    ===================================================== */
 
+// Apply theme immediately before DOM renders to prevent flash
+(function() {
+    const html = document.documentElement;
+    const THEME_KEY = 'portfolio-theme';
+    
+    function getInitialTheme() {
+        const stored = localStorage.getItem(THEME_KEY);
+        if (stored) return stored;
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+            return 'light';
+        }
+        return 'dark';
+    }
+    
+    const initialTheme = getInitialTheme();
+    html.setAttribute('data-theme', initialTheme);
+})();
+
 document.addEventListener('DOMContentLoaded', () => {
     // Initialize all features
     initMobileNav();
@@ -9,10 +27,12 @@ document.addEventListener('DOMContentLoaded', () => {
     initTypingEffect();
     initSmoothScroll();
     initCurrentYear();
-    initParticles();
+    initGalaxyBackground();
+    initBackToTop();
     initMouseFollower();
     initParallaxOrbs();
     initMagneticButtons();
+    initThemeToggle();
 });
 
 /* ----- Mobile Navigation ----- */
@@ -239,17 +259,39 @@ document.head.appendChild(style);
 let lastScroll = 0;
 const header = document.querySelector('.header');
 
-window.addEventListener('scroll', () => {
+// Batch scroll updates using rAF to avoid jank
+let scrollTicking = false;
+function handleScrollBatch() {
     const currentScroll = window.scrollY;
 
-    if (currentScroll > 100) {
-        header.style.background = 'rgba(15, 23, 42, 0.95)';
-    } else {
-        header.style.background = 'rgba(15, 23, 42, 0.85)';
+    if (header) {
+        header.style.background = currentScroll > 100 ? 'rgba(15, 23, 42, 0.95)' : 'rgba(15, 23, 42, 0.85)';
+    }
+
+    // update active nav link (previously on its own listener)
+    highlightNavLink();
+
+    // update parallax orbs vertical position (light-weight)
+    const orbs = document.querySelectorAll('.orb');
+    if (orbs && orbs.length) {
+        const scrollY = currentScroll;
+        orbs.forEach((orb, index) => {
+            const speed = (index + 1) * 0.05;
+            const y = scrollY * speed;
+            orb.style.transform = `translateY(${-y}px)`;
+        });
     }
 
     lastScroll = currentScroll;
-});
+    scrollTicking = false;
+}
+
+window.addEventListener('scroll', () => {
+    if (!scrollTicking) {
+        requestAnimationFrame(handleScrollBatch);
+        scrollTicking = true;
+    }
+}, { passive: true });
 
 /* ----- Active Nav Link Highlight ----- */
 const sections = document.querySelectorAll('section[id]');
@@ -273,8 +315,6 @@ function highlightNavLink() {
         }
     });
 }
-
-window.addEventListener('scroll', highlightNavLink);
 
 /* ----- Skill Level Animation on Scroll ----- */
 function initSkillLevels() {
@@ -344,32 +384,45 @@ function initParallaxOrbs() {
     const orbs = document.querySelectorAll('.orb');
     if (!orbs.length) return;
 
-    // Parallax on mouse move
+    // Throttle mouse move + scroll updates via rAF for smoother performance
+    let orbMouseX = 0, orbMouseY = 0;
+    let orbTick = false;
+
     document.addEventListener('mousemove', (e) => {
-        const { clientX, clientY } = e;
-        const centerX = window.innerWidth / 2;
-        const centerY = window.innerHeight / 2;
+        orbMouseX = e.clientX;
+        orbMouseY = e.clientY;
+        if (!orbTick) {
+            requestAnimationFrame(() => {
+                const centerX = window.innerWidth / 2;
+                const centerY = window.innerHeight / 2;
+                orbs.forEach((orb, index) => {
+                    const speed = (index + 1) * 0.02;
+                    const x = (orbMouseX - centerX) * speed;
+                    const y = (orbMouseY - centerY) * speed;
+                    orb.style.transform = `translate(${x}px, ${y}px)`;
+                });
+                orbTick = false;
+            });
+            orbTick = true;
+        }
+    }, { passive: true });
 
-        orbs.forEach((orb, index) => {
-            const speed = (index + 1) * 0.02;
-            const x = (clientX - centerX) * speed;
-            const y = (clientY - centerY) * speed;
-
-            orb.style.transform = `translate(${x}px, ${y}px)`;
-        });
-    });
-
-    // Parallax on scroll
-    window.addEventListener('scroll', () => {
+    // Parallax on scroll (batched by global scroll handler)
+    // We'll update vertical position when the global scroll handler runs (handleScrollBatch)
+    // but ensure initial state
+    function updateOrbsOnScroll() {
         const scrollY = window.scrollY;
-
         orbs.forEach((orb, index) => {
             const speed = (index + 1) * 0.05;
             const y = scrollY * speed;
-
-            orb.style.transform = `translateY(${-y}px)`;
+            const prev = orb.style.transform || '';
+            // Keep any translateX while setting translateY
+            orb.style.transform = prev.includes('translate(') ? prev : `translateY(${-y}px)`;
         });
-    });
+    }
+
+    // call once to set positions
+    updateOrbsOnScroll();
 }
 
 /* ----- Magnetic Buttons ----- */
@@ -440,23 +493,347 @@ function initScrollProgress() {
 // Initialize scroll progress
 document.addEventListener('DOMContentLoaded', initScrollProgress);
 
-/* ----- Reveal on Scroll with Stagger ----- */
-const revealElements = document.querySelectorAll('.skill-card, .tool-card, .project-card');
+/* ----- Reveal on Scroll (handled by initScrollAnimations) ----- */
+// Removed JS-driven opacity hiding to avoid content disappearing during heavy rendering.
+// Visual reveal is handled by CSS + `initScrollAnimations()` (which adds `animated` class).
 
-const revealObserver = new IntersectionObserver((entries) => {
-    entries.forEach((entry, index) => {
-        if (entry.isIntersecting) {
-            setTimeout(() => {
-                entry.target.style.opacity = '1';
-                entry.target.style.transform = 'translateY(0)';
-            }, index * 100);
+/* ----- Back to Top Button ----- */
+function initBackToTop() {
+    const btn = document.getElementById('back-to-top');
+    if (!btn) return;
+
+    const SHOW_AFTER = 320;
+    let ticking = false;
+
+    function onScroll() {
+        const show = window.scrollY > SHOW_AFTER;
+        btn.classList.toggle('visible', show);
+        ticking = false;
+    }
+
+    window.addEventListener('scroll', () => {
+        if (!ticking) {
+            requestAnimationFrame(onScroll);
+            ticking = true;
+        }
+    }, { passive: true });
+
+    btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+}
+
+/* =====================================================
+   GALAXY PARTICLE BACKGROUND (Optimized Canvas)
+   - Thousands of tiny glowing particles
+   - Spatial grid for O(n) neighbor search
+   - Soft mouse push interaction
+   - Additive blending for neon glow
+   ===================================================== */
+
+function initGalaxyBackground() {
+    const canvas = document.getElementById('galaxy-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d', { alpha: true });
+
+    let width = 0;
+    let height = 0;
+    let dpr = Math.max(1, window.devicePixelRatio || 1);
+
+    // Config (adaptive)
+    const CELL_SIZE = 80;
+    const CONNECT_DIST = 70;
+    const MAX_CONNECTIONS = 2;
+    const PREF_MIN_PARTICLES = 200; // for reduced motion or very small screens
+    const PREF_MAX_PARTICLES = 2000;
+
+    const prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const hwConcurrency = navigator.hardwareConcurrency || 4;
+
+    // Tune density based on device capabilities
+    let densitySelector = 800; // default
+    if (prefersReduced) densitySelector = 5000;
+    else if (hwConcurrency <= 2) densitySelector = 2000;
+    else if (hwConcurrency <= 4) densitySelector = 1200;
+    else densitySelector = 800;
+
+    const MIN_PARTICLES = Math.max(PREF_MIN_PARTICLES, Math.floor((hwConcurrency / 8) * 400));
+    const MAX_PARTICLES = PREF_MAX_PARTICLES;
+
+    let frameCount = 0;
+    const REBUILD_INTERVAL = hwConcurrency <= 2 ? 6 : 3; // don't rebuild grid every frame on weak devices
+
+    let particles = [];
+    let grid = {};
+
+    let isUserScrolling = false;
+    let scrollTimeout = null;
+
+    // When user scrolls, minimize canvas work to keep main thread responsive
+    window.addEventListener('scroll', () => {
+        isUserScrolling = true;
+        if (scrollTimeout) clearTimeout(scrollTimeout);
+        scrollTimeout = setTimeout(() => { isUserScrolling = false; }, 180);
+    }, { passive: true });
+
+    const mouse = { x: -9999, y: -9999, active: false };
+
+    function resize() {
+        // use viewport size to cover entire page reliably
+        width = window.innerWidth;
+        height = window.innerHeight;
+        canvas.width = Math.round(width * dpr);
+        canvas.height = Math.round(height * dpr);
+        canvas.style.width = '100vw';
+        canvas.style.height = '100vh';
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        initParticles();
+    }
+
+    function initParticles() {
+        particles.length = 0;
+        grid = {};
+        const area = Math.max(1, width * height);
+        const density = densitySelector; // adaptive density
+        const count = Math.min(MAX_PARTICLES, Math.max(MIN_PARTICLES, Math.floor(area / density)));
+
+        for (let i = 0; i < count; i++) {
+            particles.push({
+                x: Math.random() * width,
+                y: Math.random() * height,
+                vx: (Math.random() - 0.5) * 0.3,
+                vy: (Math.random() - 0.5) * 0.3,
+                r: Math.random() * 1.2 + 0.6,
+                hue: 200 + Math.random() * 120, // bluish -> purple
+            });
+        }
+    }
+
+    function hashCell(x, y) { return x + ',' + y; }
+
+    function rebuildGrid() {
+        grid = {};
+        for (let i = 0; i < particles.length; i++) {
+            const p = particles[i];
+            const cx = Math.floor(p.x / CELL_SIZE);
+            const cy = Math.floor(p.y / CELL_SIZE);
+            const key = hashCell(cx, cy);
+            if (!grid[key]) grid[key] = [];
+            grid[key].push(i);
+        }
+    }
+
+    function step(dt) {
+        // update positions
+        for (let i = 0; i < particles.length; i++) {
+            const p = particles[i];
+
+            // mouse repulsion
+            if (mouse.active) {
+                const dx = p.x - mouse.x;
+                const dy = p.y - mouse.y;
+                const d2 = dx * dx + dy * dy;
+                const influence = 120; // px
+                if (d2 < influence * influence) {
+                    const d = Math.sqrt(d2) || 0.0001;
+                    const force = (1 - d / influence) * 0.9;
+                    p.vx += (dx / d) * force * 0.6;
+                    p.vy += (dy / d) * force * 0.6;
+                }
+            }
+
+            // velocity damping
+            p.vx *= 0.995;
+            p.vy *= 0.995;
+
+            p.x += p.vx * dt;
+            p.y += p.vy * dt;
+
+            // wrap
+            if (p.x < -10) p.x = width + 10;
+            else if (p.x > width + 10) p.x = -10;
+            if (p.y < -10) p.y = height + 10;
+            else if (p.y > height + 10) p.y = -10;
+        }
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, width, height);
+
+        // additive glow
+        ctx.globalCompositeOperation = 'lighter';
+
+        // draw particles
+        for (let i = 0; i < particles.length; i++) {
+            const p = particles[i];
+            ctx.beginPath();
+            ctx.fillStyle = `rgba(${Math.floor(60 + (p.hue - 200) * 0.6)}, ${Math.floor(140 + (p.hue - 200) * 0.5)}, ${220}, 0.85)`;
+            ctx.shadowColor = `hsla(${p.hue}, 90%, 60%, 0.12)`;
+            // reduce blur while user is scrolling to avoid expensive compositing
+            ctx.shadowBlur = isUserScrolling ? (hwConcurrency <= 2 ? 1 : 2) : (hwConcurrency <= 2 ? 2 : 8);
+            ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        // If the user is actively scrolling, skip expensive connection drawing and rebuild
+        frameCount++;
+        if (isUserScrolling) {
+            if (frameCount % REBUILD_INTERVAL === 0) rebuildGrid();
+            ctx.globalCompositeOperation = 'source-over';
+            return;
+        }
+
+        // rebuild grid only every few frames to save CPU on lower-end devices
+        if (frameCount % REBUILD_INTERVAL === 0) rebuildGrid();
+        const maxConn2 = CONNECT_DIST * CONNECT_DIST;
+        ctx.lineWidth = 0.6;
+        for (let i = 0; i < particles.length; i++) {
+            const p = particles[i];
+            const cx = Math.floor(p.x / CELL_SIZE);
+            const cy = Math.floor(p.y / CELL_SIZE);
+            let connections = 0;
+
+            for (let ox = -1; ox <= 1; ox++) {
+                for (let oy = -1; oy <= 1; oy++) {
+                    const key = hashCell(cx + ox, cy + oy);
+                    const cell = grid[key];
+                    if (!cell) continue;
+
+                    for (let j = 0; j < cell.length; j++) {
+                        const idx = cell[j];
+                        if (idx <= i) continue; // avoid double work
+                        const q = particles[idx];
+                        const dx = p.x - q.x;
+                        const dy = p.y - q.y;
+                        const d2 = dx * dx + dy * dy;
+                        if (d2 <= maxConn2 && connections < MAX_CONNECTIONS) {
+                            const alpha = 1 - d2 / maxConn2;
+                            ctx.beginPath();
+                            ctx.strokeStyle = `rgba(150,160,255,${alpha * 0.12})`;
+                            ctx.moveTo(p.x, p.y);
+                            ctx.lineTo(q.x, q.y);
+                            ctx.stroke();
+                            connections++;
+                        }
+                    }
+                }
+            }
+        }
+
+        ctx.globalCompositeOperation = 'source-over';
+    }
+
+    let last = performance.now();
+    function loop(now) {
+        if (document.hidden) {
+            last = now;
+            requestAnimationFrame(loop);
+            return;
+        }
+        const dt = Math.min(40, now - last) / 16.6667; // normalized to ~60fps steps
+        step(dt);
+        draw();
+        last = now;
+        requestAnimationFrame(loop);
+    }
+
+    // Mouse handlers
+    window.addEventListener('mousemove', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        mouse.x = e.clientX - rect.left;
+        mouse.y = e.clientY - rect.top;
+        mouse.active = true;
+    });
+    window.addEventListener('pointerdown', (e) => {
+        mouse.active = true;
+    });
+    window.addEventListener('pointerup', () => { mouse.active = false; });
+    window.addEventListener('mouseleave', () => { mouse.active = false; });
+
+    // touch support
+    window.addEventListener('touchmove', (e) => {
+        const t = e.touches[0];
+        if (!t) return;
+        const rect = canvas.getBoundingClientRect();
+        mouse.x = t.clientX - rect.left;
+        mouse.y = t.clientY - rect.top;
+        mouse.active = true;
+    }, { passive: true });
+
+    window.addEventListener('resize', () => { resize(); });
+
+    // init
+    resize();
+
+    // If user prefers reduced motion, render a subtle static starfield and skip animation loop
+    if (prefersReduced) {
+        rebuildGrid();
+        draw();
+        return;
+    }
+
+    // Pause heavy animation when tab is hidden
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            // lower updates; we keep loop but skip heavy work inside
+        } else {
+            last = performance.now();
         }
     });
-}, { threshold: 0.1 });
 
-revealElements.forEach(el => {
-    el.style.opacity = '0';
-    el.style.transform = 'translateY(30px)';
-    el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-    revealObserver.observe(el);
-});
+    requestAnimationFrame(loop);
+}
+
+/* =====================================================
+   DARK/LIGHT MODE THEME TOGGLE
+   ===================================================== */
+
+function initThemeToggle() {
+    const themeToggle = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    const THEME_KEY = 'portfolio-theme';
+
+    // Check stored theme preference or system preference
+    function getInitialTheme() {
+        const stored = localStorage.getItem(THEME_KEY);
+        if (stored) return stored;
+
+        // Check system preference
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+            return 'light';
+        }
+        return 'dark';
+    }
+
+    // Apply theme
+    function applyTheme(theme) {
+        html.setAttribute('data-theme', theme);
+        localStorage.setItem(THEME_KEY, theme);
+    }
+
+    // Toggle theme
+    function toggleTheme() {
+        const current = html.getAttribute('data-theme') || 'dark';
+        const newTheme = current === 'dark' ? 'light' : 'dark';
+        applyTheme(newTheme);
+    }
+
+    // Initialize with saved or system theme
+    const initialTheme = getInitialTheme();
+    applyTheme(initialTheme);
+
+    // Attach toggle listener
+    if (themeToggle) {
+        themeToggle.addEventListener('click', toggleTheme);
+    }
+
+    // Listen for system theme changes
+    if (window.matchMedia) {
+        window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', (e) => {
+            if (!localStorage.getItem(THEME_KEY)) {
+                applyTheme(e.matches ? 'light' : 'dark');
+            }
+        });
+    }
+}

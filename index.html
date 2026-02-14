@@ -25,20 +25,39 @@
     <header class="header">
         <nav class="nav container">
             <a href="#" class="nav__logo">
-                <span class="logo-bracket">&lt;</span>Deepak<span class="logo-dot">.</span>Beest<span
+                <span class="logo-bracket">&lt;</span>Dipak<span class="logo-dot">.</span>Beest<span
                     class="logo-bracket">/&gt;</span>
             </a>
             <button class="nav__toggle" id="nav-toggle" aria-label="Toggle navigation">
                 <span class="hamburger"></span>
             </button>
-            <ul class="nav__menu" id="nav-menu">
-                <li class="nav__item"><a href="#home" class="nav__link">Home</a></li>
-                <li class="nav__item"><a href="#skills" class="nav__link">Skills</a></li>
-                <li class="nav__item"><a href="#tools" class="nav__link">Tools</a></li>
+            <div class="nav__right">
+                <ul class="nav__menu" id="nav-menu">
+                    <li class="nav__item"><a href="#home" class="nav__link">Home</a></li>
+                    <li class="nav__item"><a href="#skills" class="nav__link">Skills</a></li>
+                    <li class="nav__item"><a href="#tools" class="nav__link">Tools</a></li>
 
-                <li class="nav__item"><a href="#projects" class="nav__link">Projects</a></li>
-                <li class="nav__item"><a href="#contact" class="nav__link nav__link--cta">Get in Touch</a></li>
-            </ul>
+                    <li class="nav__item"><a href="#projects" class="nav__link">Projects</a></li>
+                    <li class="nav__item"><a href="#contact" class="nav__link nav__link--cta">Get in Touch</a></li>
+                </ul>
+                <!-- Theme Toggle -->
+                <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark/light mode" title="Toggle theme">
+                <svg class="theme-icon theme-icon--sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="5"></circle>
+                    <line x1="12" y1="1" x2="12" y2="3"></line>
+                    <line x1="12" y1="21" x2="12" y2="23"></line>
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                    <line x1="1" y1="12" x2="3" y2="12"></line>
+                    <line x1="21" y1="12" x2="23" y2="12"></line>
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                </svg>
+                <svg class="theme-icon theme-icon--moon" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                </svg>
+            </button>
+            </div>
         </nav>
     </header>
 
@@ -46,7 +65,7 @@
         <!-- Hero Section -->
         <section class="hero" id="home">
             <div class="hero__bg-gradient"></div>
-            <div class="hero__particles" id="particles"></div>
+            <canvas id="galaxy-canvas" class="hero__galaxy" aria-hidden="true"></canvas>
             <!-- Antigravity-style floating orbs -->
             <div class="floating-orbs" id="floating-orbs">
                 <div class="orb orb--1"></div>
@@ -55,6 +74,9 @@
                 <div class="orb orb--4"></div>
                 <div class="orb orb--5"></div>
             </div>
+
+
+
             <!-- Grid lines background -->
             <div class="grid-lines"></div>
             <!-- Mouse follower -->
@@ -122,6 +144,8 @@
             </a>
         </section>
 
+  
+ 
         <!-- Skills Section -->
         <section class="section skills" id="skills">
             <div class="container">
@@ -148,7 +172,7 @@
                         <p class="skill-card__description">Exploratory testing, test case design, regression testing,
                             and user acceptance testing with keen attention to detail.</p>
                         <div class="skill-card__level">
-                            <span class="skill-level" style="--level: 95%"></span>
+                            <span class="skill-level" style="--level: 100%"></span>
                         </div>
 
                         <!-- Enhanced bullet points section -->
@@ -187,9 +211,7 @@
                             </li>
                         </ul>
 
-                        <div class="skill-card__level">
-                            <span class="skill-level" style="--level: 90%"></span>
-                        </div>
+                       
                     </article>
 
 
@@ -210,6 +232,9 @@
                         <h3 class="skill-card__title">Automation Testing</h3>
                         <p class="skill-card__description">Building robust test frameworks with Selenium, Playwright,
                             pytest, and custom automation scripts.</p>
+                                  <div class="skill-card__level">
+                            <span class="skill-level" style="--level: 95%"></span>
+                        </div>
 
                         <!-- Enhanced bullet points section -->
                         <ul class="skill-card__features">
@@ -254,20 +279,6 @@
                                 </svg>
                                 <span>Implementing BDD framework using Behave/Pytest-BDD</span>
                             </li>
-
-                            <li class="feature-item">
-                                <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd"
-                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                        clip-rule="evenodd" />
-                                </svg>
-                                <span></span>
-                            </li>
-                        </ul>
-
-                        <div class="skill-card__level">
-                            <span class="skill-level" style="--level: 90%"></span>
-                        </div>
                     </article>
 
 
@@ -287,7 +298,7 @@
                         <p class="skill-card__description">REST API testing using Postman, requests library, and
                             automated API test suites with schema validation.</p>
                         <div class="skill-card__level">
-                            <span class="skill-level" style="--level: 88%"></span>
+                            <span class="skill-level" style="--level: 97%"></span>
                         </div>
 
                         <!-- Enhanced bullet points section -->
@@ -325,10 +336,6 @@
                                 <span>Custom framework development</span>
                             </li>
                         </ul>
-
-                        <div class="skill-card__level">
-                            <span class="skill-level" style="--level: 90%"></span>
-                        </div>
                     </article>
 
 
@@ -346,6 +353,10 @@
                         </div>
                         <h3 class="skill-card__title">Performance Testing</h3>
                         <p class="skill-card__description">Testing application performance using JMeter.</p>
+
+                              <div class="skill-card__level">
+                            <span class="skill-level" style="--level: 80%"></span>
+                        </div>
 
                         <!-- Enhanced bullet points section -->
                         <ul class="skill-card__features">
@@ -383,9 +394,7 @@
                             </li>
                         </ul>
 
-                        <div class="skill-card__level">
-                            <span class="skill-level" style="--level: 90%"></span>
-                        </div>
+                      
 
                     </article>
 
@@ -404,7 +413,7 @@
                         <p class="skill-card__description">Git workflows, GitHub/GitLab collaboration, branching
                             strategies, and code review best practices.</p>
                         <div class="skill-card__level">
-                            <span class="skill-level" style="--level: 85%"></span>
+                            <span class="skill-level" style="--level: 95%"></span>
                         </div>
 
 
@@ -436,9 +445,7 @@
                             </li>
 
 
-                            <div class="skill-card__level">
-                                <span class="skill-level" style="--level: 90%"></span>
-                            </div>
+                        
                     </article>
 
                     <!-- Agile & DevOps -->
@@ -457,6 +464,9 @@
                         <h3 class="skill-card__title">Agile & DevOps</h3>
                         <p class="skill-card__description">Scrum, Kanban methodologies, CI/CD pipelines, sprint
                             planning, and continuous testing practices.</p>
+                                  <div class="skill-card__level">
+                            <span class="skill-level" style="--level: 97%"></span>
+                        </div>
 
                         <!-- Enhanced bullet points section -->
                         <ul class="skill-card__features">
@@ -493,10 +503,6 @@
                                 <span>Custom framework development</span>
                             </li>
                         </ul>
-
-                        <div class="skill-card__level">
-                            <span class="skill-level" style="--level: 90%"></span>
-                        </div>
                     </article>
 
                     <!-- Bug Tracking & Test Management -->
@@ -515,6 +521,10 @@
                         <h3 class="skill-card__title">Bug Tracking</h3>
                         <p class="skill-card__description">Expert in Jira, Azure DevOps Board, TestRail, and creating
                             comprehensive bug reports with proper severity classification.</p>
+                        
+                                  <div class="skill-card__level">
+                            <span class="skill-level" style="--level: 100%"></span>
+                        </div>
 
                         <!-- Enhanced bullet points section -->
                         <ul class="skill-card__features">
@@ -551,10 +561,6 @@
                                 <span>Effective lifecycle tracking and status reporting</span>
                             </li>
                         </ul>
-
-                        <div class="skill-card__level">
-                            <span class="skill-level" style="--level: 90%"></span>
-                        </div>
                     </article>
 
                     <!-- Cross-Browser & Cross-Platform -->
@@ -576,6 +582,10 @@
                         <h3 class="skill-card__title">Cross-Browser Testing</h3>
                         <p class="skill-card__description">Testing across Chrome, Firefox, Safari, Edge, and mobile
                             platforms ensuring consistent user experience.</p>
+
+                                  <div class="skill-card__level">
+                            <span class="skill-level" style="--level: 100%"></span>
+                        </div>
 
                         <!-- Enhanced bullet points section -->
                         <ul class="skill-card__features">
@@ -623,10 +633,6 @@
                                 <span>Using Selenium/Playwright Grid for parallel cross-browser testing</span>
                             </li>
                         </ul>
-
-                        <div class="skill-card__level">
-                            <span class="skill-level" style="--level: 90%"></span>
-                        </div>
                     </article>
                 </div>
             </div>
@@ -793,10 +799,9 @@
         <section class="section projects" id="projects">
             <div class="container">
                 <div class="section__header">
-                    <span class="section__tag">Portfolio</span>
-                    <h2 class="section__title">Featured Projects</h2>
-                    <p class="section__subtitle">A selection of QA projects showcasing testing expertise and measurable
-                        improvements.</p>
+                    <span class="section__tag"></span>
+                    <h2 class="section__title">My Projects</h2>
+                    <p class="section__subtitle">My top QA projects, showcasing expertise in API testing, mobile validation, and more. Each project highlights improvements in performance, reliability, and user experience.</p>
                 </div>
                 <div class="projects__grid">
                     <article class="project-card" data-animate>
@@ -829,6 +834,16 @@
                                     <span class="result__value">E2E</span>
                                     <span class="result__label">Full Coverage</span>
                                 </div>
+                            </div>
+                            <div class="project-card__links">
+                                <a href="https://app.figsflow.com/signin" target="_blank" rel="noopener noreferrer" class="project-link project-link--code">
+                                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0 1 12 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg>
+                                    <span>Code</span>
+                                </a>
+                                <a href="https://app.figsflow.com/signin" target="_blank" class="project-link project-link--demo">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                                    <span>Live Demo</span>
+                                </a>
                             </div>
                         </div>
                     </article>
@@ -868,6 +883,16 @@
                                     <span class="result__label">Test Coverage</span>
                                 </div>
                             </div>
+                            <div class="project-card__links">
+                                <a href="https://github.com/DipakBist08/" target="_blank" rel="noopener noreferrer" class="project-link project-link--code">
+                                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0 1 12 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg>
+                                    <span>Code</span>
+                                </a>
+                                <a href="https://github.com/DipakBist08/" target="_blank" rel="noopener noreferrer" class="project-link project-link--demo">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                                    <span>Live Demo</span>
+                                </a>
+                            </div>
                         </div>
                     </article>
 
@@ -904,6 +929,16 @@
                                     <span class="result__value">4.8★</span>
                                     <span class="result__label">App Rating</span>
                                 </div>
+                            </div>
+                            <div class="project-card__links">
+                                <a href="https://github.com/DipakBist08/" target="_blank" rel="noopener noreferrer" class="project-link project-link--code">
+                                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0 1 12 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg>
+                                    <span>Code</span>
+                                </a>
+                                <a href="https://github.com/DipakBist08/" target="_blank" class="project-link project-link--demo">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                                    <span>Live Demo</span>
+                                </a>
                             </div>
                         </div>
                     </article>
@@ -1011,6 +1046,14 @@
             </div>
         </div>
     </footer>
+</div>
+
+    <!-- Back to top -->
+    <button id="back-to-top" aria-label="Back to top" title="Back to top">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M12 5l-7 7h14l-7-7z" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+    </button>
 
     <script src="script.js"></script>
 </body>
