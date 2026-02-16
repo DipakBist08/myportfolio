@@ -481,19 +481,27 @@ function initParallaxOrbs() {
     }, { passive: true });
 }
 
-/* ----- Magnetic Buttons ----- */
+/* ----- Magnetic Buttons (Throttled for Chrome) ----- */
 function initMagneticButtons() {
     const buttons = document.querySelectorAll('.btn');
 
     buttons.forEach(button => {
+        let ticking = false;
+        
         button.addEventListener('mousemove', (e) => {
-            const rect = button.getBoundingClientRect();
-            const x = e.clientX - rect.left - rect.width / 2;
-            const y = e.clientY - rect.top - rect.height / 2;
+            if (!ticking) {
+                requestAnimationFrame(() => {
+                    const rect = button.getBoundingClientRect();
+                    const x = e.clientX - rect.left - rect.width / 2;
+                    const y = e.clientY - rect.top - rect.height / 2;
 
-            // Subtle magnetic effect
-            button.style.transform = `translate(${x * 0.15}px, ${y * 0.15}px)`;
-        });
+                    // Subtle magnetic effect
+                    button.style.transform = `translate(${x * 0.15}px, ${y * 0.15}px)`;
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        }, { passive: true });
 
         button.addEventListener('mouseleave', () => {
             button.style.transform = 'translate(0, 0)';
@@ -501,28 +509,41 @@ function initMagneticButtons() {
     });
 }
 
-/* ----- Enhanced Card Tilt Effect ----- */
-document.querySelectorAll('.skill-card, .tool-card, .project-card').forEach(card => {
-    card.addEventListener('mousemove', (e) => {
-        const rect = card.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
+/* ----- Enhanced Card Tilt Effect (Throttled for Chrome) ----- */
+function initCardTilt() {
+    document.querySelectorAll('.skill-card, .tool-card, .project-card').forEach(card => {
+        let ticking = false;
+        let lastX = 0, lastY = 0, lastRect = null;
+        
+        card.addEventListener('mousemove', (e) => {
+            if (!ticking) {
+                requestAnimationFrame(() => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
 
-        const centerX = rect.width / 2;
-        const centerY = rect.height / 2;
+                    const centerX = rect.width / 2;
+                    const centerY = rect.height / 2;
 
-        const rotateX = (y - centerY) / 20;
-        const rotateY = (centerX - x) / 20;
+                    const rotateX = (y - centerY) / 20;
+                    const rotateY = (centerX - x) / 20;
 
-        card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-8px)`;
+                    card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-8px)`;
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        }, { passive: true });
+
+        card.addEventListener('mouseleave', () => {
+            card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) translateY(0)';
+        });
     });
+}
 
-    card.addEventListener('mouseleave', () => {
-        card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) translateY(0)';
-    });
-});
+document.addEventListener('DOMContentLoaded', initCardTilt);
 
-/* ----- Scroll Progress Indicator ----- */
+/* ----- Scroll Progress Indicator (Throttled) ----- */
 function initScrollProgress() {
     const progressBar = document.createElement('div');
     progressBar.className = 'scroll-progress';
@@ -538,12 +559,19 @@ function initScrollProgress() {
     `;
     document.body.appendChild(progressBar);
 
+    let ticking = false;
     window.addEventListener('scroll', () => {
-        const scrollTop = window.scrollY;
-        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-        const scrollPercent = (scrollTop / docHeight) * 100;
-        progressBar.style.width = `${scrollPercent}%`;
-    });
+        if (!ticking) {
+            requestAnimationFrame(() => {
+                const scrollTop = window.scrollY;
+                const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+                const scrollPercent = (scrollTop / docHeight) * 100;
+                progressBar.style.width = `${scrollPercent}%`;
+                ticking = false;
+            });
+            ticking = true;
+        }
+    }, { passive: true });
 }
 
 // Initialize scroll progress
@@ -739,11 +767,13 @@ function initGalaxyBackground() {
             const p = particles[i];
             ctx.beginPath();
             ctx.fillStyle = `rgba(${Math.floor(60 + (p.hue - 200) * 0.6)}, ${Math.floor(140 + (p.hue - 200) * 0.5)}, ${220}, 0.85)`;
-            ctx.shadowColor = `hsla(${p.hue}, 90%, 60%, 0.12)`;
+            // Disable shadow blur in Chrome to prevent freezing - Chrome has slower canvas shadow rendering
+            const isChrome = /Chrome/.test(navigator.userAgent) && !/Edg/.test(navigator.userAgent);
+            ctx.shadowColor = `hsla(${p.hue}, 90%, 60%, ${isChrome ? 0 : 0.12})`;
             // reduce blur while user is scrolling to avoid expensive compositing
-            // Edge needs even lower blur to prevent freezing
-            const edgeBlurReduction = isEdgeBrowser ? 0.4 : 1;
-            ctx.shadowBlur = (isUserScrolling ? (hwConcurrency <= 2 ? 1 : 2) : (hwConcurrency <= 2 ? 2 : 8)) * edgeBlurReduction;
+            // Chrome and Edge need minimal/disabled blur to prevent freezing
+            const blurReduction = isChrome ? 0 : (isEdgeBrowser ? 0.4 : 1);
+            ctx.shadowBlur = (isUserScrolling ? (hwConcurrency <= 2 ? 1 : 2) : (hwConcurrency <= 2 ? 2 : 8)) * blurReduction;
             ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
             ctx.fill();
         }
