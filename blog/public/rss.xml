@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Dipak Bist | QA Blog</title>
+    <link>https://blog.dipakbist.com.np</link>
+    <description>Articles on Software QA, automation testing, Playwright, API testing, and QA career tips.</description>
+    <language>en-US</language>
+    <managingEditor>mbdds54@gmail.com (Dipak Bist)</managingEditor>
+    <atom:link href="https://blog.dipakbist.com.np/rss.xml" rel="self" type="application/rss+xml"/>
+    <lastBuildDate>Sat, 25 Apr 2026 08:40:51 GMT</lastBuildDate>
+    
+    <item>
+      <title><![CDATA[How to Write a Good Bug Report: The Complete QA Guide]]></title>
+      <link>https://blog.dipakbist.com.np/blog/how-to-write-good-bug-report</link>
+      <guid isPermaLink="true">https://blog.dipakbist.com.np/blog/how-to-write-good-bug-report</guid>
+      <description><![CDATA[A vague bug report gets ignored. A precise one gets fixed the same day. Learn exactly how to write bug reports that developers love and managers understand.]]></description>
+      <pubDate>Wed, 08 Jan 2025 00:00:00 GMT</pubDate>
+      <category><![CDATA[Bug Reporting]]></category>
+      <category><![CDATA[Bug Reporting]]></category>
+      <category><![CDATA[Manual Testing]]></category>
+      <category><![CDATA[QA Fundamentals]]></category>
+      <category><![CDATA[Jira]]></category>
+      <category><![CDATA[Communication]]></category>
+    </item>
+    <item>
+      <title><![CDATA[Playwright API Testing Guide: Test REST APIs Without a Browser]]></title>
+      <link>https://blog.dipakbist.com.np/blog/playwright-api-testing-guide</link>
+      <guid isPermaLink="true">https://blog.dipakbist.com.np/blog/playwright-api-testing-guide</guid>
+      <description><![CDATA[Playwright isn't just for browser automation — it has a powerful API testing layer. Learn to write fast, reliable API tests with Python, complete with real examples.]]></description>
+      <pubDate>Tue, 10 Dec 2024 00:00:00 GMT</pubDate>
+      <category><![CDATA[API Testing]]></category>
+      <category><![CDATA[Playwright]]></category>
+      <category><![CDATA[API Testing]]></category>
+      <category><![CDATA[Python]]></category>
+      <category><![CDATA[Automation Testing]]></category>
+      <category><![CDATA[REST API]]></category>
+    </item>
+    <item>
+      <title><![CDATA[Manual Testing vs Automation Testing: When to Use Which]]></title>
+      <link>https://blog.dipakbist.com.np/blog/manual-vs-automation-testing</link>
+      <guid isPermaLink="true">https://blog.dipakbist.com.np/blog/manual-vs-automation-testing</guid>
+      <description><![CDATA[Understand the real strengths and trade-offs of manual vs automation testing, and learn a practical framework for deciding which approach fits your project.]]></description>
+      <pubDate>Fri, 15 Nov 2024 00:00:00 GMT</pubDate>
+      <category><![CDATA[Manual Testing]]></category>
+      <category><![CDATA[Manual Testing]]></category>
+      <category><![CDATA[Automation Testing]]></category>
+      <category><![CDATA[Test Strategy]]></category>
+      <category><![CDATA[QA Fundamentals]]></category>
+    </item>
+  </channel>
+</rss>
