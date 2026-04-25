@@ -1,0 +1,100 @@
+import secrets
+from datetime import datetime, timezone
+from typing import Optional
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy.orm import Session
+
+from app.database import get_db
+from app.dependencies import get_current_user
+from app.models.user import User
+from app.models.subscriber import Subscriber
+from app.schemas.subscriber import SubscribeRequest, SubscriberOut, SubscriberStats
+from app.core.email import send_confirmation_email
+
+router = APIRouter(prefix="/subscribers", tags=["Admin – Subscribers"])
+
+
+# ── Public subscribe endpoint ─────────────────────────────────────────────────
+
+@router.post("/subscribe", status_code=status.HTTP_202_ACCEPTED)
+async def subscribe(body: SubscribeRequest, db: Session = Depends(get_db)):
+    existing = db.query(Subscriber).filter(Subscriber.email == body.email).first()
+    if existing:
+        if existing.is_unsubscribed:
+            existing.is_unsubscribed = False
+            existing.unsubscribed_at = None
+            db.commit()
+            return {"detail": "Re-subscribed. Check your email to confirm."}
+        return {"detail": "Already subscribed."}
+
+    token = secrets.token_urlsafe(32)
+    sub = Subscriber(email=body.email, name=body.name, confirmation_token=token)
+    db.add(sub)
+    db.commit()
+    await send_confirmation_email(body.email, body.name, token)
+    return {"detail": "Check your email to confirm your subscription."}
+
+
+@router.get("/confirm")
+def confirm_subscription(token: str, db: Session = Depends(get_db)):
+    sub = db.query(Subscriber).filter(Subscriber.confirmation_token == token).first()
+    if not sub:
+        raise HTTPException(status_code=404, detail="Token not found or already used")
+    sub.is_active = True
+    sub.confirmed_at = datetime.now(timezone.utc)
+    sub.confirmation_token = None
+    db.commit()
+    return {"detail": "Subscription confirmed!"}
+
+
+@router.get("/unsubscribe")
+def unsubscribe(token: str, db: Session = Depends(get_db)):
+    sub = db.query(Subscriber).filter(Subscriber.unsubscribe_token == token).first()
+    if not sub:
+        raise HTTPException(status_code=404, detail="Token not found")
+    sub.is_unsubscribed = True
+    sub.is_active = False
+    sub.unsubscribed_at = datetime.now(timezone.utc)
+    db.commit()
+    return {"detail": "You have been unsubscribed."}
+
+
+# ── Admin ─────────────────────────────────────────────────────────────────────
+
+@router.get("", response_model=list[SubscriberOut])
+def list_subscribers(
+    page: int = Query(1, ge=1),
+    page_size: int = Query(50, ge=1, le=200),
+    search: Optional[str] = None,
+    active_only: bool = False,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+):
+    q = db.query(Subscriber)
+    if active_only:
+        q = q.filter(Subscriber.is_active == True)
+    if search:
+        term = f"%{search}%"
+        q = q.filter(Subscriber.email.ilike(term) | Subscriber.name.ilike(term))
+    return q.order_by(Subscriber.subscribed_at.desc()).offset((page - 1) * page_size).limit(page_size).all()
+
+
+@router.get("/stats", response_model=SubscriberStats)
+def subscriber_stats(db: Session = Depends(get_db), _: User = Depends(get_current_user)):
+    total = db.query(Subscriber).count()
+    active = db.query(Subscriber).filter(Subscriber.is_active == True).count()
+    unsub = db.query(Subscriber).filter(Subscriber.is_unsubscribed == True).count()
+    pending = db.query(Subscriber).filter(
+        Subscriber.is_active == False,
+        Subscriber.is_unsubscribed == False,
+    ).count()
+    return SubscriberStats(total=total, active=active, unsubscribed=unsub, pending=pending)
+
+
+@router.delete("/{sub_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_subscriber(sub_id: int, db: Session = Depends(get_db), _: User = Depends(get_current_user)):
+    sub = db.query(Subscriber).filter(Subscriber.id == sub_id).first()
+    if not sub:
+        raise HTTPException(status_code=404, detail="Subscriber not found")
+    db.delete(sub)
+    db.commit()

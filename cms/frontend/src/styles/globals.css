@@ -1,0 +1,162 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── CSS variables for shadcn/ui (dark mode default) ──────────────────────── */
+@layer base {
+  :root {
+    --background: 222 47% 6%;
+    --foreground: 210 40% 94%;
+    --card: 217 33% 14%;
+    --card-foreground: 210 40% 94%;
+    --popover: 217 33% 11%;
+    --popover-foreground: 210 40% 94%;
+    --primary: 239 84% 67%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 263 70% 59%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 217 33% 18%;
+    --muted-foreground: 215 20% 60%;
+    --accent: 192 91% 43%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 217 33% 20%;
+    --input: 217 33% 18%;
+    --ring: 239 84% 67%;
+    --radius: 0.5rem;
+  }
+
+  .light {
+    --background: 210 40% 98%;
+    --foreground: 222 47% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+    --primary: 239 84% 60%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 263 70% 50%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 210 40% 94%;
+    --muted-foreground: 215 16% 45%;
+    --accent: 192 91% 36%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 214 32% 88%;
+    --input: 214 32% 91%;
+    --ring: 239 84% 60%;
+  }
+}
+
+@layer base {
+  * { @apply border-border; }
+  body {
+    @apply bg-background text-foreground font-body;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  h1, h2, h3, h4, h5, h6 { @apply font-heading; }
+}
+
+/* ── Scrollbar ────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.3); border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(99,102,241,0.6); }
+
+/* ── TipTap Editor ────────────────────────────────────────────────────────── */
+.tiptap-editor .ProseMirror {
+  @apply outline-none min-h-[400px] py-4 px-1 text-foreground;
+}
+
+.tiptap-editor .ProseMirror p.is-editor-empty:first-child::before {
+  @apply text-muted-foreground pointer-events-none float-left h-0;
+  content: attr(data-placeholder);
+}
+
+.tiptap-editor .ProseMirror h1 { @apply text-3xl font-bold font-heading mt-6 mb-3 text-foreground; }
+.tiptap-editor .ProseMirror h2 { @apply text-2xl font-bold font-heading mt-5 mb-2 text-foreground; }
+.tiptap-editor .ProseMirror h3 { @apply text-xl font-semibold font-heading mt-4 mb-2 text-foreground; }
+.tiptap-editor .ProseMirror h4 { @apply text-lg font-semibold mt-3 mb-1 text-foreground; }
+
+.tiptap-editor .ProseMirror p { @apply leading-7 mb-3; }
+
+.tiptap-editor .ProseMirror blockquote {
+  @apply border-l-4 border-primary pl-4 my-4 text-muted-foreground italic;
+}
+
+.tiptap-editor .ProseMirror code:not(pre code) {
+  @apply bg-muted text-accent px-1.5 py-0.5 rounded text-sm font-mono;
+}
+
+.tiptap-editor .ProseMirror pre {
+  @apply bg-[#0d1117] rounded-lg p-4 my-4 overflow-x-auto relative;
+}
+.tiptap-editor .ProseMirror pre code {
+  @apply text-sm font-mono;
+  color: #e6edf3;
+}
+
+.tiptap-editor .ProseMirror ul { @apply list-disc pl-6 mb-3 space-y-1; }
+.tiptap-editor .ProseMirror ol { @apply list-decimal pl-6 mb-3 space-y-1; }
+.tiptap-editor .ProseMirror li { @apply leading-6; }
+
+.tiptap-editor .ProseMirror hr { @apply border-border my-6; }
+.tiptap-editor .ProseMirror a { @apply text-primary underline hover:text-primary-light; }
+.tiptap-editor .ProseMirror img { @apply rounded-lg max-w-full h-auto my-4; }
+.tiptap-editor .ProseMirror mark { @apply bg-yellow-400/30 text-yellow-300 px-0.5 rounded; }
+
+/* Tables */
+.tiptap-editor .ProseMirror table {
+  @apply w-full border-collapse border border-border my-4 rounded-lg overflow-hidden;
+}
+.tiptap-editor .ProseMirror th {
+  @apply bg-muted px-4 py-2 text-left font-semibold border border-border;
+}
+.tiptap-editor .ProseMirror td {
+  @apply px-4 py-2 border border-border;
+}
+
+/* Task list */
+.tiptap-editor .ProseMirror ul[data-type="taskList"] { @apply list-none pl-0; }
+.tiptap-editor .ProseMirror li[data-type="taskItem"] { @apply flex items-start gap-2; }
+.tiptap-editor .ProseMirror li[data-type="taskItem"] input { @apply mt-1 accent-primary; }
+
+/* Selection */
+.tiptap-editor .ProseMirror ::selection { @apply bg-primary/30; }
+
+/* ── Callout / Info blocks ────────────────────────────────────────────────── */
+.callout {
+  @apply flex gap-3 rounded-lg p-4 my-4 border;
+}
+.callout-info    { @apply bg-blue-500/10 border-blue-500/30 text-blue-300; }
+.callout-warning { @apply bg-yellow-500/10 border-yellow-500/30 text-yellow-300; }
+.callout-success { @apply bg-green-500/10 border-green-500/30 text-green-300; }
+.callout-danger  { @apply bg-red-500/10 border-red-500/30 text-red-300; }
+
+/* ── Gradient text ────────────────────────────────────────────────────────── */
+.gradient-text {
+  @apply bg-gradient-primary bg-clip-text text-transparent;
+}
+
+/* ── Glass morphism card ──────────────────────────────────────────────────── */
+.glass-card {
+  background: rgba(30, 41, 59, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  @apply border border-white/10 rounded-xl;
+}
+
+/* ── Prose for preview ────────────────────────────────────────────────────── */
+.prose-cms {
+  @apply prose prose-invert max-w-none;
+  @apply prose-headings:font-heading prose-headings:text-foreground;
+  @apply prose-p:text-foreground/90 prose-p:leading-7;
+  @apply prose-a:text-primary hover:prose-a:text-primary-light;
+  @apply prose-code:text-accent prose-code:bg-muted prose-code:rounded prose-code:px-1;
+  @apply prose-pre:bg-[#0d1117] prose-pre:rounded-lg;
+  @apply prose-blockquote:border-primary prose-blockquote:text-muted-foreground;
+  @apply prose-img:rounded-lg;
+  @apply prose-strong:text-foreground;
+}

@@ -1,0 +1,9 @@
+blog/
+cms/
+venv/
+posts/
+node_modules/
+*.log
+.env
+.env.local
+THEME_IMPLEMENTATION.md

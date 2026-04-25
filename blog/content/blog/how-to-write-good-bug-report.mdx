@@ -1,0 +1,264 @@
+---
+title: "How to Write a Good Bug Report: The Complete QA Guide"
+description: "Learn the anatomy of a high-quality bug report that developers actually act on — with templates, real examples, severity/priority guidelines, and common mistakes to avoid."
+date: "2025-01-08"
+slug: "how-to-write-good-bug-report"
+tags: ["Bug Reporting", "Manual Testing", "QA Fundamentals", "Jira", "Communication"]
+category: "Bug Reporting"
+author: "Dipak Bist"
+excerpt: "A vague bug report gets ignored. A precise one gets fixed the same day. Learn exactly how to write bug reports that developers love and managers understand."
+featured: true
+difficulty: "beginner"
+tools: ["Jira", "GitHub Issues", "TestRail", "Loom", "Snagit"]
+keywords: ["how to write bug report", "bug report template", "severity priority", "defect report", "QA bug tracking"]
+---
+
+A vague bug report like *"the page doesn't load"* can sit in the backlog for weeks.
+
+A precise, well-structured bug report with steps, environment details, and evidence gets reproduced in 5 minutes and fixed the same day.
+
+Here's how to write the second kind.
+
+## Why Bug Report Quality Matters
+
+Your bug report is a **communication tool**. The reader (developer, tech lead, PM) was not there when you found the bug. They need enough context to:
+
+1. Reproduce it independently
+2. Understand the impact
+3. Prioritise it correctly
+4. Verify the fix later
+
+A bad report creates back-and-forth, delays, and frustration on both sides.
+
+## The Anatomy of a Good Bug Report
+
+Every bug report should answer these questions:
+
+| Field | Purpose |
+|-------|---------|
+| **Title** | What broke, in one clear sentence |
+| **Severity** | How bad is the impact? |
+| **Priority** | How urgent is the fix? |
+| **Environment** | Where does it happen? |
+| **Preconditions** | What must be true before reproducing |
+| **Steps** | Exact reproduction steps |
+| **Expected** | What should happen |
+| **Actual** | What actually happens |
+| **Evidence** | Screenshot, video, logs |
+
+## Severity vs Priority
+
+These are often confused. They are **different**:
+
+- **Severity** = Technical impact on functionality
+- **Priority** = Business urgency of the fix
+
+A broken admin import feature may be **Severity: High** but **Priority: Medium** if only 2 clients use it. A typo on the homepage may be **Severity: Low** but **Priority: High** if it's visible to millions.
+
+| Severity | Definition |
+|----------|------------|
+| Critical | App crash, data loss, security breach — zero workaround |
+| High | Major feature broken, workaround exists but is painful |
+| Medium | Feature partially broken, workaround available |
+| Low | Minor visual issue, typo, cosmetic defect |
+
+## A Real Bug Report Example
+
+<BugReport
+  id="QA-1042"
+  title="Login form submits with empty email field — no validation error shown"
+  severity="high"
+  priority="P2"
+  status="open"
+  environment="Chrome 120 | macOS 14 | Staging (v2.4.1)"
+  reportedBy="Dipak Bist"
+  assignedTo="Dev Team"
+  preconditions="Navigate to the login page. Both fields are empty."
+  testData={`Email: (empty)\nPassword: (empty)\nBrowser: Chrome 120.0.6099.130\nOS: macOS Sonoma 14.2`}
+  steps={[
+    "Open https://staging.app.com/login",
+    "Leave the email field empty",
+    "Leave the password field empty",
+    "Click the 'Sign In' button"
+  ]}
+  expected="Inline validation error appears: 'Email is required'. Form is not submitted."
+  actual="Form submission is triggered. Spinner appears for 2 seconds, then disappears. No error is shown. User remains on login page."
+  attachments="Screen recording: loom.com/share/abc123 | Console log: no errors"
+  notes="Reproduced consistently in Chrome. Not reproduced in Firefox (correct validation shows). Safari untested."
+/>
+
+## Title Formatting
+
+Your title is the most-read part of the report. Use this formula:
+
+```
+[Feature/Area] + What broke + Context
+```
+
+**Poor titles:**
+- "Login doesn't work"
+- "Bug on checkout page"
+- "App crashes"
+
+**Good titles:**
+- "Login form submits with empty email — no validation shown (Chrome)"
+- "Checkout: order total shows $0 when coupon code applied"
+- "PDF export crashes on reports > 500 rows (Safari)"
+
+## Steps to Reproduce
+
+Steps must be **atomic** (one action per step), **specific**, and **complete**:
+
+<TestCase
+  id="BUG-VERIFY-001"
+  title="Verify login validation bug — regression check after fix"
+  preconditions="On the login page at /login. User NOT logged in."
+  testData={`Email: (empty)\nPassword: (empty)`}
+  steps={[
+    { action: "Navigate to /login", expected: "Login page visible, both fields empty" },
+    { action: "Leave email field blank", expected: "Field remains empty" },
+    { action: "Leave password field blank", expected: "Field remains empty" },
+    { action: "Click 'Sign In' button", expected: "Validation error displayed: 'Email is required'. Form NOT submitted." },
+  ]}
+  priority="high"
+  type="Regression"
+  author="Dipak Bist"
+/>
+
+## Evidence That Developers Love
+
+Attach **at least one** of these:
+
+1. **Screenshot** — annotated with red arrows/boxes (use Snagit, CleanShot)
+2. **Screen recording** — shows the exact flow (use Loom, QuickTime)
+3. **Console logs** — browser DevTools > Console tab (copy full output)
+4. **Network trace** — DevTools > Network tab, filter for the failed request
+5. **Logs** — server-side logs if accessible
+
+<Callout type="tip" title="Video is Worth a Thousand Words">
+  A 30-second Loom recording showing the exact bug is worth more than 3 paragraphs of description. Always record when the bug involves timing, animation, or multi-step interaction.
+</Callout>
+
+## Common Bug Report Mistakes
+
+<QAChecklist
+  title="Before Submitting — Avoid These Mistakes"
+  items={[
+    { text: "Title is specific (not just 'Bug on page X')" },
+    { text: "Steps are numbered and atomic (one action per step)" },
+    { text: "Environment is specified (browser, OS, version)" },
+    { text: "Expected AND actual result are clearly separate" },
+    { text: "Evidence is attached (screenshot or recording)" },
+    { text: "I checked if this is already reported (no duplicate)" },
+    { text: "I can reproduce it consistently before reporting" },
+    { text: "Severity and priority are set correctly" },
+  ]}
+/>
+
+## Writing the Expected and Actual Result
+
+This is the most commonly done wrong. Be explicit:
+
+**Weak:**
+> Expected: It works
+> Actual: It doesn't work
+
+**Strong:**
+> Expected: Clicking "Submit" displays a success toast ("Order placed!") and redirects to /orders/123 within 2 seconds.
+> Actual: Clicking "Submit" shows a loading spinner for 10 seconds, then displays a blank white screen. No toast. URL remains /checkout.
+
+## Environment Details to Always Include
+
+```
+Browser: Chrome 120.0.6099.130
+OS: macOS Sonoma 14.2.1 / Windows 11 22H2
+Screen resolution: 1440x900
+Environment: Staging (https://staging.app.com) | Build v2.4.1
+User role: admin / free-tier / guest
+Network: VPN on / corporate Wi-Fi
+```
+
+<Callout type="warning" title="The 'It Works on My Machine' Problem">
+  Missing environment details is the #1 cause of "I can't reproduce it" responses. Be precise. Different OS, browser version, or user role can produce completely different behaviour.
+</Callout>
+
+## Bug Report Template (Copy-Ready)
+
+<CommandBlock
+  command="Use this template in Jira, GitHub Issues, or TestRail"
+  shell="template"
+  description="Copy the template below into your bug tracking system"
+/>
+
+```markdown filename="bug-report-template.md"
+## Title
+[Feature] Brief one-line description of the bug
+
+## Environment
+- Browser:
+- OS:
+- App version/build:
+- Test environment URL:
+- User role/account type:
+
+## Severity: [ Critical | High | Medium | Low ]
+## Priority: [ P1 | P2 | P3 | P4 ]
+
+## Preconditions
+What must be true / set up before running these steps.
+
+## Steps to Reproduce
+1. Go to ...
+2. Click on ...
+3. Enter ...
+4. Observe ...
+
+## Expected Result
+What should happen according to the spec/design.
+
+## Actual Result
+What actually happens. Include error messages verbatim.
+
+## Evidence
+- Screenshot: [attach]
+- Recording: [link]
+- Console logs: [paste or attach]
+
+## Notes / Additional Context
+- Does it reproduce consistently? (Always / Sometimes / Once)
+- Workaround available? Yes/No
+- Related tickets:
+```
+
+## Using AI to Improve Your Bug Reports
+
+<PromptBlock
+  title="Improve My Bug Report"
+  context="You are a Senior QA Engineer who writes clear, precise bug reports."
+  prompt={`Review this bug report and improve it:
+
+Title: Login broken
+Steps: Go to login page, click sign in
+Expected: should work
+Actual: doesn't work
+
+Rewrite it with:
+- A clear, specific title
+- Complete numbered steps to reproduce
+- Explicit expected vs actual result
+- Suggested severity and priority
+- Questions to ask to fill in missing environment details`}
+  tip="Paste your draft bug report and let AI identify what's missing or unclear before you submit."
+/>
+
+## Key Takeaways
+
+- Severity ≠ Priority — understand the difference and set both correctly
+- Steps must be atomic, numbered, and reproducible by anyone
+- Always include Expected **and** Actual results separately
+- Evidence (screenshot/recording) dramatically reduces back-and-forth
+- A great title is specific: **what** broke, **where**, under what **condition**
+
+<Callout type="success" title="The Golden Rule">
+  Write your bug report as if the reader has never seen your screen, knows nothing about what you were doing, and has 5 minutes to investigate. Give them everything they need to reproduce it immediately.
+</Callout>
