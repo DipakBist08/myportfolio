@@ -1,4 +1,4 @@
-# ── IDE ───────────────────────────────────────────────────
+# ── IDE & Editor ──────────────────────────────────────────
 .vscode/
 .idea/
 *.swp
@@ -6,39 +6,65 @@
 *~
 .project
 .classpath
+*.suo
 
 # ── OS ────────────────────────────────────────────────────
 .DS_Store
+.DS_Store?
 Thumbs.db
 ._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Desktop.ini
 
-# ── Node ──────────────────────────────────────────────────
+# ── Secrets & Environment ─────────────────────────────────
+.env
+.env.local
+.env.production
+.env.development
+.env.staging
+.env.*.local
+cms/backend/.env
+cms/frontend/.env.local
+
+# ── Node / JS ─────────────────────────────────────────────
 node_modules/
-dist/
-build/
-.cache/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm/
+package-lock.json
 
 # ── Next.js ───────────────────────────────────────────────
 .next/
-out/
 blog/.next/
+out/
 blog/out/
+blog/.vercel/
 
-# ── Vite ──────────────────────────────────────────────────
+# ── Vite / React build ────────────────────────────────────
+dist/
 cms/frontend/dist/
+cms/frontend/.vercel/
 
 # ── Python ────────────────────────────────────────────────
 venv/
 .venv/
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
 *.pyo
 *.pyd
 .Python
+*.egg
 *.egg-info/
-dist/
-.pytest_cache/
+.eggs/
 .mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+htmlcov/
 
 # ── Database ──────────────────────────────────────────────
 *.db
@@ -47,28 +73,32 @@ dist/
 *.sqlite
 *.sqlite3
 
-# ── Secrets & environment ──────────────────────────────────
-.env
-.env.local
-.env.production
-.env.development
-cms/backend/.env
-cms/frontend/.env.local
-
-# ── Uploads (runtime data, not source) ────────────────────
+# ── Backend runtime files ─────────────────────────────────
 cms/backend/uploads/
 
 # ── Logs ──────────────────────────────────────────────────
 *.log
+*.log.*
 logs/
 
-# ── Build leftovers ───────────────────────────────────────
-*.min.js
-*.min.css
+# ── Temp / Cache ──────────────────────────────────────────
+*.tmp
+*.temp
 .temp/
 .cache/
-_config.yml
-.htaccess
+.parcel-cache/
+
+# ── Build artifacts ───────────────────────────────────────
+build/
+*.min.js
+*.min.css
 
 # ── Vercel ────────────────────────────────────────────────
 .vercel/
+
+# ── Misc ──────────────────────────────────────────────────
+_config.yml
+.htaccess
+THEME_IMPLEMENTATION.md
+SETUP.md
+posts/
