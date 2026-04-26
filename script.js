@@ -966,143 +966,12 @@ function initThemeToggle() {
     }
 }
 
+
 /* =====================================================
-   BLOG SECTION — fetch from CMS public API
+   NEWSLETTER SUBSCRIBE — posts to CMS backend
    ===================================================== */
 
-const CMS_API = 'http://localhost:8000';
-
-const CATEGORY_EMOJI = {
-  'qa-automation':     '🤖',
-  'manual-testing':    '✅',
-  'api-testing':       '🌐',
-  'ci-cd-devops':      '⚙️',
-  'framework-setup':   '🛠️',
-  'code-tutorials':    '💻',
-  'documentation':     '📄',
-  'performance-testing':'⚡',
-};
-
-function formatBlogDate(iso) {
-  if (!iso) return '';
-  const d = new Date(iso);
-  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-}
-
-function escHtml(str) {
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
-
-function buildBlogCard(post) {
-  const catColor  = post.category ? post.category.color : '#6366f1';
-  const catName   = post.category ? post.category.name  : 'General';
-  const catSlug   = post.category ? post.category.slug  : '';
-  const emoji     = CATEGORY_EMOJI[catSlug] || '📝';
-  const dateStr   = formatBlogDate(post.published_at || post.created_at);
-  const tagHtml   = (post.tags || []).slice(0, 3)
-    .map(t => `<span class="blog-card__tag">${escHtml(t.name)}</span>`)
-    .join('');
-  const imgHtml   = post.featured_image
-    ? `<img class="blog-card__thumb" src="${escHtml(post.featured_image)}" alt="${escHtml(post.featured_image_alt || post.title)}" loading="lazy">`
-    : `<div class="blog-card__thumb-placeholder">${emoji}</div>`;
-
-  return `
-    <article class="blog-card" data-animate role="link" tabindex="0"
-      onclick="window.location.href='posts/?slug=${encodeURIComponent(post.slug)}'"
-      onkeydown="if(event.key==='Enter')window.location.href='posts/?slug=${encodeURIComponent(post.slug)}'"
-      style="cursor:pointer">
-      ${imgHtml}
-      <div class="blog-card__body">
-        <div class="blog-card__meta">
-          <span class="blog-card__category"
-            style="color:${catColor};border-color:${catColor}40;background:${catColor}18">
-            ${escHtml(catName)}
-          </span>
-          <span class="blog-card__time">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-              width="12" height="12" style="vertical-align:middle;margin-right:3px">
-              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-            </svg>
-            ${post.reading_time || 1} min &nbsp;·&nbsp; ${dateStr}
-          </span>
-        </div>
-        <h3 class="blog-card__title">${escHtml(post.title)}</h3>
-        <p class="blog-card__excerpt">${escHtml(post.excerpt || '')}</p>
-        <div class="blog-card__footer">
-          <div class="blog-card__tags">${tagHtml}</div>
-          <span class="blog-card__read">
-            Read
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-              width="13" height="13"><line x1="5" y1="12" x2="19" y2="12"/>
-              <polyline points="12 5 19 12 12 19"/></svg>
-          </span>
-        </div>
-      </div>
-    </article>`;
-}
-
-async function loadBlogPosts() {
-  const grid    = document.getElementById('blog-grid');
-  const errBox  = document.getElementById('blog-error');
-  const emptyBox= document.getElementById('blog-empty');
-  const footer  = document.getElementById('blog-footer');
-  if (!grid) return;
-
-  // Reset state
-  errBox.style.display   = 'none';
-  emptyBox.style.display = 'none';
-  footer.style.display   = 'none';
-
-  // Show skeletons
-  grid.innerHTML = Array(3).fill(0).map(() => `
-    <div class="blog-card blog-card--skeleton" aria-hidden="true">
-      <div class="blog-card__skeleton-img"></div>
-      <div class="blog-card__body">
-        <div class="blog-card__skeleton-tag"></div>
-        <div class="blog-card__skeleton-title"></div>
-        <div class="blog-card__skeleton-line"></div>
-        <div class="blog-card__skeleton-line blog-card__skeleton-line--short"></div>
-      </div>
-    </div>`).join('');
-
-  try {
-    const res = await fetch(`${CMS_API}/api/public/posts?page_size=6`, {
-      signal: AbortSignal.timeout(8000),
-    });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-    const posts = data.items || [];
-
-    if (posts.length === 0) {
-      grid.innerHTML     = '';
-      emptyBox.style.display = 'flex';
-      return;
-    }
-
-    grid.innerHTML = posts.map(buildBlogCard).join('');
-
-    if (data.total > posts.length) {
-      footer.style.display = 'flex';
-    }
-
-    // Re-run scroll animations on new cards
-    if (typeof initScrollAnimations === 'function') {
-      initScrollAnimations();
-    } else {
-      grid.querySelectorAll('[data-animate]').forEach(el => {
-        el.classList.add('animated');
-      });
-    }
-  } catch (err) {
-    console.warn('Blog fetch failed:', err.message);
-    grid.innerHTML        = '';
-    errBox.style.display  = 'flex';
-  }
-}
+const BACKEND_API = 'https://api.dipakbist.com.np';
 
 async function handleSubscribe(e) {
   e.preventDefault();
@@ -1112,13 +981,13 @@ async function handleSubscribe(e) {
   const email      = emailInput.value.trim();
   if (!email) return;
 
-  btn.disabled  = true;
+  btn.disabled    = true;
   btn.textContent = 'Subscribing…';
   feedback.style.color = '';
   feedback.textContent = '';
 
   try {
-    const res = await fetch(`${CMS_API}/api/v1/subscribers/subscribe`, {
+    const res = await fetch(`${BACKEND_API}/api/v1/subscribers/subscribe`, {
       method : 'POST',
       headers: { 'Content-Type': 'application/json' },
       body   : JSON.stringify({ email }),
@@ -1139,59 +1008,4 @@ async function handleSubscribe(e) {
     btn.disabled    = false;
     btn.textContent = 'Subscribe';
   }
-}
-
-// Auto-load on DOM ready
-document.addEventListener('DOMContentLoaded', () => {
-    loadBlogPosts();
-    initBlogScrollIsolation();
-});
-
-/* =====================================================
-   BLOG SCROLL ISOLATION
-   When the blog section fills the viewport, wheel/touch
-   scroll is redirected into the blog's inner container.
-   At the top/bottom boundary, page scroll resumes.
-   ===================================================== */
-function initBlogScrollIsolation() {
-    const blog = document.getElementById('blog');
-    const inner = blog?.querySelector('.container');
-    if (!blog || !inner) return;
-
-    const navH = () => document.querySelector('.header')?.offsetHeight || 80;
-
-    function isBlogActive() {
-        const r = blog.getBoundingClientRect();
-        return r.top <= navH() + 2 && r.bottom >= window.innerHeight - 2;
-    }
-
-    window.addEventListener('wheel', (e) => {
-        if (!isBlogActive()) return;
-
-        const atTop    = inner.scrollTop <= 0;
-        const atBottom = inner.scrollTop + inner.clientHeight >= inner.scrollHeight - 2;
-
-        // At boundaries → let page scroll through
-        if ((e.deltaY < 0 && atTop) || (e.deltaY > 0 && atBottom)) return;
-
-        e.preventDefault();
-        inner.scrollBy({ top: e.deltaY, behavior: 'auto' });
-    }, { passive: false });
-
-    // Touch support
-    let touchY = 0;
-    window.addEventListener('touchstart', (e) => { touchY = e.touches[0].clientY; }, { passive: true });
-    window.addEventListener('touchmove', (e) => {
-        if (!isBlogActive()) return;
-
-        const delta   = touchY - e.touches[0].clientY;
-        const atTop    = inner.scrollTop <= 0;
-        const atBottom = inner.scrollTop + inner.clientHeight >= inner.scrollHeight - 2;
-
-        if ((delta < 0 && atTop) || (delta > 0 && atBottom)) return;
-
-        e.preventDefault();
-        inner.scrollBy({ top: delta, behavior: 'auto' });
-        touchY = e.touches[0].clientY;
-    }, { passive: false });
 }
