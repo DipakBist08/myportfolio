@@ -1,7 +1,10 @@
 import secrets
+import time
+import logging
+from collections import defaultdict
 from datetime import datetime, timezone
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -13,11 +16,33 @@ from app.core.email import send_confirmation_email
 
 router = APIRouter(prefix="/subscribers", tags=["Admin – Subscribers"])
 
+# Simple in-memory rate limiter: max 3 subscribe attempts per IP per 60 s
+_subscribe_attempts: dict[str, list[float]] = defaultdict(list)
+_RATE_LIMIT = 3
+_RATE_WINDOW = 60.0
+
+
+def _check_rate_limit(ip: str) -> None:
+    now = time.monotonic()
+    window = now - _RATE_WINDOW
+    attempts = [t for t in _subscribe_attempts[ip] if t > window]
+    if len(attempts) >= _RATE_LIMIT:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Too many requests. Please wait before trying again.",
+            headers={"Retry-After": "60"},
+        )
+    attempts.append(now)
+    _subscribe_attempts[ip] = attempts
+
 
 # ── Public subscribe endpoint ─────────────────────────────────────────────────
 
 @router.post("/subscribe", status_code=status.HTTP_202_ACCEPTED)
-async def subscribe(body: SubscribeRequest, db: Session = Depends(get_db)):
+async def subscribe(body: SubscribeRequest, request: Request, db: Session = Depends(get_db)):
+    client_ip = request.client.host if request.client else "unknown"
+    _check_rate_limit(client_ip)
+
     existing = db.query(Subscriber).filter(Subscriber.email == body.email).first()
     if existing:
         if existing.is_unsubscribed:
@@ -31,7 +56,12 @@ async def subscribe(body: SubscribeRequest, db: Session = Depends(get_db)):
     sub = Subscriber(email=body.email, name=body.name, confirmation_token=token)
     db.add(sub)
     db.commit()
-    await send_confirmation_email(body.email, body.name, token)
+
+    try:
+        await send_confirmation_email(body.email, body.name, token)
+    except Exception:
+        logging.exception("Failed to send confirmation email to %s", body.email)
+
     return {"detail": "Check your email to confirm your subscription."}
 
 

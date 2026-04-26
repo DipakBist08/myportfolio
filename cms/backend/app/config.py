@@ -1,7 +1,6 @@
 from pydantic_settings import BaseSettings
-from pydantic import validator
+from pydantic import model_validator
 from typing import List
-import secrets
 
 
 class Settings(BaseSettings):
@@ -9,7 +8,7 @@ class Settings(BaseSettings):
     APP_NAME: str = "QA Portfolio CMS"
     APP_ENV: str = "development"
     DEBUG: bool = True
-    SECRET_KEY: str = secrets.token_hex(32)
+    SECRET_KEY: str  # required — no default so startup fails loud if missing
 
     # Database
     DATABASE_URL: str = "sqlite:///./cms.db"
@@ -47,6 +46,16 @@ class Settings(BaseSettings):
 
     # MFA
     MFA_ISSUER: str = "QA Portfolio CMS"
+
+    @model_validator(mode="after")
+    def validate_secret_key(self) -> "Settings":
+        placeholder = "change-this-to-a-64-char-random-hex-string-in-production"
+        if self.SECRET_KEY == placeholder or len(self.SECRET_KEY) < 32:
+            raise ValueError(
+                "SECRET_KEY must be a random hex string of at least 32 bytes. "
+                "Generate one with: python3 -c \"import secrets; print(secrets.token_hex(32))\""
+            )
+        return self
 
     @property
     def cors_origins(self) -> List[str]:
