@@ -1,7 +1,6 @@
 import Link from 'next/link'
 import { PostMeta } from '@/lib/blog/types'
 import { formatDate } from '@/lib/blog/utils'
-import CategoryBadge from './CategoryBadge'
 
 interface RelatedPostsProps {
   posts: PostMeta[]
@@ -23,7 +22,9 @@ export default function RelatedPosts({ posts }: RelatedPostsProps) {
             className="group block rounded-xl border border-slate-700/50 bg-surface-card/50 p-4 transition-all hover:border-primary/40 hover:bg-surface-card hover:-translate-y-0.5 light:border-slate-200 light:bg-white"
           >
             <div className="mb-2">
-              <CategoryBadge category={post.category} />
+              <span className="inline-flex items-center rounded-md border border-accent/25 bg-accent/10 px-2.5 py-0.5 text-xs font-semibold text-accent">
+                {post.category}
+              </span>
             </div>
             <h3 className="mb-1 text-sm font-semibold text-slate-200 group-hover:text-primary-light transition-colors line-clamp-2 light:text-slate-800">
               {post.title}

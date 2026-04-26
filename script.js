@@ -274,68 +274,6 @@ function initCurrentYear() {
     }
 }
 
-/* ----- Floating Particles ----- */
-function initParticles() {
-    const particlesContainer = document.getElementById('particles');
-    if (!particlesContainer) return;
-
-    const particleCount = 30;
-
-    for (let i = 0; i < particleCount; i++) {
-        createParticle(particlesContainer);
-    }
-}
-
-function createParticle(container) {
-    const particle = document.createElement('div');
-    particle.className = 'particle';
-
-    // Random properties
-    const size = Math.random() * 4 + 2;
-    const posX = Math.random() * 100;
-    const posY = Math.random() * 100;
-    const duration = Math.random() * 20 + 10;
-    const delay = Math.random() * 5;
-    const opacity = Math.random() * 0.3 + 0.1;
-
-    particle.style.cssText = `
-        position: absolute;
-        width: ${size}px;
-        height: ${size}px;
-        background: rgba(99, 102, 241, ${opacity});
-        border-radius: 50%;
-        left: ${posX}%;
-        top: ${posY}%;
-        animation: float ${duration}s ease-in-out ${delay}s infinite;
-        pointer-events: none;
-    `;
-
-    container.appendChild(particle);
-}
-
-// Add float animation to stylesheet
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes float {
-        0%, 100% {
-            transform: translateY(0) translateX(0);
-            opacity: 0.3;
-        }
-        25% {
-            transform: translateY(-20px) translateX(10px);
-            opacity: 0.6;
-        }
-        50% {
-            transform: translateY(-10px) translateX(-10px);
-            opacity: 0.4;
-        }
-        75% {
-            transform: translateY(-30px) translateX(5px);
-            opacity: 0.5;
-        }
-    }
-`;
-document.head.appendChild(style);
 
 /* ----- Header Scroll Effect (Debounced) ----- */
 let lastScroll = 0;

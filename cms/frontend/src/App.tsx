@@ -18,6 +18,16 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
   return <>{children}</>
 }
 
+function NotFound() {
+  return (
+    <div className="flex h-full flex-col items-center justify-center gap-3 text-center p-8">
+      <p className="text-5xl font-bold text-slate-600">404</p>
+      <p className="text-slate-400">Page not found</p>
+      <Navigate to="/dashboard" replace />
+    </div>
+  )
+}
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -42,6 +52,7 @@ export default function App() {
           <Route path="subscribers" element={<SubscribersPage />} />
           <Route path="media" element={<MediaPage />} />
           <Route path="settings" element={<SettingsPage />} />
+          <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>
     </BrowserRouter>

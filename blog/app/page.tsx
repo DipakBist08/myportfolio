@@ -1,6 +1,14 @@
 import type { Metadata } from 'next'
+import dynamic from 'next/dynamic'
 import { getAllPostsMeta } from '@/lib/blog/mdx'
-import BlogPageContent from '@/components/blog/BlogPageContent'
+
+const BlogPageContent = dynamic(
+  () => import('@/components/blog/BlogPageContent'),
+  {
+    ssr: false,
+    loading: () => <div className="mx-auto max-w-6xl px-6 py-12 text-slate-400">Loading…</div>,
+  }
+)
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://blog.dipakbist.com.np'
 

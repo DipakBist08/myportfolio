@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useState } from 'react'
 import { useTheme } from './ThemeProvider'
 
-const PORTFOLIO_URL = 'https://dipakbist.com'
+const PORTFOLIO_URL = 'https://dipakbist.com.np'
 
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false)

@@ -47,7 +47,7 @@ api.interceptors.response.use(
         return Promise.reject(error)
       }
       try {
-        const res = await axios.post(`${BASE_URL}/api/v1/auth/refresh`, { refresh_token: refreshToken })
+        const res = await axios.post(`${BASE_URL}/api/v1/auth/refresh`, { refresh_token: refreshToken }, { timeout: 10_000 })
         const newAccess = res.data.access_token
         const newRefresh = res.data.refresh_token
         useAuthStore.getState().setTokens(newAccess, newRefresh)

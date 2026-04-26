@@ -1,6 +1,6 @@
 import Link from 'next/link'
 
-const PORTFOLIO_URL = 'https://dipakbist.com'
+const PORTFOLIO_URL = 'https://dipakbist.com.np'
 const GITHUB_URL = 'https://github.com/DipakBist08'
 const LINKEDIN_URL = 'https://www.linkedin.com/in/dipakbist08/'
 

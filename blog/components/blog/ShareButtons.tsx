@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 interface ShareButtonsProps {
   title: string
@@ -9,7 +9,12 @@ interface ShareButtonsProps {
 
 export default function ShareButtons({ title, url }: ShareButtonsProps) {
   const [copied, setCopied] = useState(false)
-  const shareUrl = url ?? (typeof window !== 'undefined' ? window.location.href : '')
+  const [shareUrl, setShareUrl] = useState(url ?? '')
+
+  useEffect(() => {
+    if (!url) setShareUrl(window.location.href)
+  }, [url])
+
   const encoded = encodeURIComponent(shareUrl)
   const encodedTitle = encodeURIComponent(title)
 
