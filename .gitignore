@@ -34,7 +34,9 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .npm/
-package-lock.json
+# package-lock.json at repo root (none) — subproject lockfiles are kept
+!blog/package-lock.json
+!cms/frontend/package-lock.json
 
 # ── Next.js ───────────────────────────────────────────────
 .next/
