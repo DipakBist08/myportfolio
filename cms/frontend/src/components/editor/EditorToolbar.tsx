@@ -107,8 +107,7 @@ export default function EditorToolbar({ editor, onInsertImage, onInsertYoutube }
 
   const setLink = () => {
     if (!linkUrl) { editor.chain().focus().unsetLink().run(); return }
-    editor.chain().focus().extendMarkToLink()
-      .setLink({ href: linkUrl, target: '_blank' }).run()
+    editor.chain().focus().setLink({ href: linkUrl, target: '_blank' }).run()
     setShowLinkInput(false)
     setLinkUrl('')
   }

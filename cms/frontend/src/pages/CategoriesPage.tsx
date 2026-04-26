@@ -100,7 +100,7 @@ export default function CategoriesPage() {
                 {COLOR_OPTIONS.map(c => (
                   <button key={c} type="button" onClick={() => setValue('color', c)}
                     className="w-7 h-7 rounded-full ring-2 transition-all"
-                    style={{ background: c, ringColor: watch('color') === c ? c : 'transparent' }} />
+                    style={{ background: c, boxShadow: watch('color') === c ? `0 0 0 2px ${c}` : '0 0 0 2px transparent' }} />
                 ))}
               </div>
             </div>
