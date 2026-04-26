@@ -1,5 +1,7 @@
-blog/
-cms/
+# Never deploy these regardless of which project is building
+cms/backend/
+cms/docker-compose.yml
+cms/SETUP.md
 venv/
 posts/
 node_modules/
