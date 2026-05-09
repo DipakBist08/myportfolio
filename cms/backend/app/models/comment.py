@@ -10,22 +10,28 @@ class Comment(Base):
     id = Column(Integer, primary_key=True, index=True)
     post_slug = Column(String(255), nullable=False, index=True)
 
-    # Threading — None means top-level, int means reply to that comment id
+    # Threading — None = top-level, int = reply to that comment
     parent_id = Column(Integer, ForeignKey("comments.id", ondelete="CASCADE"), nullable=True)
 
     author_name = Column(String(100), nullable=False)
     author_email = Column(String(255), nullable=False)  # stored, never exposed publicly
     content = Column(Text, nullable=False)
 
-    is_approved = Column(Boolean, default=True, nullable=False)  # auto-approve; admin can delete spam
+    is_approved = Column(Boolean, default=True, nullable=False)
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
-    # Relationships
+    # Self-referential: remote_side marks "id" as the one-side (parent)
+    parent = relationship(
+        "Comment",
+        remote_side="Comment.id",
+        back_populates="replies",
+        foreign_keys=[parent_id],
+    )
     replies = relationship(
         "Comment",
-        backref="parent",
+        back_populates="parent",
         foreign_keys=[parent_id],
         cascade="all, delete-orphan",
         lazy="select",
