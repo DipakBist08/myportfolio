@@ -19,6 +19,7 @@ const rehypePrettyCodeOptions = {
     }
   },
   onVisitHighlightedLine(node: { properties: { className: string[] } }) {
+    node.properties.className = node.properties.className ?? []
     node.properties.className.push('highlighted')
   },
   onVisitHighlightedChars(node: { properties: { className: string[] } }) {
@@ -47,6 +48,8 @@ export default function MDXContent({ source }: MDXContentProps) {
               [rehypePrettyCode, rehypePrettyCodeOptions],
             ],
           },
+          // Allow JSX prop expressions like items={[...]} in MDX content
+          blockJS: false,
         }}
       />
     </div>
