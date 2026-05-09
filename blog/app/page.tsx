@@ -1,14 +1,7 @@
 import type { Metadata } from 'next'
-import dynamic from 'next/dynamic'
+import { Suspense } from 'react'
 import { getAllPostsMeta } from '@/lib/blog/mdx'
-
-const BlogPageContent = dynamic(
-  () => import('@/components/blog/BlogPageContent'),
-  {
-    ssr: false,
-    loading: () => <div className="mx-auto max-w-6xl px-6 py-12 text-slate-400">Loading…</div>,
-  }
-)
+import BlogPageContent from '@/components/blog/BlogPageContent'
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://blog.dipakbist.com.np'
 
@@ -55,7 +48,9 @@ export default function BlogPage() {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteLd) }} />
-      <BlogPageContent allPosts={allPosts} />
+      <Suspense fallback={<div className="mx-auto max-w-6xl px-6 py-12 text-slate-400">Loading…</div>}>
+        <BlogPageContent allPosts={allPosts} />
+      </Suspense>
     </>
   )
 }
