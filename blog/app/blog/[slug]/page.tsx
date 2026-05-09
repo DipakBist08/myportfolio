@@ -8,6 +8,7 @@ import { extractHeadings } from '@/lib/blog/utils'
 import RelatedPosts from '@/components/blog/RelatedPosts'
 import PostNavigation from '@/components/blog/PostNavigation'
 import ShareButtons from '@/components/blog/ShareButtons'
+import NewsletterForm from '@/components/blog/NewsletterForm'
 import ReadingProgress from '@/components/blog/ReadingProgress'
 import TagBadge from '@/components/blog/TagBadge'
 import CategoryBadge from '@/components/blog/CategoryBadge'
@@ -241,26 +242,8 @@ export default async function BlogPostPage({ params }: Params) {
               </div>
             )}
 
-            {/* Newsletter placeholder */}
-            <div className="mt-10 rounded-xl border border-primary/20 bg-primary/5 p-6 text-center">
-              <h3 className="mb-1 font-heading text-lg font-bold text-slate-100 light:text-slate-900">
-                Stay Updated
-              </h3>
-              <p className="mb-4 text-sm text-slate-400">
-                Get new QA articles delivered straight to your inbox.
-              </p>
-              <div className="flex flex-col gap-2 sm:flex-row sm:justify-center">
-                <input
-                  type="email"
-                  placeholder="your@email.com"
-                  className="rounded-lg border border-slate-700/50 bg-surface-card px-4 py-2 text-sm text-slate-300 placeholder-slate-500 outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/30 sm:w-64"
-                />
-                <button className="rounded-lg bg-primary px-5 py-2 text-sm font-semibold text-white hover:bg-primary-dark transition-colors">
-                  Subscribe
-                </button>
-              </div>
-              <p className="mt-2 text-xs text-slate-600">No spam, unsubscribe anytime.</p>
-            </div>
+            {/* Newsletter */}
+            <NewsletterForm />
 
             {/* Comment placeholder */}
             <div className="mt-8 rounded-xl border border-slate-700/30 bg-surface-card/30 p-6">
