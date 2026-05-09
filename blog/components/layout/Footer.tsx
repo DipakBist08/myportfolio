@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import NewsletterForm from '@/components/blog/NewsletterForm'
 
 const PORTFOLIO_URL = 'https://dipakbist.com.np'
 const GITHUB_URL = 'https://github.com/DipakBist08'
@@ -9,7 +10,32 @@ export default function Footer() {
 
   return (
     <footer className="border-t border-slate-800/60 bg-surface-darker/80 light:bg-slate-50 light:border-slate-200">
-      <div className="mx-auto max-w-6xl px-6 py-10">
+
+      {/* ── Newsletter band ── */}
+      <div className="border-b border-slate-800/40 light:border-slate-200">
+        <div className="mx-auto max-w-6xl px-6 py-10">
+          <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+
+            {/* Copy */}
+            <div className="shrink-0">
+              <p className="font-heading text-base font-bold text-slate-100 light:text-slate-900">
+                Get articles in your inbox
+              </p>
+              <p className="mt-1 text-sm text-slate-400 light:text-slate-500">
+                New QA articles, tips &amp; tutorials — delivered when they drop.
+              </p>
+            </div>
+
+            {/* Form */}
+            <div className="w-full sm:max-w-sm">
+              <NewsletterForm compact />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Bottom bar ── */}
+      <div className="mx-auto max-w-6xl px-6 py-8">
         <div className="flex flex-col items-center gap-6 sm:flex-row sm:justify-between">
 
           {/* Brand */}
@@ -54,8 +80,8 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-8 border-t border-slate-800/40 pt-5 text-center text-xs text-slate-600 light:border-slate-200 light:text-slate-400">
-          &copy; {year} Dipak Bist · Built with Next.js, MDX & Tailwind CSS
+        <div className="mt-6 border-t border-slate-800/40 pt-5 text-center text-xs text-slate-600 light:border-slate-200 light:text-slate-400">
+          &copy; {year} Dipak Bist · Built with Next.js, MDX &amp; Tailwind CSS
         </div>
       </div>
     </footer>

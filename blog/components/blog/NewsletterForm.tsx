@@ -6,7 +6,12 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.dipakbist.com.np
 
 type State = 'idle' | 'loading' | 'success' | 'error' | 'already'
 
-export default function NewsletterForm() {
+interface Props {
+  /** compact = inline footer strip, default = card on blog post */
+  compact?: boolean
+}
+
+export default function NewsletterForm({ compact = false }: Props) {
   const [email, setEmail] = useState('')
   const [state, setState] = useState<State>('idle')
   const [message, setMessage] = useState('')
@@ -51,6 +56,48 @@ export default function NewsletterForm() {
     }
   }
 
+  // ── Compact / footer variant ────────────────────────────────────────────────
+  if (compact) {
+    return (
+      <div>
+        {state === 'success' ? (
+          <div className="flex items-center gap-2 text-sm text-green-400">
+            <span>📬</span>
+            <span>Got it! Check your inbox to confirm.</span>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="flex gap-2">
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => { setEmail(e.target.value); setState('idle') }}
+              placeholder="your@email.com"
+              disabled={state === 'loading'}
+              className="flex-1 min-w-0 rounded-lg border border-slate-700/60 bg-white/5 px-3 py-2 text-sm text-slate-300 placeholder-slate-600 outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/30 disabled:opacity-50"
+            />
+            <button
+              type="submit"
+              disabled={state === 'loading'}
+              className="shrink-0 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary-dark transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {state === 'loading' ? '…' : 'Subscribe'}
+            </button>
+          </form>
+        )}
+        {(state === 'error' || state === 'already') && (
+          <p className={`mt-1.5 text-xs ${state === 'already' ? 'text-yellow-400' : 'text-red-400'}`}>
+            {message}
+          </p>
+        )}
+        {state !== 'success' && (
+          <p className="mt-1.5 text-xs text-slate-600">No spam · Unsubscribe anytime</p>
+        )}
+      </div>
+    )
+  }
+
+  // ── Default / blog post card variant ───────────────────────────────────────
   return (
     <div className="mt-10 rounded-xl border border-primary/20 bg-primary/5 p-6 text-center">
       <h3 className="mb-1 font-heading text-lg font-bold text-slate-100 light:text-slate-900">
