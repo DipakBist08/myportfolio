@@ -6,6 +6,7 @@ from app.models.subscriber import Subscriber
 from app.models.media import Media
 from app.models.settings import SiteSetting
 from app.models.analytics import AnalyticsEvent
+from app.models.comment import Comment
 
 __all__ = [
     "User", "RefreshToken",
@@ -16,4 +17,5 @@ __all__ = [
     "Media",
     "SiteSetting",
     "AnalyticsEvent",
+    "Comment",
 ]

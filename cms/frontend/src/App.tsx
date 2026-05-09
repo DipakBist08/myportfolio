@@ -9,6 +9,7 @@ import PostEditorPage from '@/pages/PostEditorPage'
 import CategoriesPage from '@/pages/CategoriesPage'
 import TagsPage from '@/pages/TagsPage'
 import SubscribersPage from '@/pages/SubscribersPage'
+import CommentsPage from '@/pages/CommentsPage'
 import MediaPage from '@/pages/MediaPage'
 import SettingsPage from '@/pages/SettingsPage'
 
@@ -50,6 +51,7 @@ export default function App() {
           <Route path="categories" element={<CategoriesPage />} />
           <Route path="tags" element={<TagsPage />} />
           <Route path="subscribers" element={<SubscribersPage />} />
+          <Route path="comments" element={<CommentsPage />} />
           <Route path="media" element={<MediaPage />} />
           <Route path="settings" element={<SettingsPage />} />
           <Route path="*" element={<NotFound />} />

@@ -5,7 +5,7 @@ import { toast } from 'sonner'
 import api from '@/lib/api'
 import {
   LayoutDashboard, FileText, Tag, FolderOpen, Users,
-  Image, Settings, LogOut, ChevronRight, Bot, X,
+  Image, Settings, LogOut, ChevronRight, Bot, X, MessageSquare,
 } from 'lucide-react'
 
 interface NavItem {
@@ -21,6 +21,7 @@ const navItems: NavItem[] = [
   { label: 'Categories', to: '/categories', icon: <FolderOpen size={18} /> },
   { label: 'Tags', to: '/tags', icon: <Tag size={18} /> },
   { label: 'Subscribers', to: '/subscribers', icon: <Users size={18} /> },
+  { label: 'Comments', to: '/comments', icon: <MessageSquare size={18} /> },
   { label: 'Media', to: '/media', icon: <Image size={18} /> },
   { label: 'Settings', to: '/settings', icon: <Settings size={18} /> },
 ]

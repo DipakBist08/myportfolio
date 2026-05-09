@@ -9,6 +9,7 @@ import RelatedPosts from '@/components/blog/RelatedPosts'
 import PostNavigation from '@/components/blog/PostNavigation'
 import ShareButtons from '@/components/blog/ShareButtons'
 import NewsletterForm from '@/components/blog/NewsletterForm'
+import CommentSection from '@/components/blog/CommentSection'
 import ReadingProgress from '@/components/blog/ReadingProgress'
 import TagBadge from '@/components/blog/TagBadge'
 import CategoryBadge from '@/components/blog/CategoryBadge'
@@ -245,19 +246,8 @@ export default async function BlogPostPage({ params }: Params) {
             {/* Newsletter */}
             <NewsletterForm />
 
-            {/* Comment placeholder */}
-            <div className="mt-8 rounded-xl border border-slate-700/30 bg-surface-card/30 p-6">
-              <h3 className="mb-2 font-heading text-base font-bold text-slate-300 light:text-slate-700">
-                Comments
-              </h3>
-              <p className="text-sm text-slate-500">
-                Comment section coming soon. For now, reach out on{' '}
-                <a href="https://www.linkedin.com/in/dipakbist08/" target="_blank" rel="noopener noreferrer" className="text-primary-light hover:underline">
-                  LinkedIn
-                </a>
-                .
-              </p>
-            </div>
+            {/* Comments */}
+            <CommentSection postSlug={meta.slug} />
           </article>
 
           {/* ── Sidebar TOC ──────────────────────────── */}

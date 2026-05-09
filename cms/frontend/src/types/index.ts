@@ -164,3 +164,25 @@ export interface DashboardStats {
   top_posts: { id: number; title: string; slug: string; views: number }[]
   views_chart: { day: string; views: number }[]
 }
+
+
+// ── Comments ──────────────────────────────────────────────────────────────────
+
+export interface CommentReply {
+  id: number
+  author_name: string
+  content: string
+  created_at: string
+}
+
+export interface Comment {
+  id: number
+  post_slug: string
+  parent_id: number | null
+  author_name: string
+  author_email: string
+  content: string
+  is_approved: boolean
+  created_at: string
+  replies: CommentReply[]
+}
