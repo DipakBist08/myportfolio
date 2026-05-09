@@ -1,53 +1,96 @@
-"""
-Email service. Disable gracefully when SMTP creds are not set.
-"""
-from typing import Optional
-from app.config import settings
 import logging
+import resend
+from app.config import settings
 
 logger = logging.getLogger(__name__)
 
 
+def _resend_client() -> None:
+    resend.api_key = settings.RESEND_API_KEY
+
+
+def _from_address() -> str:
+    return f"{settings.RESEND_FROM_NAME} <{settings.RESEND_FROM_EMAIL}>"
+
+
 async def send_confirmation_email(email: str, name: str, token: str) -> bool:
-    if not settings.EMAILS_ENABLED:
-        logger.info(f"[EMAIL DISABLED] confirm link → {settings.FRONTEND_URL}/confirm?token={token}")
+    confirm_url = f"{settings.FRONTEND_URL}/confirm?token={token}"
+    blog_url = settings.BACKEND_URL.replace("api.", "blog.")
+
+    if not settings.emails_enabled:
+        logger.info("[EMAIL DISABLED] confirm → %s", confirm_url)
         return True
+
+    _resend_client()
+    html = f"""
+    <div style="font-family:sans-serif;max-width:520px;margin:0 auto;color:#1e293b">
+      <h2 style="color:#6366f1">Confirm your subscription</h2>
+      <p>Hi {name or 'there'},</p>
+      <p>Thanks for subscribing to the QA Engineering Blog. Click below to confirm:</p>
+      <p style="margin:24px 0">
+        <a href="{confirm_url}"
+           style="background:#6366f1;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:600">
+          Confirm subscription
+        </a>
+      </p>
+      <p style="color:#64748b;font-size:13px">
+        If you didn't subscribe, just ignore this email.
+      </p>
+    </div>
+    """
     try:
-        from fastapi_mail import FastMail, MessageSchema, ConnectionConfig
-        conf = ConnectionConfig(
-            MAIL_USERNAME=settings.SMTP_USER,
-            MAIL_PASSWORD=settings.SMTP_PASSWORD,
-            MAIL_FROM=settings.EMAILS_FROM_EMAIL,
-            MAIL_FROM_NAME=settings.EMAILS_FROM_NAME,
-            MAIL_PORT=settings.SMTP_PORT,
-            MAIL_SERVER=settings.SMTP_HOST,
-            MAIL_STARTTLS=True,
-            MAIL_SSL_TLS=False,
-            USE_CREDENTIALS=True,
-        )
-        link = f"{settings.FRONTEND_URL}/confirm?token={token}"
-        html = f"""
-        <h2>Confirm your subscription</h2>
-        <p>Hi {name or 'there'},</p>
-        <p>Click the link below to confirm your subscription to the QA Portfolio Blog:</p>
-        <p><a href="{link}">{link}</a></p>
-        <p>If you did not subscribe, ignore this email.</p>
-        """
-        message = MessageSchema(
-            subject="Confirm your subscription",
-            recipients=[email],
-            body=html,
-            subtype="html",
-        )
-        fm = FastMail(conf)
-        await fm.send_message(message)
+        resend.Emails.send({
+            "from": _from_address(),
+            "to": [email],
+            "subject": "Confirm your subscription — Dipak Bist QA Blog",
+            "html": html,
+        })
         return True
-    except Exception as e:
-        logger.error(f"Email send failed: {e}")
+    except Exception:
+        logger.exception("Resend: confirmation email failed for %s", email)
         return False
 
 
-async def send_unsubscribe_email(email: str, token: str) -> bool:
-    link = f"{settings.FRONTEND_URL}/unsubscribe?token={token}"
-    logger.info(f"[EMAIL] unsubscribe link → {link}")
-    return True
+async def send_newsletter(
+    recipients: list[dict],  # [{"email": ..., "name": ..., "unsubscribe_token": ...}]
+    subject: str,
+    content_html: str,
+    blog_url: str = "",
+) -> dict:
+    """Send a newsletter to a list of recipients. Returns {sent, failed, errors}."""
+    if not settings.emails_enabled:
+        logger.info("[EMAIL DISABLED] newsletter send to %d recipients", len(recipients))
+        return {"sent": len(recipients), "failed": 0, "errors": []}
+
+    _resend_client()
+    sent, failed, errors = 0, 0, []
+
+    for r in recipients:
+        unsubscribe_url = f"{settings.BACKEND_URL}/api/v1/subscribers/unsubscribe?token={r['unsubscribe_token']}"
+        footer = f"""
+        <hr style="border:none;border-top:1px solid #e2e8f0;margin:32px 0" />
+        <p style="color:#94a3b8;font-size:12px;text-align:center">
+          You're receiving this because you subscribed to the QA Blog.<br/>
+          <a href="{unsubscribe_url}" style="color:#94a3b8">Unsubscribe</a>
+        </p>
+        """
+        html = f"""
+        <div style="font-family:sans-serif;max-width:600px;margin:0 auto;color:#1e293b">
+          {content_html}
+          {footer}
+        </div>
+        """
+        try:
+            resend.Emails.send({
+                "from": _from_address(),
+                "to": [r["email"]],
+                "subject": subject,
+                "html": html,
+            })
+            sent += 1
+        except Exception as e:
+            logger.exception("Resend: newsletter failed for %s", r["email"])
+            failed += 1
+            errors.append(f"{r['email']}: {e}")
+
+    return {"sent": sent, "failed": failed, "errors": errors}

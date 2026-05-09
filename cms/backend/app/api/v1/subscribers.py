@@ -11,8 +11,8 @@ from app.database import get_db
 from app.dependencies import get_current_user
 from app.models.user import User
 from app.models.subscriber import Subscriber
-from app.schemas.subscriber import SubscribeRequest, SubscriberOut, SubscriberStats
-from app.core.email import send_confirmation_email
+from app.schemas.subscriber import SubscribeRequest, SubscriberOut, SubscriberStats, NewsletterSendRequest, NewsletterSendResult
+from app.core.email import send_confirmation_email, send_newsletter
 
 router = APIRouter(prefix="/subscribers", tags=["Admin – Subscribers"])
 
@@ -128,3 +128,28 @@ def delete_subscriber(sub_id: int, db: Session = Depends(get_db), _: User = Depe
         raise HTTPException(status_code=404, detail="Subscriber not found")
     db.delete(sub)
     db.commit()
+
+
+@router.post("/send-newsletter", response_model=NewsletterSendResult)
+async def send_newsletter_email(
+    body: NewsletterSendRequest,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+):
+    q = db.query(Subscriber).filter(
+        Subscriber.is_active == True,
+        Subscriber.is_unsubscribed == False,
+    )
+    if body.subscriber_ids:
+        q = q.filter(Subscriber.id.in_(body.subscriber_ids))
+
+    subs = q.all()
+    if not subs:
+        raise HTTPException(status_code=400, detail="No active subscribers to send to.")
+
+    recipients = [
+        {"email": s.email, "name": s.name or "", "unsubscribe_token": s.unsubscribe_token}
+        for s in subs
+    ]
+    result = await send_newsletter(recipients, body.subject, body.content_html)
+    return result

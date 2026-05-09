@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { Search, Trash2, Users, UserCheck, UserX, Clock, Download } from 'lucide-react'
+import { Search, Trash2, Users, UserCheck, UserX, Clock, Download, Send, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import StatCard from '@/components/shared/StatCard'
@@ -10,12 +10,20 @@ import { formatDate } from '@/lib/utils'
 import api from '@/lib/api'
 import type { Subscriber, SubscriberStats } from '@/types'
 
+interface NewsletterResult { sent: number; failed: number; errors: string[] }
+
 export default function SubscribersPage() {
   const qc = useQueryClient()
   const [search, setSearch] = useState('')
   const [activeOnly, setActiveOnly] = useState(false)
   const [page, setPage] = useState(1)
   const [deleteId, setDeleteId] = useState<number | null>(null)
+
+  // Newsletter compose state
+  const [showCompose, setShowCompose] = useState(false)
+  const [nlSubject, setNlSubject] = useState('')
+  const [nlBody, setNlBody] = useState('')
+  const [nlResult, setNlResult] = useState<NewsletterResult | null>(null)
 
   const { data: stats } = useQuery<SubscriberStats>({
     queryKey: ['subscriber-stats'],
@@ -42,6 +50,21 @@ export default function SubscribersPage() {
     },
   })
 
+  const sendMutation = useMutation({
+    mutationFn: () =>
+      api.post<NewsletterResult>('/api/v1/subscribers/send-newsletter', {
+        subject: nlSubject,
+        content_html: nlBody,
+      }),
+    onSuccess: ({ data }) => {
+      setNlResult(data)
+      toast.success(`Newsletter sent to ${data.sent} subscriber${data.sent !== 1 ? 's' : ''}`)
+    },
+    onError: (err: any) => {
+      toast.error(err?.response?.data?.detail ?? 'Failed to send newsletter')
+    },
+  })
+
   const exportCSV = () => {
     const rows = [
       ['Email', 'Name', 'Status', 'Subscribed At', 'Confirmed At'],
@@ -58,6 +81,8 @@ export default function SubscribersPage() {
     a.click()
   }
 
+  const activeCount = stats?.active ?? 0
+
   return (
     <div className="max-w-5xl mx-auto space-y-5">
       <div className="flex items-center justify-between">
@@ -65,9 +90,14 @@ export default function SubscribersPage() {
           <h1 className="text-2xl font-heading font-bold text-white">Subscribers</h1>
           <p className="text-sm text-slate-400">Newsletter subscriber management</p>
         </div>
-        <Button variant="outline" size="sm" onClick={exportCSV}>
-          <Download size={14} className="mr-1.5" /> Export CSV
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={exportCSV}>
+            <Download size={14} className="mr-1.5" /> Export CSV
+          </Button>
+          <Button size="sm" onClick={() => { setShowCompose(true); setNlResult(null) }} disabled={activeCount === 0}>
+            <Send size={14} className="mr-1.5" /> Send Newsletter
+          </Button>
+        </div>
       </div>
 
       {/* Stats */}
@@ -92,7 +122,7 @@ export default function SubscribersPage() {
         </label>
       </div>
 
-      {/* Table */}
+      {/* Subscriber table */}
       <div className="glass-card overflow-hidden">
         <table className="w-full">
           <thead>
@@ -100,7 +130,7 @@ export default function SubscribersPage() {
               <th className="py-3 px-4 text-left">Email</th>
               <th className="py-3 px-4 text-left hidden md:table-cell">Name</th>
               <th className="py-3 px-4 text-left">Status</th>
-              <th className="py-3 px-4 text-left hidden lg:table-cell">Date</th>
+              <th className="py-3 px-4 text-left hidden lg:table-cell">Subscribed</th>
               <th className="py-3 px-4 text-right">Actions</th>
             </tr>
           </thead>
@@ -142,9 +172,95 @@ export default function SubscribersPage() {
         </table>
       </div>
 
-      <ConfirmDialog open={deleteId !== null} onOpenChange={o => !o && setDeleteId(null)}
-        title="Remove subscriber?" description="The subscriber will be permanently removed."
-        confirmLabel="Remove" destructive onConfirm={() => deleteId && deleteMutation.mutate(deleteId)} />
+      <ConfirmDialog
+        open={deleteId !== null}
+        onOpenChange={o => !o && setDeleteId(null)}
+        title="Remove subscriber?"
+        description="The subscriber will be permanently removed."
+        confirmLabel="Remove"
+        destructive
+        onConfirm={() => deleteId && deleteMutation.mutate(deleteId)}
+      />
+
+      {/* ── Send Newsletter Modal ─────────────────────────────────────────── */}
+      {showCompose && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="w-full max-w-2xl rounded-xl border border-border bg-surface-card shadow-2xl">
+
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-border px-5 py-4">
+              <div>
+                <h2 className="font-heading font-semibold text-white">Send Newsletter</h2>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Will be sent to <span className="text-primary-light font-medium">{activeCount} confirmed</span> subscriber{activeCount !== 1 ? 's' : ''}
+                </p>
+              </div>
+              <button onClick={() => setShowCompose(false)} className="p-1.5 rounded text-slate-400 hover:text-white hover:bg-white/10 transition-colors">
+                <X size={16} />
+              </button>
+            </div>
+
+            {nlResult ? (
+              /* ── Result screen ── */
+              <div className="p-6 text-center space-y-3">
+                <div className={`text-4xl ${nlResult.failed === 0 ? '' : 'opacity-80'}`}>
+                  {nlResult.failed === 0 ? '🎉' : '⚠️'}
+                </div>
+                <p className="text-slate-200 font-medium">
+                  Sent to <span className="text-green-400">{nlResult.sent}</span> subscriber{nlResult.sent !== 1 ? 's' : ''}
+                  {nlResult.failed > 0 && (
+                    <>, <span className="text-red-400">{nlResult.failed} failed</span></>
+                  )}
+                </p>
+                {nlResult.errors.length > 0 && (
+                  <ul className="text-xs text-red-400 text-left space-y-1 bg-red-500/10 rounded-lg p-3 border border-red-500/20">
+                    {nlResult.errors.map((e, i) => <li key={i}>{e}</li>)}
+                  </ul>
+                )}
+                <Button className="mt-2" onClick={() => { setShowCompose(false); setNlSubject(''); setNlBody('') }}>
+                  Done
+                </Button>
+              </div>
+            ) : (
+              /* ── Compose screen ── */
+              <div className="p-5 space-y-4">
+                <div>
+                  <label className="text-xs font-medium text-slate-400 mb-1.5 block">Subject line</label>
+                  <Input
+                    placeholder="e.g. New article: How to write better bug reports"
+                    value={nlSubject}
+                    onChange={e => setNlSubject(e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-medium text-slate-400 mb-1.5 block">
+                    Email body <span className="text-slate-600">(HTML supported)</span>
+                  </label>
+                  <textarea
+                    rows={12}
+                    placeholder={`<h2>New article is live! 🚀</h2>\n<p>Hi,</p>\n<p>I just published a new article on...</p>\n<p><a href="https://blog.dipakbist.com.np/blog/your-post-slug">Read it here →</a></p>`}
+                    value={nlBody}
+                    onChange={e => setNlBody(e.target.value)}
+                    className="w-full rounded-lg border border-border bg-white/5 px-3 py-2.5 text-sm text-slate-200 placeholder-slate-600 outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/30 font-mono resize-y"
+                  />
+                </div>
+
+                <div className="flex gap-2 justify-end pt-1">
+                  <Button variant="outline" onClick={() => setShowCompose(false)}>Cancel</Button>
+                  <Button
+                    onClick={() => sendMutation.mutate()}
+                    disabled={!nlSubject.trim() || !nlBody.trim() || sendMutation.isPending}
+                  >
+                    <Send size={14} className="mr-1.5" />
+                    {sendMutation.isPending ? `Sending to ${activeCount}…` : `Send to ${activeCount} subscriber${activeCount !== 1 ? 's' : ''}`}
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

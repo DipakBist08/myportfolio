@@ -24,3 +24,15 @@ class SubscriberStats(BaseModel):
     active: int
     unsubscribed: int
     pending: int
+
+
+class NewsletterSendRequest(BaseModel):
+    subject: str
+    content_html: str
+    subscriber_ids: Optional[list[int]] = None  # None = send to all active confirmed
+
+
+class NewsletterSendResult(BaseModel):
+    sent: int
+    failed: int
+    errors: list[str]

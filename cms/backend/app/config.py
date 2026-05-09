@@ -25,20 +25,20 @@ class Settings(BaseSettings):
     ADMIN_FULL_NAME: str = "CMS Admin"
 
     # CORS
-    ALLOWED_ORIGINS: str = "http://localhost:5173,http://localhost:3000"
+    ALLOWED_ORIGINS: str = "http://localhost:5173,http://localhost:3000,https://blog.dipakbist.com.np,https://dipak-blog.vercel.app"
 
     # File storage
     UPLOAD_DIR: str = "uploads"
     MAX_FILE_SIZE: int = 10 * 1024 * 1024  # 10 MB
 
-    # Email
-    SMTP_HOST: str = "smtp.gmail.com"
-    SMTP_PORT: int = 587
-    SMTP_USER: str = ""
-    SMTP_PASSWORD: str = ""
-    EMAILS_FROM_EMAIL: str = "noreply@example.com"
-    EMAILS_FROM_NAME: str = "QA Portfolio Blog"
-    EMAILS_ENABLED: bool = False
+    # Email — Resend
+    RESEND_API_KEY: str = ""
+    RESEND_FROM_EMAIL: str = "newsletter@dipakbist.com.np"
+    RESEND_FROM_NAME: str = "Dipak Bist | QA Blog"
+
+    @property
+    def emails_enabled(self) -> bool:
+        return bool(self.RESEND_API_KEY)
 
     # URLs
     FRONTEND_URL: str = "http://localhost:5173"
