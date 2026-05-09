@@ -47,7 +47,7 @@ export default function NewsletterForm({ compact = false }: Props) {
         setMessage('You are already subscribed!')
       } else {
         setState('success')
-        setMessage('Check your inbox to confirm your subscription.')
+        setMessage("You're subscribed! Welcome to the list.")
         setEmail('')
       }
     } catch {
@@ -63,7 +63,7 @@ export default function NewsletterForm({ compact = false }: Props) {
         {state === 'success' ? (
           <div className="flex items-center gap-2 text-sm text-green-400">
             <span>📬</span>
-            <span>Got it! Check your inbox to confirm.</span>
+            <span>You're subscribed! Welcome to the list.</span>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="flex gap-2">
@@ -74,7 +74,7 @@ export default function NewsletterForm({ compact = false }: Props) {
               onChange={(e) => { setEmail(e.target.value); setState('idle') }}
               placeholder="your@email.com"
               disabled={state === 'loading'}
-              className="flex-1 min-w-0 rounded-lg border border-slate-700/60 bg-white/5 px-3 py-2 text-sm text-slate-300 placeholder-slate-600 outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/30 disabled:opacity-50"
+              className="flex-1 min-w-0 rounded-lg border border-slate-700/60 bg-white/5 px-3 py-2 text-sm text-slate-300 light:text-slate-900 light:bg-white light:border-slate-300 placeholder-slate-600 light:placeholder-slate-400 outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/30 disabled:opacity-50"
             />
             <button
               type="submit"
@@ -121,7 +121,7 @@ export default function NewsletterForm({ compact = false }: Props) {
             onChange={(e) => { setEmail(e.target.value); setState('idle') }}
             placeholder="your@email.com"
             disabled={state === 'loading'}
-            className="rounded-lg border border-slate-700/50 bg-surface-card px-4 py-2 text-sm text-slate-300 placeholder-slate-500 outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/30 sm:w-64 disabled:opacity-50"
+            className="rounded-lg border border-slate-700/50 bg-surface-card px-4 py-2 text-sm text-slate-300 light:text-slate-900 light:bg-white light:border-slate-300 placeholder-slate-500 light:placeholder-slate-400 outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/30 sm:w-64 disabled:opacity-50"
           />
           <button
             type="submit"

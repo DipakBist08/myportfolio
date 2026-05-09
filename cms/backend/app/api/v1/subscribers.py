@@ -48,21 +48,22 @@ async def subscribe(body: SubscribeRequest, request: Request, db: Session = Depe
         if existing.is_unsubscribed:
             existing.is_unsubscribed = False
             existing.unsubscribed_at = None
+            existing.is_active = True
+            existing.confirmed_at = datetime.now(timezone.utc)
             db.commit()
-            return {"detail": "Re-subscribed. Check your email to confirm."}
+            return {"detail": "Welcome back! You're subscribed again."}
         return {"detail": "Already subscribed."}
 
-    token = secrets.token_urlsafe(32)
-    sub = Subscriber(email=body.email, name=body.name, confirmation_token=token)
+    sub = Subscriber(
+        email=body.email,
+        name=body.name,
+        is_active=True,
+        confirmed_at=datetime.now(timezone.utc),
+    )
     db.add(sub)
     db.commit()
 
-    try:
-        await send_confirmation_email(body.email, body.name, token)
-    except Exception:
-        logging.exception("Failed to send confirmation email to %s", body.email)
-
-    return {"detail": "Check your email to confirm your subscription."}
+    return {"detail": "Subscribed! You're on the list."}
 
 
 @router.get("/confirm")
