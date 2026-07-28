@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Single-page portfolio, so the site itself is one URL. The blog is a separate
+  Next.js app on blog.dipakbist.com.np and generates its own sitemap via
+  blog/app/sitemap.ts — it is referenced here so crawlers discover it, but its
+  individual posts are not duplicated into this file.
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://dipakbist.com.np/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://blog.dipakbist.com.np/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+</urlset>

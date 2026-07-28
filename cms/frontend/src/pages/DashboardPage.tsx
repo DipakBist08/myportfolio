@@ -11,11 +11,17 @@ import type { DashboardStats } from '@/types'
 import { Link } from 'react-router-dom'
 
 export default function DashboardPage() {
-  const { data: stats, isLoading } = useQuery<DashboardStats>({
+  const { data: stats, isLoading, isError } = useQuery<DashboardStats>({
     queryKey: ['dashboard-stats'],
     queryFn: async () => (await api.get('/api/v1/analytics/dashboard')).data,
     refetchInterval: 30_000,
   })
+
+  if (isError) return (
+    <div className="glass-card p-6 text-center text-slate-400 text-sm">
+      Failed to load dashboard stats. Please refresh the page.
+    </div>
+  )
 
   if (isLoading) return (
     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
@@ -29,7 +35,9 @@ export default function DashboardPage() {
     </div>
   )
 
-  const s = stats!
+  if (!stats) return null
+
+  const s = stats
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">

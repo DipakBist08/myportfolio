@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import resend
 from app.config import settings
@@ -65,7 +66,10 @@ async def send_newsletter(
     _resend_client()
     sent, failed, errors = 0, 0, []
 
-    for r in recipients:
+    for i, r in enumerate(recipients):
+        # Throttle so a large list does not trip Resend's per-second rate limit.
+        if i and settings.RESEND_SEND_DELAY > 0:
+            await asyncio.sleep(settings.RESEND_SEND_DELAY)
         unsubscribe_url = f"{settings.BACKEND_URL}/api/v1/subscribers/unsubscribe?token={r['unsubscribe_token']}"
         footer = f"""
         <hr style="border:none;border-top:1px solid #e2e8f0;margin:32px 0" />

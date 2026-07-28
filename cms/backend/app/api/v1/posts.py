@@ -3,7 +3,7 @@ Admin post management (CRUD + status transitions).
 """
 from datetime import datetime, timezone
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import or_, func
 
@@ -13,9 +13,11 @@ from app.models.user import User
 from app.models.post import Post, PostStatus
 from app.models.category import Category
 from app.models.tag import Tag
+from app.models.post_notification import PostNotification
 from app.schemas.post import (
     PostCreate, PostUpdate, PostDetail, PostListItem, PaginatedPosts
 )
+from app.core.notifications import announce_post_if_enabled
 from app.utils.slug import unique_slug, estimate_reading_time
 import bleach
 
@@ -98,6 +100,12 @@ def list_posts(
 @router.post("", response_model=PostDetail, status_code=status.HTTP_201_CREATED)
 def create_post(
     body: PostCreate,
+    background: BackgroundTasks,
+    notify: bool = Query(
+        True,
+        description="Email confirmed subscribers if this post is created already published. "
+                    "Pass notify=false to publish quietly.",
+    ),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -133,6 +141,12 @@ def create_post(
     db.add(post)
     db.commit()
     db.refresh(post)
+
+    # Announce only if it went straight out as published. Runs after the
+    # response is returned, so a slow mail provider never delays the editor.
+    if notify and post.status == PostStatus.PUBLISHED:
+        background.add_task(announce_post_if_enabled, post.id)
+
     return _get_or_404(post.id, db)
 
 
@@ -149,6 +163,12 @@ def get_post(post_id: int, db: Session = Depends(get_db), _: User = Depends(get_
 def update_post(
     post_id: int,
     body: PostUpdate,
+    background: BackgroundTasks,
+    notify: bool = Query(
+        True,
+        description="Email confirmed subscribers when this post transitions to published. "
+                    "Pass notify=false to publish quietly.",
+    ),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -166,7 +186,10 @@ def update_post(
 
     # Handle publish timestamp
     new_status = data.get("status")
-    if new_status == PostStatus.PUBLISHED and post.status != PostStatus.PUBLISHED:
+    just_published = (
+        new_status == PostStatus.PUBLISHED and post.status != PostStatus.PUBLISHED
+    )
+    if just_published:
         data["published_at"] = datetime.now(timezone.utc)
 
     for k, v in data.items():
@@ -176,6 +199,13 @@ def update_post(
         post.tags = db.query(Tag).filter(Tag.id.in_(tag_ids)).all()
 
     db.commit()
+
+    # Only on the draft -> published transition. Editing an already-published
+    # post does not re-announce it, and announce_post_if_enabled double-checks
+    # against post_notifications regardless.
+    if notify and just_published:
+        background.add_task(announce_post_if_enabled, post_id)
+
     return _get_or_404(post_id, db)
 
 
@@ -196,16 +226,63 @@ def delete_post(post_id: int, db: Session = Depends(get_db), _: User = Depends(g
 def bulk_status(
     post_ids: list[int],
     new_status: PostStatus,
+    background: BackgroundTasks,
+    notify: bool = Query(
+        True,
+        description="Email confirmed subscribers for each post newly moved to published.",
+    ),
     db: Session = Depends(get_db),
     _: User = Depends(get_current_user),
 ):
     posts = db.query(Post).filter(Post.id.in_(post_ids)).all()
+    newly_published: list[int] = []
     for p in posts:
+        if new_status == PostStatus.PUBLISHED and p.status != PostStatus.PUBLISHED:
+            newly_published.append(p.id)
         p.status = new_status
         if new_status == PostStatus.PUBLISHED and not p.published_at:
             p.published_at = datetime.now(timezone.utc)
     db.commit()
-    return {"updated": len(posts)}
+
+    if notify:
+        for pid in newly_published:
+            background.add_task(announce_post_if_enabled, pid)
+
+    return {"updated": len(posts), "announced": len(newly_published) if notify else 0}
+
+
+# ── Subscriber announcement status ────────────────────────────────────────────
+
+@router.get("/{post_id}/notifications")
+def post_notifications(
+    post_id: int,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+):
+    """Announcement history for a post, newest first, so the admin UI can show
+    whether subscribers were emailed and how it went."""
+    _get_or_404(post_id, db)
+    rows = (
+        db.query(PostNotification)
+        .filter(PostNotification.post_id == post_id)
+        .order_by(PostNotification.created_at.desc())
+        .all()
+    )
+    return {
+        "announced": any(r.status in PostNotification.SUCCESSFUL for r in rows),
+        "attempts": [
+            {
+                "id": r.id,
+                "status": r.status,
+                "recipients": r.recipients,
+                "failed": r.failed,
+                "delivered": bool(r.delivered),
+                "error": r.error,
+                "created_at": r.created_at,
+            }
+            for r in rows
+        ],
+    }
 
 
 # ── Analytics view increment (public-callable) ────────────────────────────────
