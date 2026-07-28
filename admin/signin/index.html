@@ -610,7 +610,10 @@ function startLockout() {
 ═══════════════════════════════════════════════════════════ */
 function showScreen(id) {
     ['setup-screen', 'signin-screen', 'change-screen'].forEach(s => {
-        document.getElementById(s).style.display = (s === id) ? '' : 'none';
+        // Must be an explicit 'block', not ''. Setting '' *removes* the inline
+        // style, which let the stylesheet's `.screen { display: none }` win — so
+        // the "shown" screen stayed hidden and the page rendered as an empty card.
+        document.getElementById(s).style.display = (s === id) ? 'block' : 'none';
     });
 }
 
