@@ -36,6 +36,15 @@ class Settings(BaseSettings):
     RESEND_FROM_EMAIL: str = "newsletter@dipakbist.com.np"
     RESEND_FROM_NAME: str = "Dipak Bist | QA Blog"
 
+    # Seconds to wait between individual sends. Resend's free tier allows
+    # ~2 requests/second; 0.6 keeps a margin. Sends run in a background task,
+    # so this delay never blocks an API response.
+    RESEND_SEND_DELAY: float = 0.6
+
+    # Master switch for the automatic "new post published" announcement.
+    # Set to False to publish without ever emailing the list.
+    NOTIFY_SUBSCRIBERS_ON_PUBLISH: bool = True
+
     @property
     def emails_enabled(self) -> bool:
         return bool(self.RESEND_API_KEY)
@@ -43,6 +52,8 @@ class Settings(BaseSettings):
     # URLs
     FRONTEND_URL: str = "http://localhost:5173"
     BACKEND_URL: str = "http://localhost:8000"
+    # Public blog root, used to build post links in announcement emails.
+    BLOG_URL: str = "https://blog.dipakbist.com.np"
 
     # MFA
     MFA_ISSUER: str = "QA Portfolio CMS"

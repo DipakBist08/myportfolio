@@ -27,9 +27,22 @@ document.addEventListener('DOMContentLoaded', () => {
         document.documentElement.classList.add('is-edge');
         document.documentElement.setAttribute('data-browser', 'edge');
     }
+
+    // backdrop-filter on the cards is the most expensive thing left during a
+    // scroll. On a machine with few cores or little memory it is the difference
+    // between smooth and not, so those devices get the same reduced-blur
+    // treatment Edge already had. Capable machines are untouched.
+    const cores = navigator.hardwareConcurrency || 4;
+    const memory = navigator.deviceMemory || 4;
+    if (cores <= 4 || memory <= 4) {
+        document.documentElement.classList.add('is-low-power');
+    }
     
     // Initialize all features
     initMobileNav();
+    initHeroVisibility();
+    initCounters();
+    initLiveMetrics();
     initScrollAnimations();
     initTypingEffect();
     initSmoothScroll();
@@ -68,12 +81,17 @@ function lazyInitHeavyEffects() {
     const hwConcurrency = navigator.hardwareConcurrency || 4;
     const deviceMemory = navigator.deviceMemory || 4;
 
-    // Detect Edge browser (has slower canvas rendering)
     const isEdge = /Edg/.test(navigator.userAgent);
-    
-    // Galaxy canvas disabled by default for performance; user can enable via localStorage
-    // For Edge, always disable canvas by default due to Chromium rendering quirks
-    const enableGalaxyDefault = localStorage.getItem('portfolio-disable-effects') !== 'true' && hwConcurrency > 4 && !prefersReduced && !isEdge;
+
+    // The starfield used to be switched off for Edge entirely, which is why the
+    // animated background was missing there while working in Chrome and Firefox.
+    // Edge has been Chromium/Blink since v79 — the same engine and the same
+    // canvas performance as Chrome — so a brand check is the wrong gate. The
+    // remaining guards are all capability-based: core count, the user's
+    // reduced-motion preference, and the explicit opt-out.
+    const enableGalaxyDefault = localStorage.getItem('portfolio-disable-effects') !== 'true'
+        && hwConcurrency > 4
+        && !prefersReduced;
 
     function runHeavyInits() {
         if (prefersReduced) return; // user prefers reduced motion: skip heavy effects
@@ -148,6 +166,132 @@ function initMobileNav() {
     });
 }
 
+/* ----- Pause hero-only decoration once the hero is scrolled away -----
+   blink, bounce, glowPulse, floatCode, gridPulse and shimmer all live inside the
+   hero but kept animating the entire way down the page, repainting off-screen
+   content while the user scrolls the sections they actually want to read.
+   A class on <html> lets CSS park them; the typing loop checks the same flag. */
+/* The reference is deliberately kept on window. Created as an anonymous
+   `new IntersectionObserver(...).observe(el)` it had no strong reference, and
+   once the galaxy canvas started allocating particles the resulting GC pass
+   could collect it — after which the hero animations never paused again. */
+let heroObserver = null;
+
+function initHeroVisibility() {
+    const hero = document.querySelector('.hero');
+    if (!hero || !('IntersectionObserver' in window)) return;
+
+    heroObserver = new IntersectionObserver((entries) => {
+        document.documentElement.classList.toggle('hero-away', !entries[0].isIntersecting);
+    }, { threshold: 0 });
+    heroObserver.observe(hero);
+    window.__heroObserver = heroObserver;
+}
+
+function heroIsAway() {
+    return document.documentElement.classList.contains('hero-away');
+}
+
+/* ----- Metric count-up -----
+   Counts each metric from 0 to its data-count-to once, when it first scrolls
+   into view. Honours prefers-reduced-motion by printing the final value
+   immediately, and the numbers are small enough that a short duration is
+   plenty — a long count-up reads as a loading spinner, not a stat. */
+function initCounters() {
+    const values = document.querySelectorAll('[data-count-to]');
+    if (!values.length) return;
+
+    const reduced = window.matchMedia
+        && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const run = (el) => {
+        const target = parseInt(el.dataset.countTo, 10);
+        const out = el.querySelector('.metric__number') || el;
+        if (!Number.isFinite(target)) return;
+        // Lets initLiveMetrics() know it may correct this number in place if a
+        // live value arrives after the animation has already run.
+        el.dataset.counted = 'true';
+        if (reduced || target <= 1) { out.textContent = String(target); return; }
+
+        const DURATION = 900;
+        const start = performance.now();
+        const tick = (now) => {
+            const t = Math.min(1, (now - start) / DURATION);
+            // ease-out so it decelerates into the final number
+            out.textContent = String(Math.round(target * (1 - Math.pow(1 - t, 3))));
+            if (t < 1) requestAnimationFrame(tick);
+            else out.textContent = String(target);
+        };
+        requestAnimationFrame(tick);
+    };
+
+    if (!('IntersectionObserver' in window)) {
+        values.forEach(run);
+        return;
+    }
+
+    const io = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+            if (!entry.isIntersecting) return;
+            run(entry.target);
+            io.unobserve(entry.target);
+        });
+    }, { threshold: 0.4 });
+
+    values.forEach(el => io.observe(el));
+    window.__counterObserver = io;   // hold a reference so it cannot be collected
+}
+
+/* ----- Live metric values -----
+   The numbers in the HTML are the last-known-good values, so the strip is
+   correct with JavaScript disabled or if a source is unreachable. This only ever
+   overwrites them on a successful fetch, and never with 0 or NaN — a metric that
+   silently drops to zero is worse than one that is a week stale.
+
+   Sources, and why:
+     published-articles  blog.dipakbist.com.np/rss.xml — generated by the blog
+                         app from the MDX files. Note the CMS API is NOT usable
+                         here: /api/public/posts reports total 0 because the posts
+                         are files in the Next.js app, not rows in the CMS.
+     public-repos        GitHub REST API. Unauthenticated, 60 requests/hour per
+                         IP, so a failure is expected occasionally and tolerated.
+     experience-years    deliberately NOT derived. See the note in the report.
+     companies           no sensible live source; changes only on a job move. */
+function initLiveMetrics() {
+    const apply = (metric, value) => {
+        const el = document.querySelector(`[data-metric="${metric}"]`);
+        if (!el) return;
+        if (!Number.isFinite(value) || value <= 0) return;   // keep the fallback
+        el.dataset.countTo = String(value);
+        // If the count-up already finished, correct the number in place.
+        if (el.dataset.counted === 'true') {
+            const out = el.querySelector('.metric__number') || el;
+            out.textContent = String(value);
+        }
+    };
+
+    const timeout = (ms) => AbortSignal ? AbortSignal.timeout(ms) : undefined;
+
+    // Published articles — count <item> elements in the RSS feed.
+    fetch('https://blog.dipakbist.com.np/rss.xml', { signal: timeout(6000) })
+        .then(r => (r.ok ? r.text() : Promise.reject(new Error(String(r.status)))))
+        .then(xml => {
+            const doc = new DOMParser().parseFromString(xml, 'application/xml');
+            if (doc.querySelector('parsererror')) throw new Error('bad xml');
+            apply('published-articles', doc.querySelectorAll('item').length);
+        })
+        .catch(() => { /* keep the value already in the HTML */ });
+
+    // Public repositories.
+    fetch('https://api.github.com/users/DipakBist08', {
+        signal: timeout(6000),
+        headers: { Accept: 'application/vnd.github+json' },
+    })
+        .then(r => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
+        .then(d => apply('public-repos', d.public_repos))
+        .catch(() => { /* keep the value already in the HTML */ });
+}
+
 /* ----- Scroll Animations ----- */
 function initScrollAnimations() {
     const animatedElements = document.querySelectorAll('[data-animate]');
@@ -156,8 +300,14 @@ function initScrollAnimations() {
 
     const observerOptions = {
         root: null,
-        rootMargin: '0px 0px -50px 0px',
-        threshold: 0.1
+        // Positive bottom margin extends the detection box *below* the viewport,
+        // so a section starts revealing just before it scrolls into view and is
+        // already readable by the time it arrives. The old -50px did the
+        // opposite: it delayed detection until the element was 50px inside.
+        rootMargin: '0px 0px 200px 0px',
+        // Was 0.1 — on a tall card that meant waiting for 10% of a ~600px card
+        // to be visible. Fire on the first sliver instead.
+        threshold: 0.01
     };
 
     const observer = new IntersectionObserver((entries) => {
@@ -176,14 +326,19 @@ function initScrollAnimations() {
         });
     }, observerOptions);
 
-    // Add staggered delays to skill and tool cards
-    const skillCards = document.querySelectorAll('.skill-card[data-animate]');
-    const toolCards = document.querySelectorAll('.tool-card[data-animate]');
-    const projectCards = document.querySelectorAll('.project-card[data-animate]');
-
-    [skillCards, toolCards, projectCards].forEach(cards => {
-        cards.forEach((card, index) => {
-            card.dataset.delay = index * 100;
+    // Stagger *within each container*, capped. The old version indexed across
+    // one flat NodeList of every .skill-card on the page, so the timeline cards
+    // pushed the skills grid to 300–800ms before it even began animating.
+    // Restarting the count per section and capping the total keeps the sense of
+    // sequence without making the last card wait.
+    const STAGGER_MS = 45;
+    const MAX_STEPS = 4;   // caps the delay at 180ms
+    ['.metrics__grid', '.workflow__list', '.timeline', '.skills__grid',
+     '.projects__grid', '.blog__grid'].forEach(sel => {
+        const container = document.querySelector(sel);
+        if (!container) return;
+        container.querySelectorAll('[data-animate]').forEach((el, index) => {
+            el.dataset.delay = Math.min(index, MAX_STEPS) * STAGGER_MS;
         });
     });
 
@@ -196,7 +351,7 @@ function initTypingEffect() {
     if (!typingElement) return;
 
     const phrases = [
-        'Python Automation Expert',
+        'Python Test Automation',
         'Selenium & Playwright Specialist',
         'API Testing Professional',
         'Quality Assurance Engineer',
@@ -209,6 +364,13 @@ function initTypingEffect() {
     let typingSpeed = 100;
 
     function type() {
+        // No point rewriting text nobody can see — and each write dirtied layout
+        // inside the hero on every tick, all the way down the page.
+        if (heroIsAway()) {
+            setTimeout(type, 400);
+            return;
+        }
+
         const currentPhrase = phrases[phraseIndex];
 
         if (isDeleting) {
@@ -281,15 +443,26 @@ const header = document.querySelector('.header');
 
 // Batch scroll updates using rAF to avoid jank
 let scrollTicking = false;
+let headerScrolled = null;
 function handleScrollBatch() {
     const currentScroll = window.scrollY;
 
+    // Only touch the DOM when the state actually flips. This used to assign an
+    // inline style on every single frame, which invalidated style + paint even
+    // when the value was identical.
     if (header) {
-        header.style.background = currentScroll > 100 ? 'rgba(15, 23, 42, 0.95)' : 'rgba(15, 23, 42, 0.85)';
+        const scrolled = currentScroll > 100;
+        if (scrolled !== headerScrolled) {
+            headerScrolled = scrolled;
+            header.style.background = scrolled
+                ? 'rgba(15, 23, 42, 0.95)'
+                : 'rgba(15, 23, 42, 0.85)';
+        }
     }
 
     // update active nav link (previously on its own listener)
     highlightNavLink();
+    syncHeroAway(currentScroll);
 
     // Parallax orbs disabled in scroll handler to reduce load; enable via animation-play-state when desired
     
@@ -308,24 +481,66 @@ window.addEventListener('scroll', () => {
 const sections = document.querySelectorAll('section[id]');
 const navLinks = document.querySelectorAll('.nav__link');
 
+/* Section offsets are cached because reading offsetTop/offsetHeight forces the
+   browser to flush layout. Doing that for every section on every scroll frame —
+   right after writing an inline style on the header — was the single biggest
+   source of scroll jank on this page. Offsets only change on resize or when
+   late-loading content reflows the page, so that is when we recompute. */
+let sectionOffsets = [];
+
+let heroBottom = 0;
+
+function measureSections() {
+    sectionOffsets = Array.from(sections, section => ({
+        id: section.getAttribute('id'),
+        top: section.offsetTop - 100,
+        height: section.offsetHeight,
+    }));
+    const hero = document.querySelector('.hero');
+    heroBottom = hero ? hero.offsetTop + hero.offsetHeight : 0;
+}
+
+/* The IntersectionObserver in initHeroVisibility() is the primary signal, but
+   its callbacks get starved while the galaxy loop is saturating the main thread
+   — measured: the pause applied on only 1 of 3 runs. This runs off the existing
+   rAF-batched scroll handler using an already-cached offset, so it costs nothing
+   extra and is deterministic. Whichever fires first wins; both agree. */
+function syncHeroAway(scrollY) {
+    if (!heroBottom) return;
+    const away = scrollY > heroBottom;
+    const root = document.documentElement;
+    if (away !== root.classList.contains('hero-away')) {
+        root.classList.toggle('hero-away', away);
+    }
+}
+
+let activeNavHref = null;
 function highlightNavLink() {
+    if (!sectionOffsets.length) measureSections();
     const scrollY = window.scrollY;
 
-    sections.forEach(section => {
-        const sectionHeight = section.offsetHeight;
-        const sectionTop = section.offsetTop - 100;
-        const sectionId = section.getAttribute('id');
+    let currentId = null;
+    for (const s of sectionOffsets) {
+        if (scrollY > s.top && scrollY <= s.top + s.height) currentId = s.id;
+    }
+    if (!currentId) return;
 
-        if (scrollY > sectionTop && scrollY <= sectionTop + sectionHeight) {
-            navLinks.forEach(link => {
-                link.classList.remove('active');
-                if (link.getAttribute('href') === `#${sectionId}`) {
-                    link.classList.add('active');
-                }
-            });
-        }
+    const href = `#${currentId}`;
+    // Skip the DOM writes entirely when the active section has not changed.
+    if (href === activeNavHref) return;
+    activeNavHref = href;
+
+    navLinks.forEach(link => {
+        link.classList.toggle('active', link.getAttribute('href') === href);
     });
 }
+
+let measureTimer;
+window.addEventListener('resize', () => {
+    clearTimeout(measureTimer);
+    measureTimer = setTimeout(measureSections, 150);
+});
+window.addEventListener('load', measureSections);
 
 /* ----- Skill Level Animation on Scroll ----- */
 function initSkillLevels() {
@@ -375,47 +590,75 @@ function initMouseFollower() {
         follower.classList.remove('active');
     });
 
-    // Smooth animation loop
-    function animateFollower() {
-        // Lerp for smooth following
-        followerX += (mouseX - followerX) * 0.08;
-        followerY += (mouseY - followerY) * 0.08;
+    // Smooth animation loop.
+    // This used to run forever, writing style.left/top every frame even when the
+    // pointer had not moved — a guaranteed layout + paint on every single frame
+    // for the life of the page. It now parks itself once it has caught up, and
+    // any pointer movement wakes it again.
+    let followerRunning = false;
 
+    function animateFollower() {
+        const dx = mouseX - followerX;
+        const dy = mouseY - followerY;
+
+        // Converged: stop the loop until the pointer moves again.
+        if (Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5) {
+            followerRunning = false;
+            return;
+        }
+
+        followerX += dx * 0.08;
+        followerY += dy * 0.08;
+        // Kept as left/top: .mouse-follower relies on transform:translate(-50%,-50%)
+        // for centring and transitions transform, so writing transform here would
+        // both off-centre it and fight that transition.
         follower.style.left = `${followerX}px`;
         follower.style.top = `${followerY}px`;
 
         requestAnimationFrame(animateFollower);
     }
 
-    animateFollower();
+    function wakeFollower() {
+        if (followerRunning) return;
+        followerRunning = true;
+        requestAnimationFrame(animateFollower);
+    }
+
+    document.addEventListener('mousemove', wakeFollower, { passive: true });
+    wakeFollower();
 }
 
-/* ----- Parallax Orbs on Scroll ----- */
-function initParallaxOrbs() {
-    const orbs = document.querySelectorAll('.orb');
-    if (!orbs.length) return;
+/* ----- Parallax Orbs -----
+   This used to write an inline `transform` onto each .orb. A CSS animation beats
+   an inline style for the property it animates, so as long as orbFloat was
+   running the parallax did nothing — which is why .orb shipped with
+   `animation-play-state: paused` and the background never actually drifted.
 
-    // Throttle mouse move updates via rAF for smoother performance
+   The parallax now moves the .floating-orbs *container* instead. The container
+   is not animated, so nothing competes: each orb keeps its own orbFloat drift
+   (already staggered 18-28s with different delays) and the whole group shifts
+   gently with the pointer. */
+function initParallaxOrbs() {
+    const group = document.getElementById('floating-orbs');
+    if (!group || !group.querySelector('.orb')) return;
+
     let orbMouseX = 0, orbMouseY = 0;
     let orbTick = false;
 
     document.addEventListener('mousemove', (e) => {
         orbMouseX = e.clientX;
         orbMouseY = e.clientY;
-        if (!orbTick) {
-            requestAnimationFrame(() => {
-                const centerX = window.innerWidth / 2;
-                const centerY = window.innerHeight / 2;
-                orbs.forEach((orb, index) => {
-                    const speed = (index + 1) * 0.01; // reduced speed for perf
-                    const x = (orbMouseX - centerX) * speed;
-                    const y = (orbMouseY - centerY) * speed;
-                    orb.style.transform = `translate(${x}px, ${y}px)`;
-                });
-                orbTick = false;
-            });
-            orbTick = true;
-        }
+        if (orbTick) return;
+        orbTick = true;
+        requestAnimationFrame(() => {
+            // Skip the write entirely when the hero is not on screen.
+            if (!heroIsAway()) {
+                const x = (orbMouseX - window.innerWidth / 2) * 0.02;
+                const y = (orbMouseY - window.innerHeight / 2) * 0.02;
+                group.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0)`;
+            }
+            orbTick = false;
+        });
     }, { passive: true });
 }
 
@@ -561,16 +804,30 @@ function initGalaxyBackground() {
 
     let width = 0;
     let height = 0;
-    let dpr = Math.max(1, window.devicePixelRatio || 1);
+    // Capped at 1.5: this is an out-of-focus starfield, so rendering it at a
+    // 2x or 3x device ratio quadruples the pixels cleared and filled every frame
+    // for detail nobody can resolve.
+    let dpr = Math.min(1.5, Math.max(1, window.devicePixelRatio || 1));
 
     // Config (adaptive)
+    const TWO_PI = Math.PI * 2;
+    // Reused across frames so the per-frame line collection does not allocate.
+    const lineBuckets = [[], [], []];
+    const LINE_COLORS = [
+        'rgba(150,160,255,0.02)',
+        'rgba(150,160,255,0.06)',
+        'rgba(150,160,255,0.10)',
+    ];
     const CELL_SIZE = 80;
     const CONNECT_DIST = 70;
     const MAX_CONNECTIONS = 2;
     const PREF_MIN_PARTICLES = 150; // tuned lower for responsiveness
-    // For Edge, further reduce particles to avoid canvas bottleneck
     const isEdgeBrowser = /Edg/.test(navigator.userAgent);
-    const PREF_MAX_PARTICLES = isEdgeBrowser ? 300 : 800; // reduce even more for Edge
+    // Was `isEdgeBrowser ? 300 : 800`. Particle count should follow the hardware,
+    // not the browser badge — an 8-core Edge machine can draw what an 8-core
+    // Chrome machine can. Weaker devices get the smaller ceiling either way.
+    const PREF_MAX_PARTICLES =
+        (navigator.hardwareConcurrency || 4) <= 4 || (navigator.deviceMemory || 4) <= 4 ? 300 : 800;
 
     const prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const hwConcurrency = navigator.hardwareConcurrency || 4;
@@ -621,6 +878,33 @@ function initGalaxyBackground() {
         initParticles();
     }
 
+    /* Particle hue is assigned once and never mutated, so the fill string can be
+       built at creation instead of being re-templated for every particle on every
+       frame. At 800 particles that removed ~800 template literals and ~2400
+       Math.floor calls per frame. */
+    // Hue is quantised into a handful of buckets so every particle sharing a
+    // bucket can be drawn in one batched path. 6 fill() calls per frame instead
+    // of one per particle.
+    const HUE_BUCKETS = 6;
+    const BUCKET_COLORS = Array.from({ length: HUE_BUCKETS }, (_, i) => {
+        const hue = 200 + (i + 0.5) * (120 / HUE_BUCKETS);
+        return `rgba(${Math.floor(60 + (hue - 200) * 0.6)}, ${Math.floor(140 + (hue - 200) * 0.5)}, 220, 0.85)`;
+    });
+
+    function makeParticle() {
+        const hue = 200 + Math.random() * 120;
+        const bucket = Math.min(HUE_BUCKETS - 1, Math.floor(((hue - 200) / 120) * HUE_BUCKETS));
+        return {
+            x: Math.random() * width,
+            y: Math.random() * height,
+            vx: (Math.random() - 0.5) * 0.3,
+            vy: (Math.random() - 0.5) * 0.3,
+            r: Math.random() * 1.2 + 0.6,
+            hue,
+            bucket,
+        };
+    }
+
     function initParticles() {
         particles.length = 0;
         grid = {};
@@ -633,7 +917,7 @@ function initGalaxyBackground() {
         // Start with a smaller initial set, ramp later if device is healthy
         const initial = Math.max(MIN_PARTICLES, Math.floor(targetParticleCount * 0.35));
         for (let i = 0; i < initial; i++) {
-            particles.push({ x: Math.random() * width, y: Math.random() * height, vx: (Math.random() - 0.5) * 0.3, vy: (Math.random() - 0.5) * 0.3, r: Math.random() * 1.2 + 0.6, hue: 200 + Math.random() * 120 });
+            particles.push(makeParticle());
         }
     }
 
@@ -642,7 +926,7 @@ function initGalaxyBackground() {
         if (particles.length >= targetParticleCount) return;
         const add = Math.min(50, targetParticleCount - particles.length);
         for (let i = 0; i < add; i++) {
-            particles.push({ x: Math.random() * width, y: Math.random() * height, vx: (Math.random() - 0.5) * 0.3, vy: (Math.random() - 0.5) * 0.3, r: Math.random() * 1.2 + 0.6, hue: 200 + Math.random() * 120 });
+            particles.push(makeParticle());
         }
     }
 
@@ -700,20 +984,34 @@ function initGalaxyBackground() {
         // additive glow
         ctx.globalCompositeOperation = 'lighter';
 
-        // draw particles
-        for (let i = 0; i < particles.length; i++) {
-            const p = particles[i];
-            ctx.beginPath();
-            ctx.fillStyle = `rgba(${Math.floor(60 + (p.hue - 200) * 0.6)}, ${Math.floor(140 + (p.hue - 200) * 0.5)}, ${220}, 0.85)`;
-            // Disable shadow blur in Chrome to prevent freezing - Chrome has slower canvas shadow rendering
-            const isChrome = /Chrome/.test(navigator.userAgent) && !/Edg/.test(navigator.userAgent);
-            ctx.shadowColor = `hsla(${p.hue}, 90%, 60%, ${isChrome ? 0 : 0.12})`;
-            // reduce blur while user is scrolling to avoid expensive compositing
-            // Chrome and Edge need minimal/disabled blur to prevent freezing
-            const blurReduction = isChrome ? 0 : (isEdgeBrowser ? 0.4 : 1);
-            ctx.shadowBlur = (isUserScrolling ? (hwConcurrency <= 2 ? 1 : 2) : (hwConcurrency <= 2 ? 2 : 8)) * blurReduction;
-            ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-            ctx.fill();
+        /* This loop used to set ctx.shadowColor and ctx.shadowBlur per particle,
+           and recompute two navigator.userAgent regexes per particle. Canvas
+           shadowBlur is a software Gaussian blur applied per draw call, so at 800
+           particles that was 800 blurred draws every frame. Chrome happened to
+           get shadowBlur 0 and skipped it; Edge got 3.2 and paid for all of it —
+           which is exactly why the page crawled on Edge and not on Chrome.
+           `globalCompositeOperation = 'lighter'` above already produces the glow
+           by additive blending, so the shadow bought nothing. Shadow is now off
+           once, outside the loop, for every browser. */
+        ctx.shadowBlur = 0;
+        ctx.shadowColor = 'transparent';
+
+        /* One beginPath/fill per hue bucket rather than per particle. Every arc in
+           a bucket goes into a single path, so the browser gets 6 fill calls a
+           frame instead of up to 800. */
+        for (let bkt = 0; bkt < HUE_BUCKETS; bkt++) {
+            let opened = false;
+            for (let i = 0; i < particles.length; i++) {
+                const p = particles[i];
+                if (p.bucket !== bkt) continue;
+                if (!opened) { ctx.beginPath(); opened = true; }
+                ctx.moveTo(p.x + p.r, p.y);
+                ctx.arc(p.x, p.y, p.r, 0, TWO_PI);
+            }
+            if (opened) {
+                ctx.fillStyle = BUCKET_COLORS[bkt];
+                ctx.fill();
+            }
         }
 
         // If the user is actively scrolling, skip expensive connection drawing and rebuild
@@ -762,21 +1060,60 @@ function initGalaxyBackground() {
                             const dy = p.y - q.y;
                             const d2 = dx * dx + dy * dy;
                             if (d2 <= maxConn2 && connections < MAX_CONNECTIONS) {
+                                // Collect instead of stroking immediately — see the
+                                // batched stroke below.
                                 const alpha = 1 - d2 / maxConn2;
-                                ctx.beginPath();
-                                ctx.strokeStyle = `rgba(150,160,255,${alpha * 0.12})`;
-                                ctx.moveTo(p.x, p.y);
-                                ctx.lineTo(q.x, q.y);
-                                ctx.stroke();
+                                const lb = alpha > 0.66 ? 2 : (alpha > 0.33 ? 1 : 0);
+                                const arr = lineBuckets[lb];
+                                arr.push(p.x, p.y, q.x, q.y);
                                 connections++;
                             }
                         }
                     }
                 }
             }
+
+            /* Previously each line was its own beginPath + strokeStyle template
+               string + stroke — up to 1600 draw calls and 1600 string allocations
+               per frame. Alpha is quantised to three levels so the whole set
+               becomes three batched strokes. */
+            for (let lb = 0; lb < 3; lb++) {
+                const arr = lineBuckets[lb];
+                if (!arr.length) continue;
+                ctx.beginPath();
+                for (let k = 0; k < arr.length; k += 4) {
+                    ctx.moveTo(arr[k], arr[k + 1]);
+                    ctx.lineTo(arr[k + 2], arr[k + 3]);
+                }
+                ctx.strokeStyle = LINE_COLORS[lb];
+                ctx.stroke();
+                arr.length = 0;
+            }
         }
 
         ctx.globalCompositeOperation = 'source-over';
+    }
+
+    // The hero is the only place this canvas is visible, but the simulation used
+    // to keep running — particle stepping plus the O(n²) connection pass — the
+    // whole way down the page. Suspend it whenever the hero is off-screen, which
+    // is exactly when the user is scrolling through the content.
+    let heroVisible = true;
+    const heroEl = document.querySelector('.hero');
+    if (heroEl && 'IntersectionObserver' in window) {
+        // Same reasoning as heroObserver above: keep a reference so this cannot
+        // be garbage collected out from under the render loop.
+        const galaxyHeroObserver = new IntersectionObserver((entries) => {
+            const wasVisible = heroVisible;
+            heroVisible = entries[0].isIntersecting;
+            // Resuming: reset the clock so dt does not jump after the pause.
+            if (heroVisible && !wasVisible) {
+                last = performance.now();
+                requestAnimationFrame(loop);
+            }
+        }, { threshold: 0 });
+        galaxyHeroObserver.observe(heroEl);
+        window.__galaxyHeroObserver = galaxyHeroObserver;
     }
 
     let last = performance.now();
@@ -786,6 +1123,9 @@ function initGalaxyBackground() {
             requestAnimationFrame(loop);
             return;
         }
+        // Park entirely while the hero is scrolled away; the observer above
+        // restarts the loop when it comes back.
+        if (!heroVisible) return;
         const frameMs = now - last;
         // update moving average
         movingAvgFrame = movingAvgFrame * (1 - FRAME_ALPHA) + frameMs * FRAME_ALPHA;
@@ -919,9 +1259,12 @@ async function handleSubscribe(e) {
   const email      = emailInput.value.trim();
   if (!email) return;
 
+  const SUCCESS = 'blog__subscribe-feedback--success';
+  const ERROR   = 'blog__subscribe-feedback--error';
+
   btn.disabled    = true;
   btn.textContent = 'Subscribing…';
-  feedback.style.color = '';
+  feedback.classList.remove(SUCCESS, ERROR);
   feedback.textContent = '';
 
   try {
@@ -931,19 +1274,39 @@ async function handleSubscribe(e) {
       body   : JSON.stringify({ email }),
       signal : AbortSignal.timeout(8000),
     });
-    const data = await res.json();
+    const data = await res.json().catch(() => ({}));
     if (res.ok || res.status === 202) {
-      feedback.style.color = '#10b981';
-      feedback.textContent = '✓ ' + (data.detail || 'Check your email to confirm!');
+      feedback.classList.add(SUCCESS);
+      feedback.textContent = '✓ ' + (detailToText(data.detail) || 'Check your email to confirm!');
       emailInput.value = '';
     } else {
-      throw new Error(data.detail || 'Subscribe failed');
+      throw new Error(detailToText(data.detail) || 'Subscribe failed');
     }
   } catch (err) {
-    feedback.style.color = '#ef4444';
-    feedback.textContent = '✗ ' + (err.message || 'Something went wrong. Try again.');
+    feedback.classList.add(ERROR);
+    // "Failed to fetch" is what the browser reports for a blocked/unreachable
+    // request (offline, CORS, or the API being down). Don't show that string to
+    // a visitor — it reads like their fault.
+    const network = err instanceof TypeError
+      || err.name === 'TimeoutError'
+      || /failed to fetch|load failed|networkerror/i.test(err.message || '');
+    feedback.textContent = network
+      ? "✗ Couldn't reach the server. Please check your connection and try again."
+      : '✗ ' + (err.message || 'Something went wrong. Try again.');
   } finally {
     btn.disabled    = false;
     btn.textContent = 'Subscribe';
   }
+}
+
+/* FastAPI returns `detail` as a string for our own errors but as an array of
+   validation objects on a 422. Flatten both to a readable sentence so the user
+   never sees "[object Object]". */
+function detailToText(detail) {
+  if (!detail) return '';
+  if (typeof detail === 'string') return detail;
+  if (Array.isArray(detail)) {
+    return detail.map(d => (d && d.msg) ? d.msg : String(d)).join('; ');
+  }
+  return String(detail.msg || '');
 }

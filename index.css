@@ -142,9 +142,13 @@
     background: rgba(15, 23, 42, 0.6);
 }
 
+/* This used to be white text on rgba(15,23,42,0.2). Over the pale light-theme
+   placeholder gradients that lands around 1.5:1 contrast — unreadable. Use the
+   same gradient pill the dark theme already uses, so the badge is one treatment
+   in both themes and the text has a solid ground to sit on. */
 [data-theme="light"] .project-card__tag {
-    background: rgba(15, 23, 42, 0.2);
-    color: rgba(255, 255, 255, 0.95);
+    background: var(--gradient-primary);
+    color: #ffffff;
     text-align: center;
 }
 
@@ -231,7 +235,10 @@
 }
 
 [data-theme="light"] .section__tag {
-    color: #0891b2;
+    /* #0891b2 measured 3.14:1 on the light background at 13.6px — below AA.
+       One step darker on the same cyan hue reaches ~5.3:1. This is the only new
+       colour value introduced, and it exists to fix a real contrast failure. */
+    color: #0e7490;
     background: rgba(6, 182, 212, 0.08);
 }
 
@@ -294,6 +301,13 @@
 
 [data-theme="light"] .contact__description {
     color: var(--text-muted);
+}
+
+/* .btn--outline draws a white 2px border, which is invisible on the light
+   theme — this affected the hero's "Contact Me" too. Reuse the light border
+   value the header already uses. */
+[data-theme="light"] .btn--outline {
+    border-color: rgba(15, 23, 42, 0.1);
 }
 
 [data-theme="light"] .btn--primary {
@@ -1120,6 +1134,15 @@ h3 {
     padding: var(--spacing-2xl);
     transition: all var(--transition-base);
     cursor: default;
+    /* Column flow so the bullet list absorbs the slack and the tool row /
+       evidence link sit on the card's baseline instead of floating mid-card
+       when a neighbouring card in the same grid row is taller. */
+    display: flex;
+    flex-direction: column;
+}
+
+.skill-card__features {
+    flex: 1;
 }
 
 .skill-card:hover {
@@ -1143,7 +1166,9 @@ h3 {
 .skill-card__icon {
     width: 60px;
     height: 60px;
-    margin-top: auto;
+    /* was margin-top: auto — a no-op in block flow, but it would sink the icon
+       to the bottom now that .skill-card is a flex column. */
+    margin-top: 0;
     margin-bottom: var(--spacing-lg);
     margin-left: auto;
     margin-right: auto;
@@ -1281,6 +1306,245 @@ h3 {
 }
 
 
+
+/* =====================================================
+   SKILL CARD — TIER BADGE, TOOL ROW, EVIDENCE LINK
+   Badge geometry is lifted verbatim from .blog-card__category.
+   Tier colours are --primary / --accent / --secondary tints
+   already present in the palette. Logo hover mirrors the old
+   .tool-card:hover .tool-card__icon scale(1.05).
+   ===================================================== */
+.skill-card__head {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-sm);
+}
+
+.skill-card__head .skill-card__title {
+    margin-bottom: 0;
+}
+
+.skill-tier {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: var(--radius-full);
+    border: 1px solid;
+    white-space: nowrap;
+}
+
+/* Tier badges: measured with DevTools' contrast API, the coloured-text version
+   failed WCAG AA at 11.2px — Growing hit 3.25:1 on dark and Working 3.41:1 on
+   light, against a 4.5 requirement. The tier is now carried by the background
+   tint and border hue while the label itself uses --text-primary, which measures
+   ~14:1 in both themes. Same three hues, same geometry, readable. */
+.skill-tier {
+    color: var(--text-primary);
+}
+
+.skill-tier--core {
+    background: rgba(99, 102, 241, 0.2);
+    border-color: rgba(99, 102, 241, 0.4);
+}
+
+.skill-tier--working {
+    background: rgba(6, 182, 212, 0.2);
+    border-color: rgba(6, 182, 212, 0.4);
+}
+
+.skill-tier--growing {
+    background: rgba(139, 92, 246, 0.2);
+    border-color: rgba(139, 92, 246, 0.4);
+}
+
+[data-theme="light"] .skill-tier--core {
+    background: rgba(99, 102, 241, 0.15);
+    border-color: rgba(99, 102, 241, 0.4);
+}
+
+[data-theme="light"] .skill-tier--working {
+    background: rgba(6, 182, 212, 0.15);
+    border-color: rgba(6, 182, 212, 0.4);
+}
+
+[data-theme="light"] .skill-tier--growing {
+    background: rgba(139, 92, 246, 0.15);
+    border-color: rgba(139, 92, 246, 0.4);
+}
+
+.skill-card__tools {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-lg);
+    padding-top: var(--spacing-lg);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="light"] .skill-card__tools {
+    border-top-color: rgba(15, 23, 42, 0.08);
+}
+
+.skill-tool {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-primary);
+    transition: transform var(--transition-base);
+}
+
+.skill-tool svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.skill-card:hover .skill-tool {
+    transform: scale(1.05);
+}
+
+.skill-card__evidence {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    margin-top: var(--spacing-md);
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--accent-light);
+    transition: color var(--transition-fast);
+}
+
+.skill-card__evidence svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+
+.skill-card__evidence:hover {
+    color: var(--accent);
+}
+
+[data-theme="light"] .skill-card__evidence {
+    color: #0891b2;
+}
+
+/* =====================================================
+   ABOUT SECTION
+   Layout only. Every value below is taken from the
+   existing token set — no new colours, radii or shadows.
+   ===================================================== */
+/* The left column is an identity sidebar (portrait + fact chips + certification)
+   sized to the 192px portrait, so it carries real content beside a long bio
+   instead of leaving a tall void. Prose is capped at the 700px measure the
+   section header already uses — 864px of 1.1rem text is far too wide to read. */
+.about .uiux__wrapper {
+    grid-template-columns: 192px 1fr;
+    align-items: start;
+    gap: var(--spacing-3xl);
+}
+
+.about__prose {
+    max-width: 700px;
+}
+
+/* Bold terms in the bio sit one step brighter than the body copy so the stack
+   is scannable. Both values already exist. */
+.uiux__description strong {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.about__image {
+    width: 192px;
+    height: 192px;
+    max-width: 100%;
+    margin: 0 auto;
+    object-fit: cover;
+    border-radius: var(--radius-full);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: var(--shadow-lg);
+}
+
+[data-theme="light"] .about__image {
+    border-color: rgba(15, 23, 42, 0.08);
+}
+
+.about__facts {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-xl);
+}
+
+/* =====================================================
+   EXPERIENCE TIMELINE
+   Rail uses the existing .skill-card border value;
+   node uses the existing --gradient-primary.
+   ===================================================== */
+.timeline {
+    position: relative;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    top: var(--spacing-sm);
+    bottom: var(--spacing-sm);
+    left: 7px;
+    width: 2px;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="light"] .timeline::before {
+    background: rgba(15, 23, 42, 0.08);
+}
+
+.timeline__item {
+    position: relative;
+    padding-left: var(--spacing-2xl);
+}
+
+.timeline__item:not(:last-child) {
+    margin-bottom: var(--spacing-xl);
+}
+
+.timeline__node {
+    position: absolute;
+    top: var(--spacing-xl);
+    left: 0;
+    width: 16px;
+    height: 16px;
+    border-radius: var(--radius-full);
+    background: var(--gradient-primary);
+}
+
+.timeline__head {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-sm);
+}
+
+/* Nothing follows the bullet list inside a timeline card, so its trailing
+   margin is just dead space at the bottom of the card. */
+.timeline__item .skill-card__features {
+    margin-bottom: 0;
+}
 
 /* =====================================================
    TOOLS SECTION
@@ -1822,6 +2086,12 @@ h3 {
     color: var(--secondary);
 }
 
+/* Fourth variant for the community card. Both stops already exist in the file. */
+.project-placeholder--4 {
+    background: linear-gradient(135deg, rgba(6, 182, 212, 0.2), rgba(139, 92, 246, 0.2));
+    color: var(--accent);
+}
+
 /* Project Logo (for real project images) */
 .project-logo {
     width: 100%;
@@ -1846,6 +2116,21 @@ h3 {
 
 .project-card__content {
     padding: var(--spacing-xl);
+    /* Column flow so the tag row (and anything after it) pins to the bottom of
+       the card. Without this, a card with less copy than its grid-row
+       neighbours leaves a void below its last element. */
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.project-card {
+    display: flex;
+    flex-direction: column;
+}
+
+.project-card__tech {
+    margin-top: auto;
 }
 
 .project-card__title {
@@ -2100,13 +2385,16 @@ h3 {
     padding: 2px 8px;
     border-radius: var(--radius-full);
     background: rgba(99,102,241,0.15);
-    color: #818cf8;
+    /* was #818cf8, which measured 4.19:1 against the card — just under AA at
+       this size. --text-secondary takes it well clear. */
+    color: var(--text-secondary);
     border: 1px solid rgba(99,102,241,0.2);
 }
 
 .blog-card__read {
     font-size: 0.75rem;
-    color: var(--primary-color);
+    /* was var(--primary-color), a token that does not exist in this file */
+    color: var(--primary-light);
     font-weight: 600;
     display: flex;
     align-items: center;
@@ -2221,7 +2509,9 @@ h3 {
 }
 
 .blog__subscribe-input:focus {
-    border-color: var(--primary-color);
+    /* was var(--primary-color), which is not defined anywhere in this file, so
+       the border colour silently never changed on focus */
+    border-color: var(--primary);
     box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
 }
 
@@ -2237,6 +2527,18 @@ h3 {
     margin: var(--spacing-sm) 0 0;
     min-height: 1.2em;
     text-align: center;
+}
+
+/* Subscribe result states. Both colours are already used elsewhere in this
+   file (#22c55e on the manual-testing card icon, #ef4444 on the old bug
+   icon), so no new value is introduced. Replaces the inline hex that
+   script.js used to set. */
+.blog__subscribe-feedback--success {
+    color: #22c55e;
+}
+
+.blog__subscribe-feedback--error {
+    color: #ef4444;
 }
 
 /* ── Light mode overrides ── */
@@ -2297,6 +2599,25 @@ h3 {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-md);
+}
+
+.contact__direct {
+    margin-top: var(--spacing-lg);
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.contact__direct a {
+    color: var(--accent-light);
+    font-weight: 600;
+}
+
+.contact__direct a:hover {
+    color: var(--accent);
+}
+
+[data-theme="light"] .contact__direct a {
+    color: #0891b2;
 }
 
 /* Contact Card */
@@ -2395,6 +2716,11 @@ h3 {
 .footer__links {
     display: flex;
     gap: var(--spacing-md);
+    /* Raising the social icons to a 44px touch target pushed this row past the
+       360px viewport (the LinkedIn item carries a text label). Let it wrap. */
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
 }
 
 .footer__social {
@@ -2522,6 +2848,23 @@ h3 {
         text-align: center;
     }
 
+    /* .about .uiux__wrapper is more specific than the rule above, so it has to
+       be collapsed explicitly or About stays two-column on tablet and mobile.
+       The bio also has to stay left-aligned — eight centred paragraphs are
+       unreadable — while the identity sidebar stays centred. */
+    .about .uiux__wrapper {
+        grid-template-columns: 1fr;
+        text-align: left;
+    }
+
+    .about__identity {
+        text-align: center;
+    }
+
+    .about__prose {
+        margin: 0 auto;
+    }
+
     .uiux__list-item {
         justify-content: center;
     }
@@ -2563,10 +2906,29 @@ h3 {
         height: 100vh;
         background: var(--bg-darker);
         flex-direction: column;
-        justify-content: center;
+        /* Was justify-content: center. Once the panel overflows (landscape
+           phones), centring pushes the first item above the scroll origin where
+           it can never be reached. The auto margins on the first/last item
+           below reproduce the centring when there is room and release it when
+           there is not. */
+        justify-content: flex-start;
         gap: var(--spacing-xl);
         transition: right var(--transition-base);
         box-shadow: var(--shadow-xl);
+        /* 7 items can exceed a short viewport (e.g. landscape phones): let the
+           panel scroll rather than restyling it. The auto margins below keep the
+           centred look when there is room, and release it when there is not, so
+           the first item stays reachable. */
+        overflow-y: auto;
+        padding: var(--spacing-2xl) 0;
+    }
+
+    .nav__menu > .nav__item:first-child {
+        margin-top: auto;
+    }
+
+    .nav__menu > .nav__item:last-child {
+        margin-bottom: auto;
     }
 
     [data-theme="light"] .nav__menu {
@@ -2680,11 +3042,19 @@ h3 {
 .orb {
     position: absolute;
     border-radius: 50%;
-    /* reduce blur to lower GPU compositing cost */
-    filter: blur(20px);
+    /* `filter: blur(20px)` used to be here and was the single most expensive
+       thing on the page: measured at ~22ms per frame across the five orbs.
+       Every orb's background is already a radial-gradient fading to transparent
+       at 70%, so there is no hard edge for a blur to soften — but because
+       orbFloat animates rotate and scale, the browser had to re-rasterise a
+       blurred 400-500px layer on every frame for each orb. Removing it is
+       visually near-identical and gives the frames back. */
     opacity: 0.6;
     animation: orbFloat 20s ease-in-out infinite;
-    animation-play-state: paused;
+    /* `animation-play-state: paused` used to live here, which is why the orbs
+       never drifted. The reason it was paused (the mouse parallax fighting the
+       animated transform) is gone now that parallax moves the container. It only
+       runs while the hero is on screen — see .hero-away below. */
 }
 
 .orb--1 {
@@ -2853,13 +3223,17 @@ h3 {
     z-index: -1;
     opacity: 0;
     transition: opacity 0.5s ease;
-    animation: borderGlow 6s linear infinite;
+    /* Was `animation: borderGlow 6s linear infinite` — running on every card at
+       all times, repainting a 300%-wide gradient even while invisible. The glow
+       is only ever seen on hover, so it now only animates on hover. */
+    animation: none;
 }
 
 .skill-card:hover::before,
 .tool-card:hover::before,
 .project-card:hover::before {
     opacity: 1;
+    animation: borderGlow 6s linear infinite;
 }
 
 @keyframes borderGlow {
@@ -2944,12 +3318,18 @@ h3 {
     opacity: 1;
 }
 
+/* Scroll reveal. Was 0.8s over 40px, which — stacked on top of the JS stagger
+   and the nth-child transition-delay below — meant a card took ~4.9s from
+   entering the viewport to being readable. Shorter travel over a shorter
+   duration keeps the same easing curve and reads as instant while scrolling.
+   `will-change` promotes the card so the transition runs on the compositor
+   instead of repainting. */
 [data-animate] {
     opacity: 0;
-    transform: translateY(40px);
+    transform: translateY(14px);
     transition:
-        opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
-        transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+        transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 [data-animate].animated {
@@ -2957,51 +3337,10 @@ h3 {
     transform: translateY(0);
 }
 
-/* ----- Stagger Animation for Grid Items ----- */
-.skills__grid [data-animate]:nth-child(1) {
-    transition-delay: 0.1s;
-}
-
-.skills__grid [data-animate]:nth-child(2) {
-    transition-delay: 0.2s;
-}
-
-.skills__grid [data-animate]:nth-child(3) {
-    transition-delay: 0.3s;
-}
-
-.skills__grid [data-animate]:nth-child(4) {
-    transition-delay: 0.4s;
-}
-
-.tools__grid [data-animate]:nth-child(1) {
-    transition-delay: 0.1s;
-}
-
-.tools__grid [data-animate]:nth-child(2) {
-    transition-delay: 0.2s;
-}
-
-.tools__grid [data-animate]:nth-child(3) {
-    transition-delay: 0.3s;
-}
-
-.tools__grid [data-animate]:nth-child(4) {
-    transition-delay: 0.4s;
-}
-
-.projects__grid [data-animate]:nth-child(1) {
-    transition-delay: 0.1s;
-}
-
-.projects__grid [data-animate]:nth-child(2) {
-    transition-delay: 0.2s;
-}
-
-.projects__grid [data-animate]:nth-child(3) {
-    transition-delay: 0.3s;
-}
-
+/* ----- Stagger Animation for Grid Items -----
+   Removed: transition-delay here was additive with the JS data-delay in
+   initScrollAnimations(), so a card waited for both. The JS stagger is now
+   the single source of truth. ----- */
 /* ----- Smooth Parallax depth for orbs on scroll ----- */
 .orb--1 {
     --parallax-speed: 0.1;
@@ -3079,6 +3418,335 @@ h3 {
     }
 }
 
+/* =====================================================
+   SCREEN-READER-ONLY TEXT
+   ===================================================== */
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* =====================================================
+   METRICS STRIP
+   Values count up once on reveal. Built from existing tokens only.
+   ===================================================== */
+.metrics {
+    padding-top: var(--spacing-3xl);
+    padding-bottom: var(--spacing-3xl);
+}
+
+.metrics__grid {
+    display: grid;
+    /* Explicit counts rather than auto-fit: with exactly four metrics, auto-fit
+       produced five tracks at 1440px and three at 1024px, leaving a lopsided
+       orphan in both cases. */
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--spacing-lg);
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+@media (max-width: 1024px) {
+    .metrics__grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .metrics__grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.metric {
+    background: var(--bg-glass);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-xl);
+    text-align: center;
+    transition: transform var(--transition-base), border-color var(--transition-base);
+}
+
+[data-theme="light"] .metric {
+    border-color: rgba(15, 23, 42, 0.08);
+    background: rgba(255, 255, 255, 0.95);
+}
+
+.metric:hover {
+    transform: translateY(-5px);
+    border-color: var(--primary);
+}
+
+.metric__value {
+    display: block;
+    font-family: var(--font-heading);
+    font-size: 3rem;
+    font-weight: 800;
+    line-height: 1.2;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.metric__label {
+    display: block;
+    margin-top: var(--spacing-sm);
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.metric__note {
+    display: block;
+    margin-top: var(--spacing-xs);
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+/* =====================================================
+   QUALITY ENGINEERING WORKFLOW
+   Numbered vertical flow. The connector reuses the timeline rail value.
+   ===================================================== */
+.workflow__list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--spacing-lg);
+    counter-reset: step;
+}
+
+.workflow__step {
+    position: relative;
+    display: flex;
+    gap: var(--spacing-lg);
+    align-items: flex-start;
+    background: var(--bg-glass);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-lg);
+    transition: transform var(--transition-base), border-color var(--transition-base);
+}
+
+[data-theme="light"] .workflow__step {
+    border-color: rgba(15, 23, 42, 0.08);
+    background: rgba(255, 255, 255, 0.95);
+}
+
+.workflow__step:hover {
+    transform: translateY(-5px);
+    border-color: var(--primary);
+}
+
+.workflow__num {
+    font-family: var(--font-heading);
+    font-size: 1.5rem;
+    font-weight: 800;
+    line-height: 1.2;
+    flex-shrink: 0;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.workflow__title {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 var(--spacing-xs);
+}
+
+.workflow__text {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin: 0;
+    line-height: 1.6;
+}
+
+/* =====================================================
+   AI IN QUALITY ENGINEERING
+   ===================================================== */
+.ai__uses {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+.ai__use {
+    display: flex;
+    gap: var(--spacing-md);
+    align-items: flex-start;
+}
+
+.ai__use .feature-icon {
+    margin-top: 4px;
+}
+
+.ai__use-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 var(--spacing-xs);
+}
+
+.ai__use-text {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin: 0;
+    line-height: 1.6;
+}
+
+.ai .uiux__wrapper {
+    align-items: start;
+}
+
+/* =====================================================
+   TOUCH TARGET SIZES
+   Audit at 360px found 22 controls under the 44x44 WCAG 2.5.5 / iOS HIG
+   minimum — the hamburger at 32px, nav links at 37px tall, the theme toggle at
+   40px, and the inline evidence/email links at 17-20px tall. These raise the
+   hit area without changing any visible box.
+   ===================================================== */
+.nav__toggle {
+    min-width: 44px;
+    min-height: 44px;
+}
+
+.theme-toggle {
+    min-width: 44px;
+    min-height: 44px;
+}
+
+.skill-card__evidence,
+.contact__direct a,
+.blog-card__read {
+    /* padding grows the hit area; the negative margin keeps the text where the
+       layout already put it. */
+    padding: var(--spacing-sm) 0;
+    margin: calc(var(--spacing-sm) * -1) 0;
+}
+
+.footer__social {
+    min-width: 44px;
+    min-height: 44px;
+}
+
+@media (max-width: 768px) {
+    /* The mobile panel has room, so give the links a proper target. */
+    .nav__link {
+        display: block;
+        padding: var(--spacing-md) var(--spacing-lg);
+    }
+
+    .project-link,
+    .btn {
+        min-height: 44px;
+    }
+}
+
+/* =====================================================
+   SKIP TO CONTENT
+   The audit found no skip link — a keyboard or screen-reader user had to walk
+   the entire nav on every visit. Hidden until focused, then styled from the
+   existing primary button tokens.
+   ===================================================== */
+.skip-link {
+    position: absolute;
+    left: var(--spacing-md);
+    top: var(--spacing-md);
+    z-index: 2000;
+    padding: var(--spacing-sm) var(--spacing-lg);
+    border-radius: var(--radius-md);
+    background: var(--gradient-primary);
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transform: translateY(-200%);
+    transition: transform var(--transition-fast);
+}
+
+.skip-link:focus {
+    transform: translateY(0);
+}
+
+/* =====================================================
+   KEYBOARD FOCUS
+   The stylesheet had no focus rule for links or buttons, so keyboard users had
+   nothing to follow. This reuses the only focus treatment that already existed
+   (.blog__subscribe-input:focus) verbatim — border colour --primary and the
+   same 3px rgba(99, 102, 241, 0.15) ring — so no new value is introduced.
+   :focus-visible keeps mouse clicks clean.
+   ===================================================== */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+[tabindex]:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+}
+
+.btn:focus-visible,
+.nav__link--cta:focus-visible,
+.project-link:focus-visible,
+.blog-card:focus-visible,
+.skill-card__evidence:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 3px;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+/* =====================================================
+   ACTIVE NAV LINK
+   script.js has always added .active via the scroll-spy, but no rule existed
+   to render it — the highlight was invisible. Uses the same colour and the
+   same ::after underline the :hover state already uses.
+   ===================================================== */
+.nav__link.active {
+    color: var(--text-primary);
+}
+
+.nav__link.active::after {
+    width: 100%;
+}
+
+[data-theme="light"] .nav__link.active {
+    color: var(--text-primary) !important;
+}
+
+.nav__link--cta.active::after {
+    display: none;
+}
+
+/* =====================================================
+   PAUSE HERO DECORATION WHEN THE HERO IS OFF-SCREEN
+   script.js adds .hero-away to <html> once the hero leaves the viewport. These
+   six animations are all inside the hero, so running them while the visitor is
+   reading Skills or Projects is pure wasted paint. Nothing about the animations
+   themselves changes — they are only parked, and resume on scroll back up.
+   ===================================================== */
+.hero-away .typing-cursor,
+.hero-away .hero__scroll-indicator,
+.hero-away .hero__code-window,
+.hero-away .grid-lines,
+.hero-away .gradient-text,
+.hero-away .orb {
+    animation-play-state: paused;
+}
+
 /* ----- Reduced Motion Support ----- */
 @media (prefers-reduced-motion: reduce) {
 
@@ -3097,25 +3765,51 @@ h3 {
     }
 }
 
-/* ----- Edge Browser Optimizations ----- */
-html.is-edge .header {
+/* ----- Edge + low-power device optimisations -----
+   .is-low-power is set by script.js for devices with <=4 cores or <=4 GB, which
+   are the ones where blurring behind every card costs real frames. Same
+   treatment Edge already received; all blur radii here already existed. */
+html.is-edge .header,
+html.is-low-power .header {
     backdrop-filter: blur(6px) !important;
     -webkit-backdrop-filter: blur(6px) !important;
 }
 
 html.is-edge .skill-card,
 html.is-edge .tool-card,
-html.is-edge .project-card {
+html.is-edge .project-card,
+html.is-low-power .skill-card,
+html.is-low-power .tool-card,
+html.is-low-power .project-card,
+html.is-low-power .contact-card {
     backdrop-filter: blur(4px) !important;
     -webkit-backdrop-filter: blur(4px) !important;
 }
 
-html.is-edge .skill-card::before,
-html.is-edge .tool-card::before,
-html.is-edge .project-card::before {
+/* Edge was excluded from the card hover glow and the mouse follower for cost
+   reasons. Both reasons are gone: borderGlow now only animates on hover instead
+   of running on ten cards forever, and the follower loop parks itself when the
+   pointer stops. Edge is Chromium, so it gets the same treatment as Chrome; the
+   guards that remain are capability-based. */
+html.is-low-power .skill-card::before,
+html.is-low-power .tool-card::before,
+html.is-low-power .project-card::before {
     display: none !important;
 }
 
-html.is-edge .mouse-follower {
+html.is-low-power .mouse-follower {
     display: none !important;
+}
+
+/* Weak hardware keeps the orbs as static colour washes rather than paying for
+   five blurred 400px layers being transformed continuously. They are still
+   visible — just not moving. */
+html.is-low-power .orb {
+    animation-play-state: paused !important;
+}
+
+/* The container gets its own compositor layer so the parallax translate never
+   repaints the blurred orbs underneath it. */
+.floating-orbs {
+    will-change: transform;
 }

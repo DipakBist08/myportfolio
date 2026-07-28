@@ -7,6 +7,7 @@ from app.models.media import Media
 from app.models.settings import SiteSetting
 from app.models.analytics import AnalyticsEvent
 from app.models.comment import Comment
+from app.models.post_notification import PostNotification
 
 __all__ = [
     "User", "RefreshToken",
@@ -18,4 +19,5 @@ __all__ = [
     "SiteSetting",
     "AnalyticsEvent",
     "Comment",
+    "PostNotification",
 ]
