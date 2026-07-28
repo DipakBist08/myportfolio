@@ -1,8 +1,7 @@
 User-agent: *
 Allow: /
 
-# The CMS sign-in surface should never be indexed.
-Disallow: /admin/
+# Source directories that must never be indexed.
 Disallow: /cms/
 
 Sitemap: https://dipakbist.com.np/sitemap.xml

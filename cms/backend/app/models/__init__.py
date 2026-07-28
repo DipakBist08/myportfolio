@@ -8,6 +8,7 @@ from app.models.settings import SiteSetting
 from app.models.analytics import AnalyticsEvent
 from app.models.comment import Comment
 from app.models.post_notification import PostNotification
+from app.models.announcement import Announcement
 
 __all__ = [
     "User", "RefreshToken",
@@ -20,4 +21,5 @@ __all__ = [
     "AnalyticsEvent",
     "Comment",
     "PostNotification",
+    "Announcement",
 ]

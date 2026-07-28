@@ -124,7 +124,6 @@
 }
 
 [data-theme="light"] .skill-card,
-[data-theme="light"] .tool-card,
 [data-theme="light"] .project-card {
     border-color: rgba(15, 23, 42, 0.08);
     background: rgba(255, 255, 255, 0.95);
@@ -153,16 +152,7 @@
 }
 
 [data-theme="light"] .skill-card:hover,
-[data-theme="light"] .tool-card:hover {
-    box-shadow: 0 10px 15px -3px rgba(15, 23, 42, 0.1), 0 4px 6px -4px rgba(15, 23, 42, 0.08);
-}
-
-[data-theme="light"] .skill-card__icon {
-    background: rgba(99, 102, 241, 0.08);
-    color: #4f46e5;
-}
-
-[data-theme="light"] .skill-card__title {
+[data-theme="light"] [data-theme="light"] [data-theme="light"] .skill-card__title {
     color: var(--text-primary);
 }
 
@@ -187,15 +177,7 @@
     background: rgba(15, 23, 42, 0.08);
 }
 
-[data-theme="light"] .tool-card__title {
-    color: var(--text-primary);
-}
-
-[data-theme="light"] .tool-card__description {
-    color: var(--text-muted);
-}
-
-[data-theme="light"] .hero__code-window {
+[data-theme="light"] [data-theme="light"] [data-theme="light"] .hero__code-window {
     border-color: rgba(15, 23, 42, 0.08);
 }
 
@@ -350,7 +332,8 @@
 html {
     scroll-behavior: smooth;
     scroll-padding-top: 80px;
-    scroll-snap-type: y proximity;
+    /* scroll-snap-type removed: the only scroll-snap-align rule targeted .blog,
+       a class no element carries, so this was inert. */
 }
 
 body {
@@ -628,6 +611,14 @@ h3 {
 .theme-toggle:hover {
     background: rgba(99, 102, 241, 0.2);
     border-color: rgba(196, 70, 12, 0.123);
+}
+
+/* #perf-toggle reuses .theme-toggle geometry. When effects are off it takes the
+   same muted treatment .theme-toggle.disabled already defines below, so a user
+   can see at a glance which state they are in. */
+#perf-toggle svg {
+    width: 18px;
+    height: 18px;
 }
 
 .theme-toggle.disabled {
@@ -1295,18 +1286,6 @@ h3 {
 }
 
 
-@keyframes fillLevel {
-    from {
-        transform: scaleX(0);
-    }
-
-    to {
-        transform: scaleX(1);
-    }
-}
-
-
-
 /* =====================================================
    SKILL CARD — TIER BADGE, TOOL ROW, EVIDENCE LINK
    Badge geometry is lifted verbatim from .blog-card__category.
@@ -1547,118 +1526,6 @@ h3 {
 }
 
 /* =====================================================
-   TOOLS SECTION
-   ===================================================== */
-.tools {
-    background: linear-gradient(180deg, transparent 0%, rgba(99, 102, 241, 0.03) 50%, transparent 100%);
-}
-
-.tools__grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: var(--spacing-xl);
-}
-
-.tool-card {
-    background: var(--bg-card);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    border-radius: var(--radius-xl);
-    padding: var(--spacing-2xl);
-    text-align: center;
-    transition: all var(--transition-base);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    height: 100%;
-}
-
-.tool-card:hover {
-    transform: translateY(-8px);
-    border-color: var(--accent);
-    box-shadow: var(--shadow-lg), 0 0 30px rgba(6, 182, 212, 0.15);
-}
-
-.tool-card__icon {
-    width: 80px;
-    height: 80px;
-    margin: 0 auto var(--spacing-lg);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(99, 102, 241, 0.05);
-    border-radius: var(--radius-lg);
-    padding: var(--spacing-md);
-    transition: all var(--transition-base);
-}
-
-.tool-card:hover .tool-card__icon {
-    background: rgba(6, 182, 212, 0.1);
-    transform: scale(1.05);
-}
-
-.tool-card__icon svg {
-    width: 100%;
-    height: 100%;
-    display: block;
-}
-
-.tool-card__title {
-    margin-bottom: var(--spacing-sm);
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: var(--text-primary);
-   
-}
-
-.tool-card__description {
-    color: var(--text-muted);
-    font-size: 0.9rem;
-    line-height: 1.6;
-    margin: 0;
-    flex-grow: 1;
-}
-
-/* Animation for cards */
-.tool-card[data-animate] {
-    opacity: 0;
-    transform: translateY(30px);
-    animation: fadeInUp 0.6s ease forwards;
-}
-
-@keyframes fadeInUp {
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Stagger animation */
-.tool-card[data-animate]:nth-child(1) {
-    animation-delay: 0.1s;
-}
-
-.tool-card[data-animate]:nth-child(2) {
-    animation-delay: 0.2s;
-}
-
-.tool-card[data-animate]:nth-child(3) {
-    animation-delay: 0.3s;
-}
-
-.tool-card[data-animate]:nth-child(4) {
-    animation-delay: 0.4s;
-}
-
-.tool-card[data-animate]:nth-child(5) {
-    animation-delay: 0.5s;
-}
-
-.tool-card[data-animate]:nth-child(6) {
-    animation-delay: 0.6s;
-}
-
-/* =====================================================
    UI/UX TESTING SECTION
    ===================================================== */
 .uiux__wrapper {
@@ -1822,20 +1689,6 @@ h3 {
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-    .tools__grid {
-        grid-template-columns: 1fr;
-        gap: var(--spacing-lg);
-    }
-
-    .tool-card {
-        padding: var(--spacing-xl);
-    }
-
-    .tool-card__icon {
-        width: 64px;
-        height: 64px;
-    }
-
     .uiux__wrapper {
         grid-template-columns: 1fr;
         gap: var(--spacing-2xl);
@@ -1987,18 +1840,6 @@ h3 {
 .test-badge svg {
     width: 18px;
     height: 18px;
-}
-
-@keyframes pulse {
-
-    0%,
-    100% {
-        box-shadow: var(--shadow-lg), 0 0 0 0 rgba(6, 182, 212, 0.4);
-    }
-
-    50% {
-        box-shadow: var(--shadow-lg), 0 0 0 10px rgba(6, 182, 212, 0);
-    }
 }
 
 */
@@ -2953,10 +2794,6 @@ h3 {
     }
 
     .skills__grid,
-    .tools__grid {
-        grid-template-columns: 1fr;
-    }
-
     .projects__grid {
         grid-template-columns: 1fr;
     }
@@ -3020,7 +2857,6 @@ h3 {
     }
 
     .skill-card,
-    .tool-card,
     .project-card__content {
         padding: var(--spacing-lg);
     }
@@ -3201,13 +3037,11 @@ h3 {
 
 /* ----- Glowing Border Animation for Cards ----- */
 .skill-card,
-.tool-card,
 .project-card {
     position: relative;
 }
 
 .skill-card::before,
-.tool-card::before,
 .project-card::before {
     content: '';
     position: absolute;
@@ -3776,10 +3610,8 @@ html.is-low-power .header {
 }
 
 html.is-edge .skill-card,
-html.is-edge .tool-card,
 html.is-edge .project-card,
 html.is-low-power .skill-card,
-html.is-low-power .tool-card,
 html.is-low-power .project-card,
 html.is-low-power .contact-card {
     backdrop-filter: blur(4px) !important;
@@ -3792,7 +3624,6 @@ html.is-low-power .contact-card {
    pointer stops. Edge is Chromium, so it gets the same treatment as Chrome; the
    guards that remain are capability-based. */
 html.is-low-power .skill-card::before,
-html.is-low-power .tool-card::before,
 html.is-low-power .project-card::before {
     display: none !important;
 }

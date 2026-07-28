@@ -132,6 +132,19 @@
                     <li class="nav__item"><a href="#contact" class="nav__link nav__link--cta">Contact</a></li>
                 </ul>
                 <!-- Theme Toggle -->
+                <!-- initPerfToggle() in script.js has always looked for #perf-toggle,
+                     but the element never existed — so the "reduce motion / heavy
+                     effects" escape hatch was implemented and unreachable. It sets
+                     localStorage['portfolio-disable-effects'], which gates the
+                     galaxy canvas and other expensive effects. -->
+                <button id="perf-toggle" class="theme-toggle" aria-label="Toggle heavy visual effects"
+                    title="Turn heavy background effects on or off">
+                    <svg class="theme-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2" aria-hidden="true">
+                        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                    </svg>
+                </button>
                 <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark/light mode" title="Toggle theme">
                 <svg class="theme-icon theme-icon--sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <circle cx="12" cy="12" r="5"></circle>
