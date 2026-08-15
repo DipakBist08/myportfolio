@@ -104,3 +104,9 @@ _config.yml
 THEME_IMPLEMENTATION.md
 SETUP.md
 posts/
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+!.env.example
