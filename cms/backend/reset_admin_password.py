@@ -19,6 +19,8 @@ Which database it touches is decided entirely by DATABASE_URL:
 
   list the accounts instead of changing anything
       python reset_admin_password.py --list
+  change the sign-in email in the same run (the CMS has no screen for that)
+      python reset_admin_password.py --email old@example.com --new-email new@example.com
 
 Add --clear-mfa if an authenticator app is also lost, otherwise login will still
 stop at the MFA step after the password is accepted.
@@ -35,6 +37,7 @@ from app.database import SessionLocal                # noqa: E402
 import app.models                                    # noqa: E402,F401  (register models)
 from app.models.user import User, RefreshToken       # noqa: E402
 from app.core.security import hash_password          # noqa: E402
+from pydantic import EmailStr, TypeAdapter, ValidationError  # noqa: E402
 
 MIN_LENGTH = 10
 
@@ -55,6 +58,8 @@ def main() -> int:
     ap.add_argument("--email", default=None,
                     help=f"account to reset (default: ADMIN_EMAIL, currently {settings.ADMIN_EMAIL})")
     ap.add_argument("--list", action="store_true", help="list accounts and exit, changing nothing")
+    ap.add_argument("--new-email", default=None,
+                    help="also change the account's sign-in email to this address")
     ap.add_argument("--clear-mfa", action="store_true",
                     help="also disable MFA, for when the authenticator app is lost too")
     ap.add_argument("--keep-sessions", action="store_true",
@@ -86,6 +91,20 @@ def main() -> int:
         print(f"account : {user.email}  (id={user.id}, superuser={bool(user.is_superuser)}, "
               f"mfa={'on' if user.mfa_enabled else 'off'})")
 
+        # Check the new email before asking for a password, so a typo costs nothing.
+        new_email = None
+        if args.new_email:
+            new_email = args.new_email.strip()
+            try:
+                TypeAdapter(EmailStr).validate_python(new_email)
+            except ValidationError:
+                print(f"\n{new_email!r} is not a valid email address. Nothing changed.")
+                return 1
+            taken = db.query(User).filter(User.email == new_email, User.id != user.id).first()
+            if taken:
+                print(f"\nAccount id={taken.id} already uses {new_email}. Nothing changed.")
+                return 1
+
         new = os.environ.get("ADMIN_NEW_PASSWORD")
         if new:
             print("password: taken from ADMIN_NEW_PASSWORD")
@@ -100,6 +119,9 @@ def main() -> int:
             return 1
 
         user.hashed_password = hash_password(new)
+        if new_email and new_email != user.email:
+            print(f"email   : {user.email} -> {new_email}")
+            user.email = new_email
         user.is_active = True          # a disabled account cannot log in even with the right password
 
         if args.clear_mfa and user.mfa_enabled:
@@ -119,7 +141,7 @@ def main() -> int:
                        .update({RefreshToken.is_revoked: True}, synchronize_session=False))
 
         db.commit()
-        print(f"\nPassword updated. {revoked} existing session(s) revoked.")
+        print(f"\nPassword updated for {user.email}. {revoked} existing session(s) revoked.")
         print("Sign in at https://cms.dipakbist.com.np/login")
         return 0
     finally:

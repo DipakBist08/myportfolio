@@ -1,13 +1,29 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { MessageSquare, Trash2, CheckCircle, XCircle, Search, ChevronDown, ChevronRight } from 'lucide-react'
+import { MessageSquare, Trash2, CheckCircle, XCircle, Search, ChevronDown, ChevronRight, ThumbsUp, ThumbsDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { formatDate } from '@/lib/utils'
 import ConfirmDialog from '@/components/shared/ConfirmDialog'
 import api from '@/lib/api'
 import type { Comment } from '@/types'
+
+/** Readers' likes and dislikes on one comment or reply. */
+function Reactions({ likes = 0, dislikes = 0, small = false }: { likes?: number; dislikes?: number; small?: boolean }) {
+  const size = small ? 11 : 12
+  return (
+    <span className={`inline-flex items-center gap-2.5 tabular-nums ${small ? 'text-[11px]' : 'text-xs'}`}>
+      <span className="sr-only">{`${likes} like${likes === 1 ? '' : 's'}, ${dislikes} dislike${dislikes === 1 ? '' : 's'}`}</span>
+      <span aria-hidden="true" className={`inline-flex items-center gap-1 ${likes ? 'text-green-400' : 'text-slate-500'}`}>
+        <ThumbsUp size={size} />{likes}
+      </span>
+      <span aria-hidden="true" className={`inline-flex items-center gap-1 ${dislikes ? 'text-red-400' : 'text-slate-500'}`}>
+        <ThumbsDown size={size} />{dislikes}
+      </span>
+    </span>
+  )
+}
 
 export default function CommentsPage() {
   const qc = useQueryClient()
@@ -160,16 +176,20 @@ export default function CommentsPage() {
                   </div>
                   <p className="text-sm text-slate-300 whitespace-pre-wrap">{comment.content}</p>
 
-                  {/* Replies toggle */}
-                  {replyCount > 0 && (
-                    <button
-                      onClick={() => toggleExpand(comment.id)}
-                      className="mt-2 flex items-center gap-1 text-xs text-slate-500 hover:text-slate-300 transition-colors"
-                    >
-                      {isExpanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
-                      {replyCount} repl{replyCount === 1 ? 'y' : 'ies'}
-                    </button>
-                  )}
+                  <div className="mt-2 flex flex-wrap items-center gap-4">
+                    <Reactions likes={comment.likes} dislikes={comment.dislikes} />
+
+                    {/* Replies toggle */}
+                    {replyCount > 0 && (
+                      <button
+                        onClick={() => toggleExpand(comment.id)}
+                        className="flex items-center gap-1 text-xs text-slate-500 hover:text-slate-300 transition-colors"
+                      >
+                        {isExpanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                        {replyCount} repl{replyCount === 1 ? 'y' : 'ies'}
+                      </button>
+                    )}
+                  </div>
 
                   {/* Replies */}
                   {isExpanded && comment.replies?.map(reply => (
@@ -183,6 +203,7 @@ export default function CommentsPage() {
                           <span className="text-xs text-slate-600">{formatDate(reply.created_at)}</span>
                         </div>
                         <p className="text-xs text-slate-400 whitespace-pre-wrap">{reply.content}</p>
+                        <div className="mt-1"><Reactions likes={reply.likes} dislikes={reply.dislikes} small /></div>
                       </div>
                     </div>
                   ))}

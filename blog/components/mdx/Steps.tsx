@@ -13,29 +13,19 @@ interface StepsProps {
 }
 
 export default function Steps({ steps, children, title }: StepsProps) {
-  // If steps array provided, render structured steps
   if (steps) {
     return (
-      <div className="my-5">
-        {title && <p className="mb-3 text-sm font-semibold text-slate-300 light:text-slate-700">{title}</p>}
-        <ol className="space-y-4 border-l-2 border-primary/30 pl-6">
+      <div className="my-6">
+        {title && <p className="mb-3 text-sm font-semibold text-ink">{title}</p>}
+        <ol className="m-0 list-none space-y-5 border-l border-line p-0 pl-7">
           {steps.map((step, i) => (
-            <li key={i} className="relative">
-              {/* Number dot */}
-              <span className="absolute -left-[1.875rem] flex h-7 w-7 items-center justify-center rounded-full border border-primary/50 bg-surface-card text-xs font-bold text-primary-light">
+            <li key={i} className="relative m-0">
+              <span className="absolute -left-[2.3rem] top-0 inline-flex h-7 w-7 items-center justify-center rounded-full border border-line bg-surface-card font-mono text-xs font-medium text-primary-light light:bg-white" aria-hidden="true">
                 {i + 1}
               </span>
-              <div className="pt-0.5">
-                <p className="text-sm font-semibold text-slate-200 light:text-slate-800">{step.title}</p>
-                {step.description && (
-                  <p className="mt-1 text-sm text-slate-400">{step.description}</p>
-                )}
-                {step.code && (
-                  <code className="mt-2 block rounded-lg bg-surface-card px-3 py-2 text-xs font-mono text-slate-300 whitespace-pre-wrap">
-                    {step.code}
-                  </code>
-                )}
-              </div>
+              <p className="m-0 pt-0.5 text-[0.9375rem] font-semibold text-ink">{step.title}</p>
+              {step.description && <p className="m-0 mt-1 text-sm text-muted">{step.description}</p>}
+              {step.code && <code className="panel-code mt-2">{step.code}</code>}
             </li>
           ))}
         </ol>
@@ -43,10 +33,9 @@ export default function Steps({ steps, children, title }: StepsProps) {
     )
   }
 
-  // If children provided, render as ordered list with custom styling
   return (
-    <div className="my-5 [&>ol]:border-l-2 [&>ol]:border-primary/30 [&>ol]:pl-6 [&>ol]:space-y-4 [&>ol>li]:relative [&>ol>li]:text-sm [&>ol>li]:text-slate-300">
-      {title && <p className="mb-3 text-sm font-semibold text-slate-300 light:text-slate-700">{title}</p>}
+    <div className="my-6 [&>ol]:border-l [&>ol]:border-line [&>ol]:pl-6 [&>ol>li]:relative [&>ol>li]:text-[0.9375rem]">
+      {title && <p className="mb-3 text-sm font-semibold text-ink">{title}</p>}
       {children}
     </div>
   )

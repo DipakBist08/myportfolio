@@ -1,0 +1,2004 @@
+/* =====================================================
+   Site: header, hero + spec panel, sections, components, footer
+   ===================================================== */
+
+/* ----- Reading progress (driven by Motion.scroll) ----- */
+.progress {
+    position: fixed;
+    inset: 0 0 auto 0;
+    height: 2px;
+    z-index: var(--z-top);
+    pointer-events: none;
+}
+
+.progress__bar {
+    height: 100%;
+    background: var(--color-accent);
+    transform: scaleX(0);
+    transform-origin: 0 50%;
+}
+
+/* ----- Header & navigation ----- */
+.header {
+    position: sticky;
+    top: 0;
+    z-index: var(--z-sticky);
+    height: var(--header-height);
+    /* Opaque on purpose: a blurred translucent header re-blurs the content
+       under it on every scrolled frame, which is the single most expensive
+       thing a page can do while scrolling on a modest GPU. */
+    background: var(--color-bg);
+    border-bottom: 1px solid transparent;
+    transition: border-color var(--duration-base) var(--ease-standard), background-color var(--duration-slow) var(--ease-standard);
+}
+
+.header.is-scrolled {
+    border-bottom-color: var(--color-border);
+}
+
+.nav {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-6);
+}
+
+.nav__logo {
+    font-family: var(--font-family-mono);
+    font-weight: 600;
+    font-size: 1.05rem;
+    color: var(--color-text);
+    text-decoration: none;
+    letter-spacing: -0.01em;
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+}
+
+.nav__bracket {
+    color: var(--color-accent-text);
+}
+
+.nav__right {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.nav__menu {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    list-style: none;
+    padding: 0;
+}
+
+.nav__link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    padding: 0 var(--space-3);
+    border-radius: var(--radius-md);
+    color: var(--color-text-muted);
+    font-size: 0.9375rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: color var(--duration-fast) var(--ease-standard), background-color var(--duration-fast) var(--ease-standard);
+}
+
+.nav__link:hover {
+    color: var(--color-text);
+    background: rgb(var(--ink-rgb) / 0.06);
+}
+
+.nav__link[aria-current="true"] {
+    color: var(--color-text);
+}
+
+.nav__menu {
+    position: relative;
+}
+
+.nav__indicator {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 2.75rem;
+    width: 0;
+    border-radius: var(--radius-md);
+    background: rgb(var(--accent-rgb) / 0.12);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(0);
+    transition: transform var(--duration-slow) var(--ease-out), width var(--duration-slow) var(--ease-out), opacity var(--duration-base) var(--ease-standard);
+}
+
+.nav__indicator.is-on {
+    opacity: 1;
+}
+
+.nav__item {
+    position: relative;
+}
+
+.nav__link--cta {
+    color: var(--color-text);
+    border: 1px solid var(--color-border-strong);
+    margin-left: var(--space-2);
+}
+
+.nav__link--cta:hover {
+    border-color: var(--color-accent);
+}
+
+.icon-btn {
+    display: inline-grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border: 1px solid transparent;
+    border-radius: var(--radius-md);
+    background: transparent;
+    color: var(--color-text-muted);
+    transition: color var(--duration-fast) var(--ease-standard), background-color var(--duration-fast) var(--ease-standard), border-color var(--duration-fast) var(--ease-standard);
+}
+
+.icon-btn:hover {
+    color: var(--color-text);
+    background: rgb(var(--ink-rgb) / 0.06);
+}
+
+.icon-btn .icon {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+/* Theme toggle: the icon shows the theme you would switch TO */
+.theme-toggle .icon--sun {
+    display: none;
+}
+
+[data-theme="light"] .theme-toggle .icon--sun {
+    display: block;
+}
+
+[data-theme="light"] .theme-toggle .icon--moon {
+    display: none;
+}
+
+.nav__toggle {
+    display: none;
+}
+
+.nav__toggle .icon--close {
+    display: none;
+}
+
+.nav__toggle[aria-expanded="true"] .icon--close {
+    display: block;
+}
+
+.nav__toggle[aria-expanded="true"] .icon--open {
+    display: none;
+}
+
+@media (max-width: 1023px) {
+    .nav__toggle {
+        display: inline-grid;
+    }
+
+    .nav__indicator {
+        display: none;
+    }
+
+    .nav__menu {
+        position: fixed;
+        top: var(--header-height);
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: var(--z-overlay);
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--space-1);
+        padding: var(--space-4) var(--container-padding) var(--space-8);
+        background: var(--color-bg);
+        border-top: 1px solid var(--color-border);
+        overflow-y: auto;
+        display: none;
+    }
+
+    .nav__menu.is-open {
+        display: flex;
+    }
+
+    .nav__link {
+        min-height: 3rem;
+        font-size: var(--font-size-lg);
+    }
+
+    .nav__link--cta {
+        margin-left: 0;
+        margin-top: var(--space-3);
+        justify-content: center;
+    }
+}
+
+/* ----- Buttons ----- */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    min-height: 2.75rem;
+    padding: 0 var(--space-5);
+    border-radius: var(--radius-md);
+    border: 1px solid transparent;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    line-height: 1;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: background-color var(--duration-fast) var(--ease-standard), border-color var(--duration-fast) var(--ease-standard), color var(--duration-fast) var(--ease-standard), box-shadow var(--duration-base) var(--ease-standard);
+}
+
+.btn--primary {
+    background: var(--button-primary-bg);
+    color: var(--button-primary-fg);
+}
+
+.btn--primary:hover {
+    background: var(--button-primary-bg-hover);
+    color: var(--button-primary-fg);
+    box-shadow: var(--shadow-ring);
+}
+
+.btn--secondary {
+    background: transparent;
+    color: var(--color-text);
+    border-color: var(--color-border-strong);
+}
+
+.btn--secondary:hover {
+    border-color: var(--color-accent);
+    color: var(--color-text);
+}
+
+.btn--text {
+    background: transparent;
+    color: var(--color-accent-text);
+    padding-inline: var(--space-3);
+}
+
+.btn--text:hover {
+    background: rgb(var(--accent-rgb) / 0.1);
+}
+
+.btn--large {
+    min-height: 3rem;
+    padding-inline: var(--space-6);
+    font-size: var(--font-size-base);
+}
+
+.btn[disabled],
+.btn[aria-busy="true"] {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn .icon {
+    width: 1.1rem;
+    height: 1.1rem;
+    transition: transform var(--duration-base) var(--ease-out);
+}
+
+.btn:hover .icon {
+    transform: translateX(3px);
+}
+
+.project__link .icon,
+.skill__evidence .icon,
+.evidence a .icon {
+    transition: transform var(--duration-base) var(--ease-out);
+}
+
+.project__link:hover .icon,
+.skill__evidence:hover .icon,
+.evidence a:hover .icon {
+    transform: translate(2px, -2px);
+}
+
+/* ----- Hero ----- */
+.hero {
+    position: relative;
+    min-height: calc(100dvh - var(--header-height));
+    display: flex;
+    align-items: center;
+    padding-block: clamp(3rem, 6vw, 5rem);
+    overflow: hidden;
+}
+
+.hero__bg {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+        radial-gradient(ellipse 60% 50% at 18% 20%, rgb(var(--accent-rgb) / 0.09), transparent 60%),
+        radial-gradient(circle at 1px 1px, rgb(var(--ink-rgb) / 0.09) 1px, transparent 1.5px);
+    background-size: auto, 28px 28px;
+    -webkit-mask-image: radial-gradient(ellipse 85% 70% at 50% 40%, #000 20%, transparent 100%);
+    mask-image: radial-gradient(ellipse 85% 70% at 50% 40%, #000 20%, transparent 100%);
+}
+
+.hero__grid {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 13fr) minmax(0, 11fr);
+    gap: clamp(2.5rem, 6vw, 5rem);
+    align-items: center;
+}
+
+/* Wide screens: equal columns, so the code panel has room for its longest
+   statement (67 characters) on one line (see .flow__code). */
+@media (min-width: 1280px) {
+    .hero__grid {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    }
+}
+
+.hero__copy {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+}
+
+.hero__title {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1em;
+    font-stretch: 92%;
+}
+
+.hero__line {
+    display: block;
+}
+
+.hero__line--role {
+    font-weight: 500;
+    font-size: 0.56em;
+    letter-spacing: -0.02em;
+    color: var(--color-text-muted);
+    font-stretch: 100%;
+}
+
+.hero__lede {
+    font-size: var(--font-size-lg);
+    color: var(--color-text-secondary);
+    max-width: 52ch;
+}
+
+.hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+}
+
+/* ----- Hero code panel: card, header, status, progress ----- */
+.spec {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    font-family: var(--font-family-mono);
+    overflow: hidden;
+}
+
+.spec__head {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    border-bottom: 1px solid var(--color-border);
+    background: rgb(var(--ink-rgb) / 0.03);
+}
+
+.spec__file {
+    font-family: var(--font-family-mono);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    letter-spacing: 0;
+    color: var(--color-text-muted);
+}
+
+.spec__status {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-width: 4.5rem; /* ready / running / passed: the dot stays put */
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+}
+
+.spec__status::before {
+    content: '';
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: var(--radius-full);
+    background: var(--color-text-subtle);
+}
+
+.spec__status.is-running::before {
+    background: var(--color-accent);
+    animation: pulse 1.1s ease-in-out infinite;
+}
+
+.spec__status.is-pass::before { background: var(--color-success); }
+.spec__status.is-fail::before { background: var(--color-danger); }
+
+/* Run progress: the share of the flow's steps done */
+.spec__progress {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 2px;
+    background: var(--color-accent);
+    transform: scaleX(0);
+    transform-origin: 0 50%;
+    transition: transform var(--duration-slow) var(--ease-out);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .spec__progress {
+        transition: none;
+    }
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.35; }
+}
+
+/* The hero's code panel: a short pytest + Playwright login test whose steps
+   run in order, then pytest's result line. Code colours are component tokens
+   on the semantic layer, so both themes keep AA contrast. */
+.flow {
+    --code-text: var(--color-text-muted);
+    --code-keyword: var(--color-accent-text);
+    --code-decorator: var(--color-accent-soft);
+    --code-string: var(--color-text);
+    --code-function: var(--color-text);
+    --flow-gutter: 1.75rem;
+}
+
+.flow__code {
+    margin: 0;
+    padding: var(--space-4) var(--space-3) var(--space-3);
+    font-family: var(--font-family-mono);
+    font-size: 0.75rem;
+    line-height: 1.7;
+    color: var(--code-text);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    overflow-x: auto;
+    tab-size: 4;
+    container: flow-code / inline-size;
+}
+
+.flow__code code {
+    display: block;
+    padding-left: var(--flow-gutter);
+    font: inherit;
+    color: inherit;
+}
+
+.tok-kw { color: var(--code-keyword); }
+.tok-dec { color: var(--code-decorator); }
+.tok-str { color: var(--code-string); }
+.tok-fn { color: var(--code-function); font-weight: 600; }
+
+/* A step of the flow. Its marker sits in the gutter: hollow while queued,
+   pulsing while it runs, a check once done. Only colours change, so the
+   panel never moves. */
+.flow__step {
+    position: relative;
+    display: inline-block;
+    /* The running band reaches half a rem past the code, so a closing bracket
+       never sits on its rounded edge. */
+    width: calc(100% + var(--flow-gutter) + 0.5rem);
+    margin-left: calc(-1 * var(--flow-gutter));
+    padding-left: var(--flow-gutter);
+    padding-right: 0.5rem;
+    border-radius: var(--radius-sm);
+    transition: background-color var(--duration-base) var(--ease-standard);
+}
+
+.flow__step::before {
+    content: '';
+    position: absolute;
+    left: 0.6rem;
+    top: 0.85em; /* centre of the first line (line-height 1.7), also when the line wraps */
+    width: 0.5rem;
+    height: 0.5rem;
+    margin-top: -0.25rem;
+    border-radius: var(--radius-full);
+    border: 1.5px solid var(--color-text-subtle); /* queued: readable at 3:1 or better in both themes */
+    transition: background-color var(--duration-fast) var(--ease-standard), border-color var(--duration-fast) var(--ease-standard);
+}
+
+/* Code size: 11.5px from 1280px, where the hero columns are equal and every
+   statement fits on one line; 12px below, where long statements wrap. */
+@media (min-width: 1280px) {
+    .flow__code,
+    .flow__run {
+        font-size: 0.71875rem;
+    }
+}
+
+/* Wrapping, the default: a long statement soft-wraps at a call boundary
+   (<wbr> in the markup) with a two-column hanging indent, as an editor
+   soft-wraps code. Its indentation and first call (.flow__lead) and its
+   string literals never split, and as a last resort a token breaks rather
+   than run past the panel. Copying still gives one line per statement. */
+.flow__step {
+    padding-left: calc(var(--flow-gutter) + 6ch);
+    text-indent: -6ch;
+}
+
+.flow__lead,
+.flow__code .tok-str {
+    white-space: pre;
+}
+
+/* A long line that is not a step (the import) wraps the same way. */
+.flow__wrap {
+    display: inline-block;
+    width: 100%;
+    padding-left: 6ch;
+    text-indent: -6ch;
+}
+
+/* One line per statement whenever the panel has room for the longest one
+   (67 characters plus the gutter, measured in the code's own font, so a
+   larger browser font or zoom falls back to wrapping instead of
+   overflowing). The <wbr> break points are switched off: a browser breaks
+   at a <wbr> even under white-space: pre. */
+@container flow-code (min-width: calc(1.75rem + 67ch + 2px)) {
+    .flow__code code {
+        white-space: pre;
+        overflow-wrap: normal;
+    }
+
+    .flow__code wbr {
+        display: none;
+    }
+
+    .flow__step {
+        padding-left: var(--flow-gutter);
+        text-indent: 0;
+    }
+
+    .flow__wrap {
+        padding-left: 0;
+        text-indent: 0;
+    }
+}
+
+.flow__step.is-running {
+    background: rgb(var(--accent-rgb) / 0.12);
+}
+
+.flow__step.is-running::before {
+    border-color: var(--color-accent);
+    background: var(--color-accent);
+    animation: pulse 1.1s ease-in-out infinite;
+}
+
+.flow__step.is-done::before {
+    left: 0.5rem;
+    width: 0.75rem;
+    height: 0.75rem;
+    margin-top: -0.375rem;
+    border: 0;
+    border-radius: 0;
+    background-color: var(--color-success);
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cpath d='M229.66,77.66l-128,128a8,8,0,0,1-11.32,0l-56-56a8,8,0,0,1,11.32-11.32L96,188.69,218.34,66.34a8,8,0,0,1,11.32,11.32Z'/%3E%3C/svg%3E") center / 100% no-repeat;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cpath d='M229.66,77.66l-128,128a8,8,0,0,1-11.32,0l-56-56a8,8,0,0,1,11.32-11.32L96,188.69,218.34,66.34a8,8,0,0,1,11.32,11.32Z'/%3E%3C/svg%3E") center / 100% no-repeat;
+}
+
+/* The run: the command, then pytest -v's result line once the flow is done.
+   The result's space is held from the start. */
+.flow__run {
+    padding: var(--space-3) var(--space-4) var(--space-4);
+    border-top: 1px solid var(--color-border);
+    font-family: var(--font-family-mono);
+    font-size: 0.75rem;
+    line-height: 1.7;
+}
+
+.flow__run p {
+    max-width: none;
+    margin: 0;
+}
+
+.flow__cmd {
+    color: var(--color-text-muted);
+}
+
+.flow__prompt {
+    color: var(--color-accent-text);
+    user-select: none;
+}
+
+.flow__result {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: 1ch;
+    overflow-wrap: anywhere;
+    color: var(--color-text);
+    visibility: hidden;
+}
+
+.flow.is-complete .flow__result {
+    visibility: visible;
+}
+
+.flow__passed {
+    color: var(--color-success);
+    font-weight: 500;
+}
+
+.flow__pct {
+    color: var(--color-text-subtle);
+    white-space: pre;
+}
+
+/* Re-run plays the flow again from its first step. */
+.flow__foot {
+    display: flex;
+    justify-content: flex-end;
+    padding: var(--space-2) var(--space-4);
+    border-top: 1px solid var(--color-border);
+}
+
+.flow__foot .btn {
+    min-height: 3rem;
+    font-family: var(--font-family-sans);
+}
+/* ----- About ----- */
+.about__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+    gap: clamp(2rem, 5vw, 4rem);
+    align-items: start;
+}
+
+.about__identity {
+    position: sticky;
+    top: calc(var(--header-height) + var(--space-6));
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+}
+
+.about__portrait {
+    width: 160px;
+    height: 160px;
+    border-radius: var(--radius-xl);
+    object-fit: cover;
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-md);
+}
+
+.about__facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    list-style: none;
+    padding: 0;
+}
+
+.about__evidence {
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--color-border);
+}
+
+.about__evidence-title {
+    font-family: var(--font-family-mono);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: var(--letter-spacing-wide);
+    color: var(--color-text-subtle);
+    margin-bottom: var(--space-3);
+    font-weight: 500;
+}
+
+.evidence {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    font-size: var(--font-size-sm);
+}
+
+.evidence a {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+}
+
+/* Touch screens: standalone text links get a 44px tap height. */
+@media (pointer: coarse) {
+    .evidence {
+        gap: 0;
+    }
+
+    .evidence a {
+        min-height: 2.75rem;
+    }
+}
+
+.about__prose {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+    color: var(--color-text-secondary);
+}
+
+.about__prose p:first-child {
+    font-size: var(--font-size-xl);
+    color: var(--color-text);
+    line-height: 1.45;
+}
+
+.disclosure {
+    border-top: 1px solid var(--color-border);
+    padding-top: var(--space-2);
+}
+
+.disclosure summary {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: 2.75rem;
+    cursor: pointer;
+    list-style: none;
+    color: var(--color-accent-text);
+    font-weight: 500;
+}
+
+.disclosure summary::-webkit-details-marker {
+    display: none;
+}
+
+.disclosure summary .icon {
+    transition: transform var(--duration-base) var(--ease-out);
+}
+
+.disclosure[open] summary .icon {
+    transform: rotate(180deg);
+}
+
+.disclosure__body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+    padding-top: var(--space-4);
+}
+
+/* ----- Tags ----- */
+.tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    list-style: none;
+    padding: 0;
+}
+
+.tag {
+    display: inline-flex;
+    align-items: center;
+    min-height: 1.75rem;
+    padding: 0 var(--space-3);
+    border-radius: var(--radius-full);
+    background: var(--tag-bg);
+    border: 1px solid var(--tag-border);
+    color: var(--tag-fg);
+    font-size: var(--font-size-xs);
+    font-weight: 500;
+    letter-spacing: 0.01em;
+}
+
+.tag--neutral {
+    background: rgb(var(--ink-rgb) / 0.05);
+    border-color: var(--color-border);
+    color: var(--color-text-muted);
+}
+
+/* ----- Workflow -----
+   Ten steps that end where they began. Default (narrow): a vertical timeline,
+   steps in order down one line, then "back to 01". When the section is wide
+   enough (container query below): a loop. The steps sit clockwise around a
+   ring from 01 at the top, and a dashed arrow carries 10 back into 01. When
+   the section scrolls into view a point travels the ring once (js/motion.js):
+   the line fills behind it, each step ticks, pulses and comes into focus as
+   the point stops there, then the point rides the dashed arc back into 01.
+   As a timeline the line to each step fills as it ticks. Without motion
+   everything is drawn and ticked at once. */
+.workflow > .container {
+    container: workflow / inline-size;
+}
+
+.workflow__loop {
+    --step-ms: 330ms; /* one step of the travelling point: a move, then a short stop */
+    margin-top: var(--space-6);
+}
+
+.workflow__ring {
+    display: none;
+}
+
+.workflow__aside {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    margin-bottom: var(--space-8);
+}
+
+.workflow__counter {
+    font-family: var(--font-family-mono);
+    font-size: 2.5rem;
+    font-weight: 600;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-text);
+}
+
+.workflow__counter small {
+    font-size: 1rem;
+    color: var(--color-text-subtle);
+    font-weight: 400;
+}
+
+/* Lets the count step up into place as each step ticks. */
+.workflow__counter > span {
+    display: inline-block;
+}
+
+.steps {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+/* Timeline: a mark on the left, a line joining it to the next step. */
+.step {
+    position: relative;
+    padding: 0 0 var(--space-6) 2.75rem;
+}
+
+.step::before {
+    content: '';
+    position: absolute;
+    left: calc(0.6875rem - 1px);
+    top: 1.6rem;
+    bottom: 0.2rem;
+    width: 2px;
+    background: var(--color-border-strong);
+}
+
+/* The same line in the accent, filled down to a step once both ends of it
+   are reached (the last one runs on to "back to 01"). */
+.step::after {
+    content: '';
+    position: absolute;
+    left: calc(0.6875rem - 1px);
+    top: 1.6rem;
+    bottom: 0.2rem;
+    width: 2px;
+    background: var(--color-accent);
+    transform: scaleY(0);
+    transform-origin: top;
+    transition: transform var(--duration-slow) var(--ease-out);
+}
+
+.step.is-done:has(+ .step.is-done)::after,
+.step.is-done:last-child::after {
+    transform: scaleY(1);
+}
+
+html:not(.anim) .step::after {
+    transition: none;
+}
+
+.step__mark {
+    position: absolute;
+    left: 0;
+    top: 0.1rem;
+    width: 1.375rem;
+    height: 1.375rem;
+    border-radius: var(--radius-full);
+    border: 2px solid var(--color-border-strong);
+    background: var(--color-bg);
+    transition: background-color var(--duration-base) var(--ease-standard), border-color var(--duration-base) var(--ease-standard);
+}
+
+.step__mark::after {
+    content: '';
+    position: absolute;
+    inset: 3px;
+    background-color: #fff;
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cpath d='M229.66,77.66l-128,128a8,8,0,0,1-11.32,0l-56-56a8,8,0,0,1,11.32-11.32L96,188.69,218.34,66.34a8,8,0,0,1,11.32,11.32Z'/%3E%3C/svg%3E") center / 100% no-repeat;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cpath d='M229.66,77.66l-128,128a8,8,0,0,1-11.32,0l-56-56a8,8,0,0,1,11.32-11.32L96,188.69,218.34,66.34a8,8,0,0,1,11.32,11.32Z'/%3E%3C/svg%3E") center / 100% no-repeat;
+    opacity: 0;
+    transition: opacity var(--duration-base) var(--ease-standard);
+}
+
+.step.is-done .step__mark {
+    border-color: var(--color-accent);
+    background: var(--color-accent);
+}
+
+.step.is-done .step__mark::after {
+    opacity: 1;
+}
+
+/* One pulse from the mark when a step is reached, and again on 01 when the
+   loop comes back round. Only while the motion module runs the page. */
+.step__mark::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border: 2px solid var(--color-accent);
+    border-radius: inherit;
+    opacity: 0;
+    pointer-events: none;
+}
+
+html.anim.motion .step.is-done .step__mark::before {
+    animation: workflow-pulse 700ms var(--ease-out);
+}
+
+html.anim.motion .step.is-again .step__mark::before {
+    animation-name: workflow-pulse-again;
+}
+
+@keyframes workflow-pulse {
+    from { opacity: 0.7; transform: scale(1); }
+    to { opacity: 0; transform: scale(2.3); }
+}
+
+@keyframes workflow-pulse-again {
+    from { opacity: 0.7; transform: scale(1); }
+    to { opacity: 0; transform: scale(2.3); }
+}
+
+.step__eyebrow {
+    display: flex;
+    gap: 0.5em;
+    margin-bottom: 0.2rem;
+    font-family: var(--font-family-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-text-subtle);
+}
+
+.step__stage {
+    color: var(--color-accent-text);
+}
+
+.step__num {
+    font-variant-numeric: tabular-nums;
+}
+
+.step__title {
+    font-size: var(--font-size-md);
+    font-weight: 600;
+    margin-bottom: var(--space-1);
+}
+
+.step__text {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+}
+
+.workflow__back {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin: 0;
+    padding-left: 0.25rem;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-subtle);
+}
+
+.workflow__back .icon {
+    width: 1rem;
+    height: 1rem;
+    color: var(--color-accent-text);
+}
+
+/* The loop, where the section is at least 1080px wide: room for the ring and
+   a 240px text block on either side. Each step's mark (--mx, --my) and text
+   anchor (--tx, --ty) are offsets from the ring's centre, set in the markup:
+   marks every 36deg on a 270px ring; side text as close to the ring as it can
+   sit without touching it anywhere along its height. */
+@container workflow (min-width: 1080px) {
+        .workflow__loop {
+            position: relative;
+            height: 860px;
+            margin-top: 0;
+        }
+
+        .workflow__ring {
+            display: block;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 600px;
+            height: 600px;
+            translate: -50% -50%;
+            overflow: visible;
+            fill: none;
+            stroke-width: 2;
+            stroke-linecap: round;
+        }
+
+        .workflow__track { stroke: var(--color-border-strong); }
+
+        .workflow__progress {
+            stroke: var(--color-accent);
+            stroke-dasharray: 1;
+            stroke-dashoffset: 1;
+        }
+
+        .workflow__feedback {
+            stroke: var(--color-accent-soft);
+            stroke-dasharray: 6 7;
+            opacity: 0;
+        }
+
+        /* Mask that uncovers the return arc behind the point; open by default. */
+        .workflow__reveal {
+            stroke: #fff;
+            stroke-width: 28;
+            stroke-linecap: butt;
+            stroke-dasharray: 1;
+            stroke-dashoffset: 0;
+        }
+
+        /* The travelling point. It passes under each mark, so a stop docks
+           into the mark; the background-coloured rim keeps it clear of the line. */
+        .workflow__head {
+            fill: var(--color-accent);
+            stroke: var(--color-bg);
+            stroke-width: 3;
+            opacity: 0;
+        }
+
+        #workflow-arrow path { fill: var(--color-accent-soft); stroke: none; }
+
+        .workflow__loop.is-drawn .workflow__progress { stroke-dashoffset: 0; }
+        .workflow__loop.is-drawn .workflow__feedback { opacity: 1; }
+
+        html:not(.anim) .workflow__progress { stroke-dashoffset: 0; }
+        html:not(.anim) .workflow__feedback { opacity: 1; }
+
+        /* Steps the point has not reached yet wait out of focus. */
+        .step__body {
+            transition: opacity 450ms var(--ease-out), filter 450ms var(--ease-out);
+        }
+
+        .workflow__loop.is-armed .step:not(.is-done) .step__body {
+            opacity: 0.4;
+            filter: blur(1.5px);
+        }
+
+        .workflow__aside {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 18rem;
+            translate: -50% -50%;
+            align-items: center;
+            margin: 0;
+            text-align: center;
+        }
+
+        .workflow__counter { font-size: 3rem; }
+
+        .step {
+            position: static;
+            padding: 0;
+        }
+
+        .step::before,
+        .step::after { content: none; }
+
+        .step__mark {
+            left: calc(50% + var(--mx));
+            top: calc(50% + var(--my));
+            translate: -50% -50%;
+        }
+
+        /* Pointing at a step's text finds its place on the ring. */
+        @media (hover: hover) {
+            .step__mark {
+                transition: background-color var(--duration-base) var(--ease-standard), border-color var(--duration-base) var(--ease-standard), scale var(--duration-base) var(--ease-out);
+            }
+
+            .step:hover .step__mark { scale: 1.3; }
+        }
+
+        .step__body {
+            position: absolute;
+            width: 240px;
+            left: calc(50% + var(--tx));
+            top: calc(50% + var(--ty));
+        }
+
+        .step[data-side="right"] .step__body { translate: 0 -50%; }
+        .step[data-side="left"] .step__body { translate: -100% -50%; text-align: right; }
+        .step[data-side="left"] .step__eyebrow { justify-content: flex-end; }
+        .step[data-side="top"] .step__body,
+        .step[data-side="bottom"] .step__body { width: 320px; text-align: center; }
+        .step[data-side="top"] .step__eyebrow,
+        .step[data-side="bottom"] .step__eyebrow { justify-content: center; }
+        .step[data-side="top"] .step__body { translate: -50% -100%; }
+        .step[data-side="bottom"] .step__body { translate: -50% 0; }
+
+        .workflow__back { display: none; }
+}
+
+/* ----- Experience ----- */
+.timeline {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid var(--color-border);
+}
+
+.role {
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 9fr);
+    gap: var(--space-4) clamp(1.5rem, 4vw, 3rem);
+    padding: clamp(1.5rem, 3vw, 2.5rem) 0;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.role__when {
+    font-family: var(--font-family-mono);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-2);
+    font-variant-numeric: tabular-nums;
+}
+
+.role__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-3);
+    margin-bottom: var(--space-1);
+}
+
+.role__org {
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-4);
+}
+
+.role__points {
+    padding-left: 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    color: var(--color-text-secondary);
+    max-width: var(--measure);
+}
+
+.role__points li::marker {
+    color: var(--color-accent-text);
+}
+
+/* A point's lead-in ("API Testing:") reads as its label. */
+.role__points strong {
+    color: var(--color-text);
+    font-weight: 600;
+}
+
+/* ----- Skills ----- */
+.skills {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-4);
+}
+
+.skill {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    padding: var(--space-6);
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-lg);
+    transition: border-color var(--duration-base) var(--ease-standard);
+}
+
+.skill:hover {
+    border-color: var(--color-border-strong);
+}
+
+.skill__head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-3);
+}
+
+.skill__title {
+    font-size: var(--font-size-lg);
+}
+
+.tier {
+    flex: none;
+    font-family: var(--font-family-mono);
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: var(--letter-spacing-wide);
+    padding: 0.2rem 0.5rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border-strong);
+    color: var(--color-text-muted);
+}
+
+.tier--core {
+    color: var(--color-accent-text);
+    border-color: rgb(var(--accent-rgb) / 0.4);
+}
+
+.skill__desc {
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-base);
+}
+
+.skill__points {
+    padding-left: 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+}
+
+.skill__points li::marker {
+    color: var(--color-accent-text);
+}
+
+.skill__foot {
+    margin-top: auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--color-border);
+}
+
+.tools {
+    display: flex;
+    gap: var(--space-2);
+    list-style: none;
+    padding: 0;
+}
+
+.tool {
+    width: 1.75rem;
+    height: 1.75rem;
+    padding: 0.25rem;
+    border-radius: var(--radius-sm);
+    background: rgb(var(--ink-rgb) / 0.05);
+    display: grid;
+    place-items: center;
+}
+
+.tool svg {
+    width: 100%;
+    height: 100%;
+}
+
+.skill__evidence {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    min-height: 2.25rem;
+}
+
+/* ----- AI section ----- */
+.ai__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 6fr) minmax(0, 6fr);
+    gap: clamp(2rem, 5vw, 4rem);
+    align-items: start;
+}
+
+.ai__prose {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-lg);
+}
+
+.ai__apply-title {
+    font-size: var(--font-size-md);
+    color: var(--color-text);
+    margin-bottom: var(--space-4);
+}
+
+.uses {
+    list-style: none;
+    padding: 0;
+    border-top: 1px solid var(--color-border);
+}
+
+.use {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: var(--space-3);
+    padding: var(--space-4) 0;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.use__num {
+    font-family: var(--font-family-mono);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-subtle);
+    padding-top: 0.2rem;
+}
+
+.use__title {
+    font-size: var(--font-size-md);
+    margin-bottom: var(--space-1);
+}
+
+.use__text {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+}
+
+/* ----- Projects ----- */
+.project {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    padding: var(--space-6);
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-lg);
+    height: 100%;
+    transition: border-color var(--duration-base) var(--ease-standard), box-shadow var(--duration-base) var(--ease-standard);
+}
+
+.project:hover {
+    border-color: var(--color-border-strong);
+    box-shadow: var(--shadow-md);
+}
+
+.project--featured {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: clamp(1.5rem, 4vw, 3rem);
+    align-items: center;
+    margin-bottom: var(--space-4);
+    padding: clamp(1.5rem, 3vw, 2.5rem);
+}
+
+/* The product logo is drawn for a white ground, so the tile keeps one in
+   both themes, like a thumbnail would. */
+.project__media {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 4 / 3;
+    border-radius: var(--radius-md);
+    background: var(--neutral-50);
+    border: 1px solid var(--color-border);
+    padding: var(--space-6);
+}
+
+.project__media img {
+    width: min(100%, 320px);
+    height: auto;
+}
+
+.project__body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    min-width: 0;
+}
+
+.project__kicker {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+}
+
+.project__type {
+    font-family: var(--font-family-mono);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: var(--letter-spacing-wide);
+    color: var(--color-text-subtle);
+}
+
+.project__result {
+    font-family: var(--font-family-mono);
+    font-size: 0.75rem;
+    color: var(--color-accent-text);
+}
+
+.project__title {
+    font-size: var(--font-size-2xl);
+}
+
+.project--featured .project__title {
+    font-size: var(--font-size-3xl);
+}
+
+.project__desc {
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-base);
+}
+
+/* Title with the product's one-line description under it. */
+.project__heading {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+}
+
+.project__tagline {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-base);
+    font-weight: 500;
+}
+
+/* "More about FigsFlow": the rest of the product description and its capabilities. */
+.project__more {
+    gap: var(--space-4);
+}
+
+.project__subhead {
+    margin-bottom: var(--space-3);
+    font-family: var(--font-family-mono);
+    font-size: var(--font-size-xs);
+    font-weight: 500;
+    letter-spacing: var(--letter-spacing-wide);
+    text-transform: uppercase;
+    color: var(--color-text-subtle);
+}
+
+.capabilities {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+    gap: var(--space-2) var(--space-6);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+}
+
+.capabilities li {
+    position: relative;
+    padding-left: 1rem;
+}
+
+.capabilities li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.6em;
+    width: 0.375rem;
+    height: 0.375rem;
+    border-radius: var(--radius-full);
+    background: var(--color-accent);
+}
+
+.project__foot {
+    margin-top: auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--color-border);
+}
+
+.project__link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    font-weight: 500;
+    min-height: 2.25rem;
+}
+
+.project__skip {
+    margin: 0;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-subtle);
+}
+
+.projects__grid {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-4);
+}
+
+/* ----- Blog ----- */
+.posts {
+    list-style: none;
+    padding: 0;
+    border-top: 1px solid var(--color-border);
+}
+
+.post {
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 7fr) auto;
+    gap: var(--space-3) clamp(1rem, 4vw, 3rem);
+    padding: var(--space-6) 0;
+    border-bottom: 1px solid var(--color-border);
+    align-items: start;
+}
+
+.post__meta {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    font-family: var(--font-family-mono);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    font-variant-numeric: tabular-nums;
+}
+
+.post__title {
+    font-size: var(--font-size-xl);
+    margin-bottom: var(--space-2);
+}
+
+.post__title a {
+    color: var(--color-text);
+    text-decoration-color: transparent;
+}
+
+.post__title a:hover {
+    color: var(--color-accent-text);
+    text-decoration-color: currentColor;
+}
+
+.post__excerpt {
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-3);
+}
+
+.post__arrow {
+    color: var(--color-text-subtle);
+    padding-top: 0.35rem;
+}
+
+.posts__more {
+    margin-top: var(--space-8);
+}
+
+/* ----- Contact ----- */
+.contact__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    gap: clamp(2rem, 6vw, 5rem);
+    align-items: start;
+}
+
+.contact__copy {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+}
+
+.contact__title {
+    font-size: var(--font-size-4xl);
+    font-size: clamp(2.25rem, 1.6rem + 3vw, 4rem);
+    letter-spacing: var(--letter-spacing-display);
+}
+
+.contact__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+}
+
+.contact__direct {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2) var(--space-3);
+    color: var(--color-text-muted);
+    max-width: none;
+}
+
+.contact__email {
+    font-family: var(--font-family-mono);
+    color: var(--color-text);
+    font-size: 0.9375rem;
+}
+
+.copy-btn {
+    min-height: 2.25rem;
+    padding-inline: var(--space-3);
+    font-size: var(--font-size-sm);
+}
+
+.contact__form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    padding: var(--space-6);
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-lg);
+}
+
+.contact__form-title {
+    font-size: var(--font-size-lg);
+}
+
+.contact__form-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-4);
+}
+
+.contact__form .field {
+    gap: var(--space-1);
+}
+
+.contact__form .field label {
+    margin-bottom: var(--space-1);
+}
+
+.field textarea {
+    min-height: 8rem;
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border-strong);
+    background: var(--color-surface);
+    color: var(--color-text);
+    font: inherit;
+    font-size: 1rem;
+    line-height: 1.5;
+    resize: vertical;
+    transition: border-color var(--duration-fast) var(--ease-standard), box-shadow var(--duration-fast) var(--ease-standard);
+}
+
+.field textarea:focus-visible {
+    border-color: var(--color-accent);
+    box-shadow: var(--focus-ring);
+}
+
+.field textarea[aria-invalid="true"] {
+    border-color: var(--color-danger);
+}
+
+.contact__form-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.contact__form-actions .subscribe__feedback {
+    flex: 1 1 14rem;
+}
+
+.contact__honey {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+/* ----- Footer ----- */
+.footer {
+    border-top: 1px solid var(--color-border);
+    background: var(--color-bg-raised);
+}
+
+.footer__subscribe {
+    padding-block: clamp(2.5rem, 5vw, 4rem);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.subscribe {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: var(--space-6);
+    align-items: end;
+}
+
+.subscribe__intro h2 {
+    font-size: var(--font-size-2xl);
+    margin-bottom: var(--space-1);
+}
+
+.subscribe__intro p {
+    color: var(--color-text-muted);
+}
+
+.subscribe__form {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: var(--space-2) var(--space-3);
+    align-items: end;
+    width: min(100%, 30rem);
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.field label {
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+}
+
+.field input {
+    min-height: 2.75rem;
+    padding: 0 var(--space-4);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border-strong);
+    background: var(--color-surface);
+    color: var(--color-text);
+    font-size: 1rem;
+    transition: border-color var(--duration-fast) var(--ease-standard), box-shadow var(--duration-fast) var(--ease-standard);
+}
+
+.field input::placeholder {
+    color: var(--color-text-subtle);
+}
+
+.field input:focus-visible {
+    border-color: var(--color-accent);
+    box-shadow: var(--focus-ring);
+}
+
+.field input[aria-invalid="true"] {
+    border-color: var(--color-danger);
+}
+
+.field__hint {
+    grid-column: 1 / -1;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    min-height: 1.4em;
+    max-width: none;
+}
+
+.field__hint.is-error {
+    color: var(--color-danger);
+}
+
+.subscribe__feedback {
+    grid-column: 1 / -1;
+    font-size: var(--font-size-sm);
+    min-height: 1.4em;
+    max-width: none;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.subscribe__feedback.is-success {
+    color: var(--color-text);
+}
+
+.subscribe__feedback.is-error {
+    color: var(--color-danger);
+}
+
+.footer__grid {
+    padding-block: clamp(2rem, 4vw, 3rem);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: var(--space-6);
+    align-items: start;
+}
+
+.footer__tagline {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    margin-top: var(--space-2);
+}
+
+.footer__social {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    list-style: none;
+    padding: 0;
+}
+
+.footer__social a {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    padding: 0 var(--space-3);
+    border-radius: var(--radius-md);
+    color: var(--color-text-muted);
+    text-decoration: none;
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    transition: color var(--duration-fast) var(--ease-standard), background-color var(--duration-fast) var(--ease-standard);
+}
+
+.footer__social a:hover {
+    color: var(--color-text);
+    background: rgb(var(--ink-rgb) / 0.06);
+}
+
+.footer__social svg {
+    width: 1.1rem;
+    height: 1.1rem;
+}
+
+.footer__meta {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--space-2) var(--space-4);
+    padding-top: var(--space-6);
+    border-top: 1px solid var(--color-border);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+}
+
+.footer__meta p {
+    max-width: none;
+}
+
+.footer__meta a {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+}
+
+/* ----- Back to top ----- */
+.totop {
+    position: fixed;
+    right: var(--space-4);
+    bottom: var(--space-4);
+    z-index: var(--z-sticky);
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: var(--radius-full);
+    border: 1px solid var(--color-border-strong);
+    background: var(--color-surface);
+    color: var(--color-text);
+    display: grid;
+    place-items: center;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(8px);
+    transition: opacity var(--duration-base) var(--ease-standard), visibility var(--duration-base), transform var(--duration-base) var(--ease-out), border-color var(--duration-fast);
+}
+
+.totop.is-visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.totop:hover {
+    border-color: var(--color-accent);
+}
+
+.totop .icon {
+    width: 1.15rem;
+    height: 1.15rem;
+}
+
+/* ----- Responsive ----- */
+@media (max-width: 1023px) {
+
+    .hero__grid,
+    .about__grid,
+    .ai__grid,
+    .contact__grid,
+    .project--featured {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .hero {
+        min-height: 0;
+        padding-top: clamp(2.5rem, 6vw, 4rem);
+    }
+
+    .about__identity {
+        position: static;
+    }
+
+    .skills {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+}
+
+@media (max-width: 767px) {
+
+    .skills,
+    .projects__grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .role,
+    .post {
+        grid-template-columns: minmax(0, 1fr);
+        gap: var(--space-2);
+    }
+
+    .post__arrow {
+        display: none;
+    }
+
+    .subscribe,
+    .subscribe__form,
+    .contact__form-row,
+    .footer__grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .subscribe__form .btn {
+        width: 100%;
+    }
+
+    .totop {
+        right: var(--space-3);
+        bottom: var(--space-3);
+    }
+
+    .flow__code,
+    .flow__run {
+        padding-inline: var(--space-3);
+    }
+}
+
+@media (max-width: 400px) {
+    .hero__actions .btn {
+        flex: 1 1 auto;
+    }
+}

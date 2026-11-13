@@ -10,21 +10,11 @@ interface FigureProps {
 
 export default function Figure({ src, alt, caption, width = 1200, height = 630 }: FigureProps) {
   return (
-    <figure className="my-6">
-      <div className="overflow-hidden rounded-xl border border-slate-700/50">
-        <Image
-          src={src}
-          alt={alt}
-          width={width}
-          height={height}
-          className="w-full object-cover"
-        />
+    <figure className="my-8">
+      <div className="overflow-hidden rounded-xl border border-line">
+        <Image src={src} alt={alt} width={width} height={height} sizes="(min-width: 1280px) 76ch, 100vw" className="h-auto w-full object-cover" />
       </div>
-      {caption && (
-        <figcaption className="mt-2 text-center text-xs text-slate-500 light:text-slate-400">
-          {caption}
-        </figcaption>
-      )}
+      {caption && <figcaption className="mono-label mt-2 text-center">{caption}</figcaption>}
     </figure>
   )
 }

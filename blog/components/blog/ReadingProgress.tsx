@@ -1,30 +1,19 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { motion, useScroll, useSpring } from 'framer-motion'
 
+/* Scroll-linked progress bar. useScroll binds to the document's scroll
+   progress without a scroll listener re-rendering React on every frame; the
+   spring smooths the bar so it reads as one continuous motion. */
 export default function ReadingProgress() {
-  const [progress, setProgress] = useState(0)
-
-  useEffect(() => {
-    const update = () => {
-      const scrollTop = window.scrollY
-      const docHeight = document.documentElement.scrollHeight - window.innerHeight
-      setProgress(docHeight > 0 ? (scrollTop / docHeight) * 100 : 0)
-    }
-
-    window.addEventListener('scroll', update, { passive: true })
-    return () => window.removeEventListener('scroll', update)
-  }, [])
+  const { scrollYProgress } = useScroll()
+  const scaleX = useSpring(scrollYProgress, { stiffness: 220, damping: 34, mass: 0.4 })
 
   return (
-    <div
-      className="reading-progress-bar"
-      style={{ width: `${progress}%` }}
-      role="progressbar"
-      aria-valuenow={Math.round(progress)}
-      aria-valuemin={0}
-      aria-valuemax={100}
-      aria-label="Reading progress"
+    <motion.div
+      aria-hidden="true"
+      className="pointer-events-none fixed inset-x-0 top-0 z-[60] h-0.5 origin-left bg-primary"
+      style={{ scaleX }}
     />
   )
 }

@@ -1,4 +1,4 @@
-import Badge from './Badge'
+import { PIcon } from './icons'
 
 type Severity = 'critical' | 'high' | 'medium' | 'low'
 type Priority = 'P1' | 'P2' | 'P3' | 'P4'
@@ -22,162 +22,96 @@ interface BugReportProps {
   notes?: string
 }
 
-const severityColors: Record<Severity, string> = {
-  critical: 'text-red-400 bg-red-500/10 border-red-500/30',
-  high: 'text-orange-400 bg-orange-500/10 border-orange-500/30',
-  medium: 'text-yellow-400 bg-yellow-500/10 border-yellow-500/30',
-  low: 'text-green-400 bg-green-500/10 border-green-500/30',
+const severityClass: Record<Severity, string> = {
+  critical: 'status-fail',
+  high: 'status-fail',
+  medium: 'status-warn',
+  low: 'status-neutral',
 }
 
-const statusColors: Record<Status, string> = {
-  open: 'text-red-400 bg-red-500/10 border-red-500/30',
-  'in-progress': 'text-yellow-400 bg-yellow-500/10 border-yellow-500/30',
-  resolved: 'text-green-400 bg-green-500/10 border-green-500/30',
-  closed: 'text-slate-400 bg-slate-500/10 border-slate-500/30',
-  duplicate: 'text-purple-400 bg-purple-500/10 border-purple-500/30',
+const statusClass: Record<Status, string> = {
+  open: 'status-fail',
+  'in-progress': 'status-warn',
+  resolved: 'status-pass',
+  closed: 'status-neutral',
+  duplicate: 'status-neutral',
 }
 
+/* A worked bug report, laid out the way a tracker would show it. */
 export default function BugReport({
-  id,
-  title,
-  severity,
-  priority,
-  status = 'open',
-  environment,
-  reportedBy,
-  assignedTo,
-  steps,
-  expected,
-  actual,
-  preconditions,
-  testData,
-  attachments,
-  notes,
+  id, title, severity, priority, status = 'open', environment, reportedBy, assignedTo,
+  steps, expected, actual, preconditions, testData, attachments, notes,
 }: BugReportProps) {
   return (
-    <div className="my-6 rounded-xl border border-red-500/20 bg-red-500/5 overflow-hidden">
-      {/* Header */}
-      <div className="flex flex-wrap items-center gap-3 border-b border-red-500/20 bg-red-500/10 px-5 py-3">
-        <div className="flex items-center gap-2">
-          <svg className="h-4 w-4 text-red-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="12" cy="12" r="10" />
-            <line x1="12" y1="8" x2="12" y2="12" />
-            <line x1="12" y1="16" x2="12.01" y2="16" />
-          </svg>
-          <span className="text-sm font-bold text-red-400">Bug Report</span>
-        </div>
-        {id && <span className="font-mono text-xs text-slate-500">#{id}</span>}
-        <div className="ml-auto flex flex-wrap gap-2">
-          <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium capitalize ${severityColors[severity]}`}>
-            {severity}
-          </span>
-          <span className="inline-flex items-center rounded-full border border-primary/30 bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary-light">
-            {priority}
-          </span>
-          <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium capitalize ${statusColors[status]}`}>
-            {status}
-          </span>
+    <section className="panel" aria-label={`Bug report: ${title}`}>
+      <div className="panel-head">
+        <p className="panel-title m-0"><PIcon name="bug" className="h-4 w-4 text-fail" /> Bug report</p>
+        {id && <span className="mono-label">#{id}</span>}
+        <div className="ml-auto flex flex-wrap gap-1.5">
+          <span className={`status ${severityClass[severity]}`}>Severity: {severity}</span>
+          <span className="status status-info">{priority}</span>
+          <span className={`status ${statusClass[status]}`}>{status}</span>
         </div>
       </div>
 
-      <div className="p-5 space-y-4">
-        {/* Title */}
-        <h4 className="text-base font-semibold text-slate-100 light:text-slate-800">{title}</h4>
+      <div className="space-y-5 p-5">
+        <h3 className="m-0 text-base font-semibold text-ink">{title}</h3>
 
-        {/* Meta grid */}
         {(environment || reportedBy || assignedTo) && (
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 text-xs">
-            {environment && <MetaItem label="Environment" value={environment} />}
-            {reportedBy && <MetaItem label="Reported By" value={reportedBy} />}
-            {assignedTo && <MetaItem label="Assigned To" value={assignedTo} />}
-          </div>
+          <dl className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-3">
+            {environment && <Meta label="Environment" value={environment} />}
+            {reportedBy && <Meta label="Reported by" value={reportedBy} />}
+            {assignedTo && <Meta label="Assigned to" value={assignedTo} />}
+          </dl>
         )}
 
-        {/* Preconditions */}
         {preconditions && (
-          <Section label="Preconditions">
-            <p className="text-sm text-slate-300 light:text-slate-600">{preconditions}</p>
-          </Section>
+          <div><span className="panel-label">Preconditions</span><p className="m-0 text-sm text-ink/90">{preconditions}</p></div>
         )}
 
-        {/* Test Data */}
         {testData && (
-          <Section label="Test Data">
-            <code className="block text-xs font-mono bg-surface-card p-2.5 rounded-lg text-slate-300 whitespace-pre-wrap">
-              {testData}
-            </code>
-          </Section>
+          <div><span className="panel-label">Test data</span><code className="panel-code">{testData}</code></div>
         )}
 
-        {/* Steps to Reproduce */}
-        <Section label="Steps to Reproduce">
-          <ol className="space-y-1.5 text-sm text-slate-300 light:text-slate-600">
+        <div>
+          <span className="panel-label">Steps to reproduce</span>
+          <ol className="m-0 list-none space-y-2 p-0 text-sm text-ink/90">
             {steps.map((step, i) => (
-              <li key={i} className="flex items-start gap-2">
-                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/20 text-xs font-bold text-primary-light">
-                  {i + 1}
-                </span>
+              <li key={i} className="flex items-start gap-3">
+                <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/15 font-mono text-[0.7rem] font-medium text-primary-light" aria-hidden="true">{i + 1}</span>
                 <span>{step}</span>
               </li>
             ))}
           </ol>
-        </Section>
+        </div>
 
-        {/* Expected vs Actual */}
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <div className="rounded-lg border border-green-500/20 bg-green-500/5 p-3">
-            <p className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold text-green-400">
-              <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M22 11.08V12a10 10 0 11-5.93-9.14" strokeLinecap="round" strokeLinejoin="round" />
-                <polyline points="22 4 12 14.01 9 11.01" />
-              </svg>
-              Expected Result
-            </p>
-            <p className="text-sm text-slate-300 light:text-slate-600">{expected}</p>
+          <div className="rounded-lg border border-line p-4">
+            <p className="m-0 mb-1.5 flex items-center gap-1.5 text-xs font-semibold text-pass"><PIcon name="checkCircle" className="h-4 w-4" /> Expected result</p>
+            <p className="m-0 text-sm text-ink/90">{expected}</p>
           </div>
-          <div className="rounded-lg border border-red-500/20 bg-red-500/5 p-3">
-            <p className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold text-red-400">
-              <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="12" cy="12" r="10" />
-                <line x1="15" y1="9" x2="9" y2="15" />
-                <line x1="9" y1="9" x2="15" y2="15" />
-              </svg>
-              Actual Result
-            </p>
-            <p className="text-sm text-slate-300 light:text-slate-600">{actual}</p>
+          <div className="rounded-lg border border-line p-4">
+            <p className="m-0 mb-1.5 flex items-center gap-1.5 text-xs font-semibold text-fail"><PIcon name="xCircle" className="h-4 w-4" /> Actual result</p>
+            <p className="m-0 text-sm text-ink/90">{actual}</p>
           </div>
         </div>
 
-        {/* Notes / Attachments */}
         {attachments && (
-          <Section label="Attachments">
-            <p className="text-sm text-slate-400">{attachments}</p>
-          </Section>
+          <div><span className="panel-label">Attachments</span><p className="m-0 text-sm text-muted">{attachments}</p></div>
         )}
         {notes && (
-          <Section label="Notes">
-            <p className="text-sm text-slate-400">{notes}</p>
-          </Section>
+          <div><span className="panel-label">Notes</span><p className="m-0 text-sm text-muted">{notes}</p></div>
         )}
       </div>
-    </div>
+    </section>
   )
 }
 
-function Section({ label, children }: { label: string; children: React.ReactNode }) {
+function Meta({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-slate-500">{label}</p>
-      {children}
-    </div>
-  )
-}
-
-function MetaItem({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <span className="block text-slate-500">{label}</span>
-      <span className="text-slate-300 light:text-slate-700">{value}</span>
+      <dt className="panel-label mb-0.5">{label}</dt>
+      <dd className="m-0 text-ink/90">{value}</dd>
     </div>
   )
 }

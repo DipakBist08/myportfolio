@@ -4,13 +4,14 @@ import rehypeSlug from 'rehype-slug'
 import rehypeAutolinkHeadings from 'rehype-autolink-headings'
 import rehypePrettyCode from 'rehype-pretty-code'
 import { getMDXComponents } from './MDXComponents'
+import { remarkAdSlots } from '@/lib/blog/remarkAdSlots'
 
 interface MDXContentProps {
   source: string
 }
 
 const rehypePrettyCodeOptions = {
-  theme: 'github-dark',
+  theme: 'github-dark-default',
   keepBackground: true,
   onVisitLine(node: { children: { type: string }[] }) {
     // Prevent lines from collapsing in `display: grid` mode
@@ -35,7 +36,7 @@ export default function MDXContent({ source }: MDXContentProps) {
         components={getMDXComponents()}
         options={{
           mdxOptions: {
-            remarkPlugins: [remarkGfm],
+            remarkPlugins: [remarkGfm, remarkAdSlots],
             rehypePlugins: [
               rehypeSlug,
               [

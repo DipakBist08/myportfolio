@@ -10,6 +10,8 @@ import CommandBlock from './CommandBlock'
 import Figure from './Figure'
 import Steps from './Steps'
 import Badge from './Badge'
+import KeyTakeaways from './KeyTakeaways'
+import AdSlot from '@/components/ads/AdSlot'
 import Link from 'next/link'
 
 /**
@@ -40,6 +42,13 @@ export function getMDXComponents(overrides?: MDXComponents): MDXComponents {
       )
     },
 
+    // Images in post bodies sit below the fold: load lazily. Alt text is
+    // required by scripts/seo-lint.mjs, so it is passed through as written.
+    img: ({ alt, ...props }) => (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img alt={alt ?? ''} loading="lazy" decoding="async" {...props} />
+    ),
+
     // Pre tag: wrap with copy button
     pre: PreWithCopy,
 
@@ -69,7 +78,7 @@ export function getMDXComponents(overrides?: MDXComponents): MDXComponents {
     // Blockquote
     blockquote: ({ children, ...props }) => (
       <blockquote
-        className="border-l-4 border-primary pl-4 italic text-slate-400 light:text-slate-600 my-4"
+        className="my-5 border-l-2 border-primary pl-5 not-italic text-muted"
         {...props}
       >
         {children}
@@ -78,20 +87,20 @@ export function getMDXComponents(overrides?: MDXComponents): MDXComponents {
 
     // Table
     table: ({ children, ...props }) => (
-      <div className="my-5 overflow-x-auto rounded-xl border border-slate-700/50">
+      <div className="my-5 overflow-x-auto rounded-xl border border-line">
         <table className="w-full text-sm" {...props}>{children}</table>
       </div>
     ),
     thead: ({ children, ...props }) => (
-      <thead className="bg-surface-card/60 border-b border-slate-700/50" {...props}>{children}</thead>
+      <thead className="border-b border-line bg-[rgb(var(--ink-rgb)/0.04)]" {...props}>{children}</thead>
     ),
     th: ({ children, ...props }) => (
-      <th className="px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider text-slate-400" {...props}>
+      <th className="px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider text-muted" {...props}>
         {children}
       </th>
     ),
     td: ({ children, ...props }) => (
-      <td className="px-4 py-2.5 text-slate-300 light:text-slate-700 border-t border-slate-700/30" {...props}>
+      <td className="border-t border-line px-4 py-2.5 text-ink/90" {...props}>
         {children}
       </td>
     ),
@@ -111,6 +120,9 @@ export function getMDXComponents(overrides?: MDXComponents): MDXComponents {
     Figure,
     Steps,
     Badge,
+    KeyTakeaways,
+    // Inserted by lib/blog/remarkAdSlots.ts, never written by hand in a post.
+    AdSlot,
 
     // Override with any additional components
     ...overrides,

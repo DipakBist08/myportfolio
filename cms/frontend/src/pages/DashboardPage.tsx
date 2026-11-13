@@ -4,7 +4,7 @@ import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts'
 import StatCard from '@/components/shared/StatCard'
-import StatusBadge from '@/components/shared/StatusBadge'
+import TrafficPanel from '@/components/dashboard/TrafficPanel'
 import { formatDate, formatRelative } from '@/lib/utils'
 import api from '@/lib/api'
 import type { DashboardStats } from '@/types'
@@ -47,6 +47,10 @@ export default function DashboardPage() {
         <p className="text-sm text-slate-400 mt-0.5">Your blog's performance at a glance</p>
       </div>
 
+      <TrafficPanel />
+
+      <h2 className="text-lg font-heading font-semibold text-white pt-2">CMS content</h2>
+
       {/* Stats grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <StatCard
@@ -57,7 +61,7 @@ export default function DashboardPage() {
           iconColor="text-primary"
         />
         <StatCard
-          title="Total Views"
+          title="CMS post views"
           value={s.total_views.toLocaleString()}
           icon={Eye}
           iconColor="text-accent"

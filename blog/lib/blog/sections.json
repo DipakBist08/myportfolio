@@ -1,0 +1,20 @@
+[
+  {
+    "label": "QA Fundamentals"
+  },
+  {
+    "label": "Automation",
+    "categories": [
+      "Automation Testing",
+      "Playwright",
+      "API Testing",
+      "BDD",
+      "Performance Testing",
+      "CI/CD"
+    ],
+    "intro": "Test automation guides: Playwright with Python, API testing, BDD with Behave, performance testing with JMeter, and running suites in CI."
+  },
+  {
+    "label": "AI Lab"
+  }
+]

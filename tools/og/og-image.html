@@ -1,0 +1,199 @@
+<!doctype html>
+<!--
+  Source of assets/og-image.png, the portfolio's link-preview image (1200x630).
+  Render it from the repository root with:  .venv/bin/python tools/og/render.py
+  The renderer fails on unloaded fonts, touching or overlapping text, text near
+  an edge, or a file over 300 KB. The code and result lines quote the hero's
+  test_login.py panel verbatim; tests/test_journeys.py checks that they still do.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Dipak Bist · Software QA Engineer</title>
+<link rel="stylesheet" href="/css/tokens.css">
+<style>
+  /* Grid: content box x 94..1106 (the blog card's margins). Vertical rhythm on
+     the line boxes: 80 margin / mark / 38 / name / 7 / title / 40 / panel /
+     ~65 margin. Type: Bricolage 120 and 50; mono 26 (mark, code, result) and
+     20 (labels). */
+  html, body { margin: 0; width: 1200px; height: 630px; }
+
+  body {
+    position: relative;
+    overflow: hidden;
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--font-family-sans);
+    font-variant-ligatures: none;
+  }
+
+  /* The blog card's ground: the same indigo glow top-left over a 28px dot
+     grid. Dots sit on x = 94 + 28n and y = 361 + 28n, so they line up with
+     the left edge and fall under the panel's top border. */
+  .bg {
+    position: absolute;
+    inset: 0;
+    background-image:
+      radial-gradient(ellipse 440px 260px at 216px 164px, rgb(99 102 241 / 0.12) 0%, rgb(99 102 241 / 0.075) 35%, rgb(99 102 241 / 0.03) 68%, transparent 100%),
+      radial-gradient(circle at 1px 1px, rgb(var(--ink-rgb) / 0.09) 1px, transparent 1.5px);
+    background-size: auto, 28px 28px;
+    background-position: 0 0, 9px 24px;
+  }
+
+  p, h1, pre { margin: 0; }
+
+  /* Each text block on its own layer: Chromium then antialiases it in
+     greyscale, with no coloured fringes in the downscaled previews. */
+  .row, .name, .title, .panel { position: absolute; left: 94px; will-change: transform; }
+
+  .row {
+    top: 80px;
+    width: 1012px;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-family: var(--font-family-mono);
+    line-height: 1;
+  }
+
+  .mark {
+    margin-left: -2px;
+    font-size: 26px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--color-text);
+  }
+
+  .mark .b { color: var(--color-accent-text); }
+
+  /* 20px keeps its ink right of x=915, so the centre square crop shows no fragment of it */
+  .domain {
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--color-text-muted);
+  }
+
+  .name {
+    top: 144px;
+    margin-left: -4px;
+    font-size: 120px;
+    font-weight: 700;
+    font-stretch: 92%;
+    line-height: 1;
+    letter-spacing: -0.035em;
+    color: var(--color-text);
+  }
+
+  .title {
+    top: 271px;
+    margin-left: -1px;
+    font-size: 50px;
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: var(--color-text-muted);
+  }
+
+  /* The hero's code panel (test_login.py), at card scale */
+  .panel {
+    top: 361px;
+    width: 1012px;
+    box-sizing: border-box;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+    font-family: var(--font-family-mono);
+  }
+
+  .panel__head {
+    position: relative;
+    height: 40px;
+    padding: 0 28px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid var(--color-border);
+    background: rgb(var(--ink-rgb) / 0.03);
+  }
+
+  /* The hero's run progress bar, complete */
+  .panel__head::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 2px;
+    background: var(--color-accent);
+  }
+
+  /* Labels share one size (20px, like the domain); content is 26px */
+  .file {
+    font-size: 20px;
+    font-weight: 500;
+    line-height: 1;
+    color: var(--color-text-muted);
+  }
+
+  .code {
+    padding: 12px 28px;
+    font-family: var(--font-family-mono);
+    font-size: 26px;
+    line-height: 38px;
+    color: var(--color-text-muted);
+    white-space: pre;
+  }
+
+  .step { position: relative; }
+
+  /* Green check in the step's indent, as the hero marks a finished step */
+  .check {
+    position: absolute;
+    left: -2px;
+    top: 50%;
+    width: 24px;
+    height: 24px;
+    margin-top: -12px;
+    fill: none;
+    stroke: var(--color-success);
+    stroke-width: 2.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .str { color: var(--color-text); }
+
+  .run {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 28px 12px;
+    border-top: 1px solid var(--color-border);
+    font-size: 26px;
+    line-height: 38px;
+    color: var(--color-text);
+  }
+
+  .passed { color: var(--color-success); font-weight: 500; }
+  .pct { color: var(--color-text-subtle); }
+</style>
+</head>
+<body>
+  <div class="bg" aria-hidden="true"></div>
+
+  <div class="row">
+    <p class="mark"><span class="b">&lt;</span>DipakBist<span class="b">/&gt;</span></p>
+    <p class="domain">dipakbist.com.np</p>
+  </div>
+
+  <h1 class="name">Dipak Bist</h1>
+  <p class="title">Software QA Engineer</p>
+
+  <section class="panel">
+    <div class="panel__head"><p class="file">test_login.py</p></div>
+<pre class="code"><span class="step" data-quote><svg class="check" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.25 4.25L19 7"/></svg>    page.get_by_role(<span class="str">"button"</span>, name=<span class="str">"Sign in"</span>).click()</span>
+<span class="step" data-quote><svg class="check" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.25 4.25L19 7"/></svg>    expect(page).to_have_title(<span class="str">"Dashboard"</span>)</span></pre>
+    <p class="run"><span data-quote-result>test_login.py::test_login[chromium] <span class="passed">PASSED</span></span><span class="pct">[100%]</span></p>
+  </section>
+</body>
+</html>

@@ -8,3 +8,6 @@ node_modules/
 .env
 .env.local
 THEME_IMPLEMENTATION.md
+
+# Source and renderer for assets/og-image.png; not part of the site
+tools/

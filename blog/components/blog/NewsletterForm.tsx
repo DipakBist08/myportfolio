@@ -44,10 +44,10 @@ export default function NewsletterForm({ compact = false }: Props) {
       const detail: string = data.detail ?? ''
       if (detail.toLowerCase().includes('already')) {
         setState('already')
-        setMessage('You are already subscribed!')
+        setMessage('You are already subscribed.')
       } else {
         setState('success')
-        setMessage("You're subscribed! Welcome to the list.")
+        setMessage("You're subscribed. Welcome to the list.")
         setEmail('')
       }
     } catch {
@@ -62,8 +62,7 @@ export default function NewsletterForm({ compact = false }: Props) {
       <div>
         {state === 'success' ? (
           <div className="flex items-center gap-2 text-sm text-green-400">
-            <span>📬</span>
-            <span>You're subscribed! Welcome to the list.</span>
+            <span>You're subscribed. Welcome to the list.</span>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="flex gap-2">
@@ -72,26 +71,26 @@ export default function NewsletterForm({ compact = false }: Props) {
               required
               value={email}
               onChange={(e) => { setEmail(e.target.value); setState('idle') }}
-              placeholder="your@email.com"
+              placeholder="name@example.com"
               disabled={state === 'loading'}
-              className="flex-1 min-w-0 rounded-lg border border-slate-700/60 bg-white/5 px-3 py-2 text-sm text-slate-300 light:text-slate-900 light:bg-white light:border-slate-300 placeholder-slate-600 light:placeholder-slate-400 outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/30 disabled:opacity-50"
+              className="min-h-11 min-w-0 flex-1 rounded-lg border border-line-strong bg-surface-card px-3 text-base text-ink placeholder:text-subtle outline-none focus:border-primary disabled:opacity-50 light:bg-white"
             />
             <button
               type="submit"
               disabled={state === 'loading'}
-              className="shrink-0 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary-dark transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+              className="btn btn-primary shrink-0"
             >
               {state === 'loading' ? '…' : 'Subscribe'}
             </button>
           </form>
         )}
         {(state === 'error' || state === 'already') && (
-          <p className={`mt-1.5 text-xs ${state === 'already' ? 'text-yellow-400' : 'text-red-400'}`}>
+          <p className={`mt-1.5 text-xs ${state === 'already' ? 'text-muted' : 'text-red-400 light:text-red-700'}`}>
             {message}
           </p>
         )}
         {state !== 'success' && (
-          <p className="mt-1.5 text-xs text-slate-600">No spam · Unsubscribe anytime</p>
+          <p className="mt-1.5 text-xs text-muted">One email per new article. Unsubscribe any time.</p>
         )}
       </div>
     )
@@ -99,34 +98,29 @@ export default function NewsletterForm({ compact = false }: Props) {
 
   // ── Default / blog post card variant ───────────────────────────────────────
   return (
-    <div className="mt-10 rounded-xl border border-primary/20 bg-primary/5 p-6 text-center">
-      <h3 className="mb-1 font-heading text-lg font-bold text-slate-100 light:text-slate-900">
-        Stay Updated
-      </h3>
-      <p className="mb-4 text-sm text-slate-400">
-        Get new QA articles delivered straight to your inbox.
-      </p>
+    <div className="mt-12 rounded-xl border border-line p-6">
+      <h3 className="mb-1 text-xl font-semibold text-ink">Stay Updated</h3>
+      <p className="mb-4 text-sm text-muted">Get new QA articles delivered straight to your inbox.</p>
 
       {state === 'success' ? (
         <div className="flex flex-col items-center gap-2">
-          <span className="text-2xl">📬</span>
           <p className="text-sm font-medium text-green-400">{message}</p>
         </div>
       ) : (
-        <form onSubmit={handleSubmit} className="flex flex-col gap-2 sm:flex-row sm:justify-center">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-2 sm:flex-row">
           <input
             type="email"
             required
             value={email}
             onChange={(e) => { setEmail(e.target.value); setState('idle') }}
-            placeholder="your@email.com"
+            placeholder="name@example.com"
             disabled={state === 'loading'}
-            className="rounded-lg border border-slate-700/50 bg-surface-card px-4 py-2 text-sm text-slate-300 light:text-slate-900 light:bg-white light:border-slate-300 placeholder-slate-500 light:placeholder-slate-400 outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/30 sm:w-64 disabled:opacity-50"
+            className="min-h-11 rounded-lg border border-line-strong bg-surface-card px-4 text-base text-ink placeholder:text-subtle outline-none focus:border-primary disabled:opacity-50 sm:w-72 light:bg-white"
           />
           <button
             type="submit"
             disabled={state === 'loading'}
-            className="rounded-lg bg-primary px-5 py-2 text-sm font-semibold text-white hover:bg-primary-dark transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+            className="btn btn-primary"
           >
             {state === 'loading' ? 'Subscribing…' : 'Subscribe'}
           </button>
@@ -134,13 +128,13 @@ export default function NewsletterForm({ compact = false }: Props) {
       )}
 
       {(state === 'error' || state === 'already') && (
-        <p className={`mt-2 text-xs ${state === 'already' ? 'text-yellow-400' : 'text-red-400'}`}>
+        <p className={`mt-2 text-xs ${state === 'already' ? 'text-muted' : 'text-red-400 light:text-red-700'}`}>
           {message}
         </p>
       )}
 
       {state !== 'success' && (
-        <p className="mt-2 text-xs text-slate-600">No spam, unsubscribe anytime.</p>
+        <p className="mt-2 text-xs text-muted">One email per new article. Unsubscribe any time.</p>
       )}
     </div>
   )

@@ -1,290 +1,530 @@
 ---
-title: "Playwright API Testing Guide: Test REST APIs Without a Browser"
-description: "Learn how to use Playwright's built-in APIRequestContext to test REST APIs — with real examples covering authentication, CRUD operations, schema validation, and CI/CD integration."
-date: "2024-12-10"
+title: "Playwright API Testing in Python, No Browser Needed"
+description: "Playwright API testing in Python with pytest: CRUD requests, JSON Schema checks, 401 and 403 cases, negative tests and CI. All 25 tests were run and pass."
 slug: "playwright-api-testing-guide"
-tags: ["Playwright", "API Testing", "Python", "Automation Testing", "REST API"]
+primaryQuery: "playwright api testing python"
+secondaryQueries:
+  - "playwright apirequestcontext python"
+  - "pytest playwright api testing"
+  - "playwright python post request"
+cluster: "api-testing"
+isPillar: false
+datePublished: "2024-12-10"
+dateModified: "2026-11-12"
+testedWith: "Playwright for Python 1.65.1, pytest-playwright 0.10.0, pytest 9.2.0, jsonschema 4.26.0, Python 3.12.3"
+draft: false
 category: "API Testing"
+tags: ["Playwright", "API Testing", "Python", "pytest", "REST API"]
 author: "Dipak Bist"
-excerpt: "Playwright isn't just for browser automation — it has a powerful API testing layer. Learn to write fast, reliable API tests with Python, complete with real examples."
+excerpt: "Playwright's request API tests REST endpoints from Python without launching a browser. This guide builds a small pytest suite step by step, and every test in it runs and passes."
 featured: true
 difficulty: "intermediate"
-tools: ["Playwright", "Python", "pytest", "REST API", "JSON Schema"]
-keywords: ["Playwright API testing", "Playwright Python REST API", "APIRequestContext", "API test automation", "pytest playwright"]
-coverImage: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=800&h=450&fit=crop"
+tools: ["Playwright", "Python", "pytest", "jsonschema", "GitHub Actions"]
+faq:
+  - q: "Is Playwright good for API testing without a browser?"
+    a: "Yes. Playwright's APIRequestContext sends HTTP requests directly, so API tests never launch a browser. The example suite in this guide passed with no browser binaries installed at all. It is a good fit when your team already uses Playwright for UI tests and wants one tool, one set of fixtures, and shared login state."
+  - q: "How do I share authentication tokens across Playwright API tests?"
+    a: "Create the request context once, in a session-scoped pytest fixture, and pass the token in extra_http_headers. Every test that uses the fixture then sends the same Authorization header. Read the token from an environment variable, not from the code, so it never gets committed to Git or shared by accident."
+  - q: "Can I use Playwright API tests and browser tests in the same project?"
+    a: "Yes. pytest-playwright gives you both the page fixture for browser tests and the playwright fixture for API contexts, in the same suite. A common pattern is to create test data through the API, then check it in the UI. Storage state can also move between API and browser contexts."
+  - q: "How do I send a POST request with Playwright in Python?"
+    a: "Call post() on an APIRequestContext with the path and a dict in the data argument, for example api_context.post('/users', data=payload). Playwright serializes a dict to JSON and sets the Content-Type header to application/json for you. Use form= for form-encoded bodies and multipart= for file uploads."
 ---
 
-Most developers know Playwright as a browser automation tool. But it also has a powerful built-in **API testing layer** — `APIRequestContext` — that lets you test REST APIs without launching a browser at all.
+Playwright API testing in Python means sending HTTP requests through Playwright's `APIRequestContext` and checking the responses with pytest, without opening a browser. You get Playwright's fixtures, assertions and auth handling for your API layer, in the same project as your UI tests. This guide builds a complete test suite step by step, and every test in it was run and passes.
 
-This guide walks through everything you need to write production-quality API tests in Python using Playwright.
+{/* [ADD YOUR EXPERIENCE: one or two sentences on where Playwright API tests helped you at work, for example creating test data before a UI test, or catching a broken endpoint before the UI did. Keep it generic: no employer, product or client names.] */}
 
-## Why Playwright for API Testing?
+<KeyTakeaways>
+- `APIRequestContext` sends HTTP requests directly. The suite in this guide passes with no browsers installed.
+- Create the request context once per test session, with the base URL and the auth header.
+- For every write, check the status, the body and the stored data. A `201` alone proves little.
+- `jsonschema` ignores `"format"` rules such as email unless you pass a `FormatChecker`.
+- Test `401`, `403` and bad input as carefully as the happy path.
+</KeyTakeaways>
 
-<Callout type="info" title="Playwright vs Requests vs Postman">
-  Playwright's `APIRequestContext` gives you the same cookie management, authentication, and state that browser tests use — so you can seamlessly combine API setup with E2E testing in the same test suite. No context-switching between tools.
-</Callout>
+## What do you need for Playwright API testing in Python?
 
-Benefits over using `requests` alone:
-- Same session/cookie management as browser tests
-- Integrated with playwright's `pytest` fixture system
-- Can mix API calls with UI interactions
-- Built-in `expect` API for assertions
-- Works with HAR recording for debugging
-
-## Setup
+You need Python 3.10 or newer and two packages: `pytest-playwright`, which installs Playwright and pytest, and `jsonschema` for response validation. You do not need to run `playwright install`, because API tests never start a browser.
 
 ```bash
-pip install pytest-playwright
-playwright install chromium
+python -m venv .venv
+source .venv/bin/activate   # on Windows: .venv\Scripts\activate
+pip install pytest-playwright jsonschema
 ```
 
-Your `conftest.py`:
+These are the exact versions this guide was tested with:
 
-```python filename="conftest.py"
+```text title="requirements.txt"
+playwright==1.65.1
+pytest==9.2.0
+pytest-playwright==0.10.0
+jsonschema==4.26.0
+```
+
+<Callout type="info" title="No browser download needed">
+  `pip install playwright` installs the library and its driver, not the browsers. Browsers come from the separate `playwright install` step, which API-only suites can skip. The example suite for this guide passes with Playwright pointed at an empty browser folder (`PLAYWRIGHT_BROWSERS_PATH`), so no browser is involved at any point.
+</Callout>
+
+## What API will the tests run against?
+
+The examples test a small users API. So that every example runs for anyone, with no account and no network access, the example project includes a mock of that API: `mock_api.py`, written with the Python standard library only. It starts on a free local port when the test session starts. To point the same tests at another API, set `API_BASE_URL`.
+
+| Request | Success | Expected errors |
+|---|---|---|
+| `GET /users/{id}` | `200` with the user | `401`, `404` |
+| `POST /users` | `201` with the new user | `400` missing field, `422` invalid value, `409` email taken, `401`, `403` |
+| `PATCH /users/{id}` | `200` with the updated user | `422` invalid value, `404`, `401`, `403` |
+| `DELETE /users/{id}` | `204` with no body | `404`, `401`, `403` |
+| `GET /admin/settings` | `200` | `401`, `403` |
+
+There are two tokens: `admin-token` can read and write, and `viewer-token` can only read. The complete project, with the mock and all 25 tests, is in the [Playwright API testing example project on GitHub](https://github.com/DipakBist08/myportfolio/tree/main/blog/examples/playwright-api-testing-guide).
+
+## How do you set up an APIRequestContext with pytest?
+
+Create one `APIRequestContext` per test session in `conftest.py`, with the base URL and the headers every request needs. pytest-playwright provides the `playwright` fixture you build it from. Dispose of the context at the end of the session to free its memory.
+
+```python title="conftest.py"
+import os
+import uuid
+from typing import Iterator
+
 import pytest
-from playwright.sync_api import Playwright, APIRequestContext
+from playwright.sync_api import APIRequestContext, Playwright
 
-BASE_URL = "https://api.example.com"
-API_TOKEN = "your-api-token-here"  # ideally from env var
+import mock_api
+
 
 @pytest.fixture(scope="session")
-def api_context(playwright: Playwright) -> APIRequestContext:
-    context = playwright.request.new_context(
-        base_url=BASE_URL,
-        extra_http_headers={
-            "Authorization": f"Bearer {API_TOKEN}",
-            "Accept": "application/json",
-            "Content-Type": "application/json",
-        },
-    )
+def base_url() -> Iterator[str]:
+    """Use API_BASE_URL when it is set; otherwise start the local mock API."""
+    external = os.environ.get("API_BASE_URL")
+    if external:  # an empty value (an unset CI variable) falls through to the mock
+        yield external
+        return
+    server, url = mock_api.start()
+    yield url
+    server.shutdown()
+
+
+def new_context(playwright: Playwright, base_url: str, token: str | None) -> APIRequestContext:
+    headers = {"Accept": "application/json"}
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
+    return playwright.request.new_context(base_url=base_url, extra_http_headers=headers)
+
+
+def token(name: str, mock_default: str) -> str:
+    # `or`, not a get() default: CI sets the variable to "" when a secret is missing.
+    return os.environ.get(name) or mock_default
+
+
+@pytest.fixture(scope="session")
+def api_context(playwright: Playwright, base_url: str) -> Iterator[APIRequestContext]:
+    """Requests sent as an admin. The token comes from the environment, never from the code."""
+    context = new_context(playwright, base_url, token("API_TOKEN", "admin-token"))
     yield context
     context.dispose()
+
+
+@pytest.fixture(scope="session")
+def viewer_context(playwright: Playwright, base_url: str) -> Iterator[APIRequestContext]:
+    """Requests sent as a read-only user."""
+    context = new_context(playwright, base_url, token("API_VIEWER_TOKEN", "viewer-token"))
+    yield context
+    context.dispose()
+
+
+@pytest.fixture(scope="session")
+def anonymous_context(playwright: Playwright, base_url: str) -> Iterator[APIRequestContext]:
+    """Requests sent with no token at all."""
+    context = new_context(playwright, base_url, token=None)
+    yield context
+    context.dispose()
+
+
+@pytest.fixture
+def unique_email() -> str:
+    """A fresh address per test, so tests never collide on the unique-email rule."""
+    return f"qa-{uuid.uuid4().hex[:12]}@example.com"
+
+
+@pytest.fixture
+def created_user(api_context: APIRequestContext, unique_email: str) -> Iterator[dict]:
+    """Create a user for one test and delete it afterwards, even if the test fails."""
+    response = api_context.post("/users", data={"name": "QA Tester", "email": unique_email, "role": "viewer"})
+    assert response.status == 201, response.text()
+    user = response.json()
+    yield user
+    api_context.delete(f"/users/{user['id']}")  # 404 is fine if the test already deleted it
 ```
 
-## GET Request — Fetch a Resource
+Three details in this file prevent common problems:
 
-```python filename="tests/api/test_users.py"
-import pytest
+- **The token comes from the environment.** `API_TOKEN` is read with `or` instead of a `get()` default, because CI systems pass a missing secret as an empty string.
+- **Every test gets its own email address.** `unique_email` stops tests from colliding on the "email must be unique" rule, so they can run in any order, or twice in a row.
+- **Test data is cleaned up.** `created_user` deletes the user after the test, even when the test fails, because pytest runs fixture teardown either way.
+
+Official references: [API testing in the Playwright for Python docs](https://playwright.dev/python/docs/api-testing) and [how pytest fixtures work](https://docs.pytest.org/en/stable/how-to/fixtures.html).
+
+## How do you test a GET request?
+
+Send the request, check the status, then check the body. `expect(response).to_be_ok()` passes for any status from 200 to 299, so compare `response.status` directly when the exact code matters, as in the 404 test below.
+
+```python title="tests/test_users_read.py"
 from playwright.sync_api import APIRequestContext, expect
 
-def test_get_user_returns_200(api_context: APIRequestContext):
+
+def test_get_user_returns_the_user(api_context: APIRequestContext):
     response = api_context.get("/users/1")
 
-    # Status assertion
-    expect(response).to_be_ok()
+    expect(response).to_be_ok()  # any 2xx status
 
-    # Body assertions
     body = response.json()
     assert body["id"] == 1
-    assert "email" in body
-    assert "@" in body["email"]
+    assert body["email"] == "asha@example.com"
+    assert response.headers["content-type"] == "application/json"
+
+
+def test_get_missing_user_returns_404(api_context: APIRequestContext):
+    response = api_context.get("/users/999999")
+
+    assert response.status == 404
+    assert response.json() == {"error": "not_found"}
+
+
+def test_list_users_includes_a_created_user(api_context: APIRequestContext, created_user: dict):
+    response = api_context.get("/users")
+
+    expect(response).to_be_ok()
+    assert created_user["id"] in [user["id"] for user in response.json()]
 ```
+
+This is the response the first test checks:
 
 <APIRequest
   method="GET"
-  url="https://api.example.com/users/1"
+  url="/users/1"
   headers={{ "Authorization": "Bearer <token>", "Accept": "application/json" }}
   status={200}
   response={`{
   "id": 1,
-  "name": "Dipak Bist",
-  "email": "dipak@example.com",
+  "name": "Asha Rai",
+  "email": "asha@example.com",
   "role": "admin"
 }`}
-  description="Fetch a user by ID. Returns the full user object."
+  description="Response from the example project's mock API."
 />
 
-## POST Request — Create a Resource
+The assertion is documented in the [APIResponseAssertions reference](https://playwright.dev/python/docs/api/class-apiresponseassertions).
 
-```python filename="tests/api/test_create_user.py"
-def test_create_user(api_context: APIRequestContext):
-    payload = {
-        "name": "QA Tester",
-        "email": "qa.tester@example.com",
-        "role": "viewer",
-    }
+## How do you test POST, PATCH and DELETE requests?
 
-    response = api_context.post("/users", data=payload)
+For every write, check three things: the status code, the response body, and the stored data, by reading the record back. An API can answer `201` or `200` and still fail to save the change, and only the read-back catches that.
+
+Written as a manual test case, the flow looks like this. The tests below automate each step.
+
+<TestCase
+  id="API-001"
+  title="Create, update and delete a user through the REST API"
+  objective="The users API stores changes and removes deleted users"
+  preconditions="An admin token. The email address used is not taken."
+  testData={`name: QA Tester\nemail: a new, unique address\nrole: viewer`}
+  type="API"
+  priority="high"
+  author="Dipak Bist"
+  steps={[
+    { action: "POST /users with the test data", expected: "201, and the body echoes the name, email and role with a numeric id" },
+    { action: "PATCH /users/{id} with a new email", expected: "200, and GET /users/{id} returns the new email" },
+    { action: "DELETE /users/{id}", expected: "204 with no body" },
+    { action: "GET /users/{id}", expected: "404: the user is gone" },
+  ]}
+/>
+
+```python title="tests/test_users_write.py"
+from playwright.sync_api import APIRequestContext, expect
+
+
+def test_create_user(api_context: APIRequestContext, unique_email: str):
+    payload = {"name": "QA Tester", "email": unique_email, "role": "viewer"}
+
+    response = api_context.post("/users", data=payload)  # a dict is sent as JSON
 
     assert response.status == 201
     body = response.json()
-    assert body["id"] is not None
-    assert body["email"] == payload["email"]
-    return body["id"]  # can be used in subsequent tests
-```
+    assert isinstance(body["id"], int)
+    assert {key: body[key] for key in payload} == payload
 
-## PUT / PATCH — Update a Resource
+    api_context.delete(f"/users/{body['id']}")  # clean up what this test created
 
-```python filename="tests/api/test_update_user.py"
-def test_update_user_email(api_context: APIRequestContext):
-    update_payload = {"email": "updated@example.com"}
 
-    response = api_context.patch("/users/1", data=update_payload)
+def test_update_user_email(api_context: APIRequestContext, created_user: dict, unique_email: str):
+    new_email = f"updated-{unique_email}"
+
+    response = api_context.patch(f"/users/{created_user['id']}", data={"email": new_email})
+
     expect(response).to_be_ok()
+    assert response.json()["email"] == new_email
+    # Read it back: the update must be stored, not only echoed in the response.
+    assert api_context.get(f"/users/{created_user['id']}").json()["email"] == new_email
 
-    body = response.json()
-    assert body["email"] == "updated@example.com"
+
+def test_delete_user(api_context: APIRequestContext, created_user: dict):
+    user_url = f"/users/{created_user['id']}"
+
+    delete_response = api_context.delete(user_url)
+    assert delete_response.status == 204
+
+    assert api_context.get(user_url).status == 404  # it is really gone
+    assert api_context.delete(user_url).status == 404  # deleting twice is not a success
 ```
 
-## DELETE — Remove a Resource
+Two details worth copying:
 
-```python filename="tests/api/test_delete_user.py"
-def test_delete_user(api_context: APIRequestContext):
-    # Create user first
-    create_resp = api_context.post("/users", data={"name": "Delete Me", "email": "delete@example.com"})
-    user_id = create_resp.json()["id"]
+- **`data=` with a dict is sent as JSON.** Playwright also sets `Content-Type: application/json` for you. Use `form=` for form-encoded bodies and `multipart=` for file uploads. See the [APIRequestContext reference](https://playwright.dev/python/docs/api/class-apirequestcontext).
+- **The delete test deletes twice.** In this API's contract the second call returns `404`. Some APIs return `204` again by design. Whichever your API documents, test it, so a change in behavior gets noticed.
 
-    # Delete
-    delete_resp = api_context.delete(f"/users/{user_id}")
-    assert delete_resp.status == 204
+## How do you validate an API response with JSON Schema?
 
-    # Verify it's gone
-    verify_resp = api_context.get(f"/users/{user_id}")
-    assert verify_resp.status == 404
-```
+Describe the expected shape of a response once, as a JSON Schema, and validate responses against it. Schema checks catch a renamed field, a wrong type or an unexpected extra field, which checks on one or two values miss.
 
-## Schema Validation
-
-```python filename="tests/api/test_schema.py"
-import jsonschema
+```python title="tests/test_schema.py"
+import pytest
+from jsonschema import Draft202012Validator, FormatChecker, ValidationError
+from playwright.sync_api import APIRequestContext
 
 USER_SCHEMA = {
     "type": "object",
-    "required": ["id", "name", "email"],
+    "required": ["id", "name", "email", "role"],
     "properties": {
         "id": {"type": "integer"},
         "name": {"type": "string", "minLength": 1},
         "email": {"type": "string", "format": "email"},
         "role": {"type": "string", "enum": ["admin", "editor", "viewer"]},
     },
-    "additionalProperties": True,
+    # Fail when the API starts returning a field nobody agreed on.
+    "additionalProperties": False,
 }
 
-def test_user_response_schema(api_context: APIRequestContext):
-    response = api_context.get("/users/1")
-    body = response.json()
+# "format" is only checked when a FormatChecker is passed in.
+validator = Draft202012Validator(USER_SCHEMA, format_checker=FormatChecker())
 
-    jsonschema.validate(instance=body, schema=USER_SCHEMA)
-    # No exception = schema valid
+
+def test_user_response_matches_schema(api_context: APIRequestContext):
+    body = api_context.get("/users/1").json()
+
+    validator.validate(body)  # raises ValidationError on a mismatch
+
+
+def test_every_listed_user_matches_schema(api_context: APIRequestContext):
+    for user in api_context.get("/users").json():
+        validator.validate(user)
+
+
+@pytest.mark.parametrize(
+    "broken_user",
+    [
+        {"id": "1", "name": "Asha Rai", "email": "asha@example.com", "role": "admin"},  # id is a string
+        {"id": 1, "name": "Asha Rai", "email": "not-an-email", "role": "admin"},  # bad email format
+        {"id": 1, "name": "Asha Rai", "email": "asha@example.com", "role": "owner"},  # unknown role
+        {"id": 1, "name": "Asha Rai", "email": "asha@example.com"},  # role is missing
+        {"id": 1, "name": "Asha Rai", "email": "asha@example.com", "role": "admin", "password": "x"},  # extra field
+    ],
+)
+def test_schema_rejects_a_broken_user(broken_user: dict):
+    """Prove the schema can fail. A schema that accepts everything protects nothing."""
+    with pytest.raises(ValidationError):
+        validator.validate(broken_user)
 ```
 
-## Authentication Flows
+`"additionalProperties": False` matters most for fields that should never leave the server, such as a password hash: the extra-field case in the last test is exactly that bug.
 
-### Bearer Token
+<Callout type="warning" title="Formats are not checked unless you ask">
+  In the `jsonschema` library, `"format": "email"` is only an annotation by default, so `not-an-email` passes. Pass `format_checker=FormatChecker()` to enforce formats, as above. See [validating formats in the jsonschema docs](https://python-jsonschema.readthedocs.io/en/stable/validate/).
+</Callout>
 
-```python filename="tests/api/test_auth.py"
-def test_401_without_token(playwright):
-    # Context without auth headers
-    unauthed = playwright.request.new_context(base_url="https://api.example.com")
-    response = unauthed.get("/protected-resource")
+## How do you test 401 and 403 responses?
+
+Test both failure modes. `401 Unauthorized` means the request has no valid credentials, and `403 Forbidden` means the credentials are valid but not allowed to do this (MDN: [401 Unauthorized](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/401), [403 Forbidden](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/403)). Give each role its own request context, so every test shows who is calling.
+
+```python title="tests/test_auth.py"
+from playwright.sync_api import APIRequestContext, Playwright
+
+
+def test_401_without_a_token(anonymous_context: APIRequestContext):
+    response = anonymous_context.get("/users/1")
+
     assert response.status == 401
-    unauthed.dispose()
+    assert response.json() == {"error": "unauthorized"}
 
-def test_403_with_wrong_role(api_context: APIRequestContext):
-    # Token with 'viewer' role trying admin endpoint
-    response = api_context.get("/admin/settings")
+
+def test_401_with_an_invalid_token(playwright: Playwright, base_url: str):
+    context = playwright.request.new_context(
+        base_url=base_url,
+        extra_http_headers={"Authorization": "Bearer not-a-real-token"},
+    )
+    try:
+        assert context.get("/users/1").status == 401
+    finally:
+        context.dispose()
+
+
+def test_viewer_can_read(viewer_context: APIRequestContext):
+    assert viewer_context.get("/users/1").status == 200
+
+
+def test_403_when_a_viewer_opens_an_admin_endpoint(viewer_context: APIRequestContext):
+    response = viewer_context.get("/admin/settings")
+
     assert response.status == 403
+    assert response.json() == {"error": "forbidden"}
+
+
+def test_403_when_a_viewer_tries_to_write(viewer_context: APIRequestContext, api_context: APIRequestContext, unique_email: str):
+    response = viewer_context.post("/users", data={"name": "Should Not Exist", "email": unique_email})
+
+    assert response.status == 403
+    # The status code alone is not enough: check that nothing was created.
+    assert unique_email not in [user["email"] for user in api_context.get("/users").json()]
 ```
 
-## A Complete Test Case
+The last test is the one many suites skip: it checks that the viewer's rejected request created nothing. A `403` with a side effect is still a security bug.
 
-<TestCase
-  id="API-001"
-  title="Create and retrieve a user via REST API"
-  objective="Verify the user creation flow returns correct data and is retrievable"
-  preconditions="Valid API token with admin role. Clean test environment."
-  testData={`name: "QA Automation\nemail: qa+test@example.com\nrole: viewer"`}
-  type="API"
-  priority="high"
-  author="Dipak Bist"
-  steps={[
-    { action: "POST /users with valid payload", expected: "201 Created, body contains id and correct email" },
-    { action: "GET /users/{id} using returned id", expected: "200 OK, body matches created user data" },
-    { action: "Validate response matches USER_SCHEMA", expected: "No schema validation errors" },
-    { action: "DELETE /users/{id}", expected: "204 No Content" },
-    { action: "GET /users/{id} again", expected: "404 Not Found" },
-  ]}
-/>
+## How do you write negative API tests?
 
-## Negative Testing
+List the invalid inputs in a parametrize table, one row per case, with the expected status and the field the error should name. For each row, check three things: the status, the error body, and that nothing was created.
 
-Don't forget unhappy paths — they catch bugs just as often:
+```python title="tests/test_negative.py"
+import pytest
+from playwright.sync_api import APIRequestContext
 
-```python filename="tests/api/test_negative.py"
-@pytest.mark.parametrize("payload,expected_status", [
-    ({}, 400),                                    # missing required fields
-    ({"name": "", "email": "bad"}, 422),          # invalid email
-    ({"name": "x" * 300, "email": "a@b.com"}, 400),  # name too long
-])
-def test_create_user_validation(api_context, payload, expected_status):
+
+@pytest.mark.parametrize(
+    "payload, expected_status, expected_fields",
+    [
+        pytest.param({}, 400, ["name", "email"], id="empty body"),
+        pytest.param({"name": "No Email"}, 400, ["email"], id="email missing"),
+        pytest.param({"name": "", "email": "a@example.com"}, 422, ["name"], id="name empty"),
+        pytest.param({"name": "x" * 101, "email": "a@example.com"}, 422, ["name"], id="name too long"),
+        pytest.param({"name": "Bad Email", "email": "not-an-email"}, 422, ["email"], id="email invalid"),
+        pytest.param({"name": "Bad Role", "email": "a@example.com", "role": "owner"}, 422, ["role"], id="role unknown"),
+    ],
+)
+def test_create_user_rejects_bad_input(api_context: APIRequestContext, payload, expected_status, expected_fields):
+    users_before = len(api_context.get("/users").json())
+
     response = api_context.post("/users", data=payload)
+
     assert response.status == expected_status
+    assert response.json()["fields"] == expected_fields  # the error says which fields are wrong
+    assert len(api_context.get("/users").json()) == users_before  # and nothing was created
+
+
+def test_create_user_rejects_a_duplicate_email(api_context: APIRequestContext, created_user: dict):
+    response = api_context.post("/users", data={"name": "Twin", "email": created_user["email"]})
+
+    assert response.status == 409
+    assert response.json() == {"error": "email_taken"}
 ```
 
-## CI/CD Integration
+The split between `400` and `422` is this API's contract. Your API may use `400` for every validation error: test what your API documents, not these numbers. The `id=` labels make each case readable in the test report; see [parametrizing tests](https://docs.pytest.org/en/stable/how-to/parametrize.html) in the pytest docs.
 
-```yaml filename=".github/workflows/api-tests.yml"
-name: API Tests
+## How do you run the tests?
+
+Run pytest from the project folder:
+
+```bash
+pytest -v
+```
+
+This is the end of the output from the run for this guide. All 25 tests pass in under 3 seconds, and no browser starts:
+
+```text
+tests/test_negative.py::test_create_user_rejects_bad_input[role unknown] PASSED [ 44%]
+tests/test_negative.py::test_create_user_rejects_a_duplicate_email PASSED [ 48%]
+tests/test_schema.py::test_user_response_matches_schema PASSED           [ 52%]
+tests/test_schema.py::test_every_listed_user_matches_schema PASSED       [ 56%]
+tests/test_schema.py::test_schema_rejects_a_broken_user[broken_user0] PASSED [ 60%]
+tests/test_schema.py::test_schema_rejects_a_broken_user[broken_user1] PASSED [ 64%]
+tests/test_schema.py::test_schema_rejects_a_broken_user[broken_user2] PASSED [ 68%]
+tests/test_schema.py::test_schema_rejects_a_broken_user[broken_user3] PASSED [ 72%]
+tests/test_schema.py::test_schema_rejects_a_broken_user[broken_user4] PASSED [ 76%]
+tests/test_users_read.py::test_get_user_returns_the_user PASSED          [ 80%]
+tests/test_users_read.py::test_get_missing_user_returns_404 PASSED       [ 84%]
+tests/test_users_read.py::test_list_users_includes_a_created_user PASSED [ 88%]
+tests/test_users_write.py::test_create_user PASSED                       [ 92%]
+tests/test_users_write.py::test_update_user_email PASSED                 [ 96%]
+tests/test_users_write.py::test_delete_user PASSED                       [100%]
+
+============================== 25 passed in 2.88s ==============================
+```
+
+The tests are written against the mock's contract: user `1`, and the error codes in the table above. To run them against your own API, change those expectations to match its documentation, then set `API_BASE_URL` and `API_TOKEN`.
+
+## How do you run Playwright API tests in CI?
+
+Install the requirements and run pytest. There is no `playwright install` step, because API tests need no browser. Store the token as a repository secret and pass it to the test step as an environment variable.
+
+```yaml title=".github/workflows/api-tests.yml"
+name: API tests
 
 on: [push, pull_request]
 
 jobs:
-  api-test:
+  api-tests:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
-          python-version: "3.11"
+          python-version: "3.12"
       - name: Install dependencies
-        run: pip install pytest pytest-playwright
+        run: pip install -r requirements.txt
       - name: Run API tests
-        run: pytest tests/api/ -v --tb=short
+        run: pytest -v
         env:
+          API_BASE_URL: ${{ vars.API_BASE_URL }}
           API_TOKEN: ${{ secrets.API_TOKEN }}
 ```
 
-## Tips and Gotchas
+When `API_BASE_URL` is not set, the tests start the mock API, so the workflow also runs in a fork that has no secrets.
 
-<Callout type="warning" title="Test Isolation">
-  Always clean up created resources after each test (teardown). Using a dedicated test environment or prefixed test data (`qa_smoke_`) prevents polluting shared environments.
-</Callout>
+## What are the most common mistakes in Playwright API tests?
 
-<Callout type="tip" title="Use Fixtures for Shared Setup">
-  Use pytest fixtures with `autouse=True` for common setup (auth, base URL) and `scope="session"` for API contexts that can be reused across tests to speed up the suite.
-</Callout>
+- **A token hardcoded in `conftest.py`.** It ends up in Git history. Read it from an environment variable.
+- **Checking only the status code.** Check the body too and, for writes, read the data back.
+- **Fixed test data.** A test that always creates `qa@example.com` collides with itself on the second run. Generate unique values.
+- **No cleanup.** Shared test environments fill up with leftover records. Delete what each test creates, in a fixture.
+- **Returning a value from a test so a later test can use it.** pytest 9 warns with `PytestReturnNotNoneWarning`, and no other test can read the value. Share data through fixtures instead.
+- **Trusting `"format"` in a schema without a `FormatChecker`.** The check silently does nothing.
 
-## Helpful AI Prompt for API Testing
+## Can AI help you write API test cases?
+
+AI tools are useful for a first list of cases, such as boundaries and missing fields. The model does not know your API's contract, so check every case against the documentation before you automate it, and never paste real tokens or customer data into the prompt.
 
 <PromptBlock
-  title="Generate API Test Cases"
-  context="You are a Senior QA Engineer specialising in API testing."
-  prompt={`Given this API endpoint:
+  title="Draft API test cases"
+  context="You are a senior QA engineer who specializes in API testing."
+  prompt={`Here is an endpoint:
 Method: POST
 URL: /api/v1/orders
 Body: { "product_id": int, "quantity": int, "user_id": int }
+Rules: quantity is 1 to 100; product_id must exist.
 
-Generate a comprehensive list of test cases covering:
-1. Happy path
-2. Boundary values for quantity (0, 1, max allowed, max+1)
+List test cases for:
+1. The happy path
+2. Boundary values for quantity (0, 1, 100, 101)
 3. Missing required fields
-4. Invalid data types
-5. Unauthorised access
-6. Idempotency (duplicate requests)
-7. Large payload
+4. Wrong data types
+5. No token, and a token without permission
+6. The same request sent twice
 
-Format as a table: | Test ID | Description | Input | Expected Status | Expected Response |`}
-  tip="Add your specific business rules (e.g. max quantity = 100) for more targeted test cases."
+Format: | ID | Description | Input | Expected status | Expected response |`}
+  tip="Give the model your real business rules. Without them it guesses limits and status codes."
 />
 
-## Key Takeaways
+## Where do API tests fit next to UI tests?
 
-- Playwright's `APIRequestContext` is a full-featured API testing tool
-- Session/auth state is shared between API and browser tests
-- Use `jsonschema` for response contract validation
-- Parametrize negative test cases to cover edge cases efficiently
-- Integrate into CI/CD using environment variables for secrets
+API tests run fast and fail with a precise message, so they can carry most functional checks, with fewer browser tests for the journeys only a browser can prove. For deciding which checks to automate at all, see [when to automate a test](/blog/manual-vs-automation-testing). When an API test does find a defect, report it with the exact request and response: this [bug report example](/blog/how-to-write-good-bug-report) shows the fields developers need.
 
-<Callout type="success">
-  API tests are typically 10-100x faster than E2E browser tests. Build a strong API test layer first — it will catch most regressions before they reach the UI.
-</Callout>
+For more on this topic, see all [API testing articles](/blog/category/api-testing).

@@ -1,45 +1,37 @@
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { getAllPostsMeta } from '@/lib/blog/mdx'
-import BlogPageContent from '@/components/blog/BlogPageContent'
+import BlogPageContent, { BlogPageView } from '@/components/blog/BlogPageContent'
+import { AUTHOR_LD, BASE_URL, SITE_LANGUAGE, SITE_NAME } from '@/lib/blog/site'
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://blog.dipakbist.com.np'
+const HOME_TITLE = 'Dipak Bist | QA Engineering Blog'
+const HOME_DESCRIPTION =
+  'Practical, tested guides on Playwright with Python, API testing, bug reporting and QA careers, written by Dipak Bist, a Software QA Engineer in Kathmandu.'
 
 export const metadata: Metadata = {
-  title: 'Blog',
-  description: 'Articles on Software QA, automation testing, Playwright, API testing, bug reporting, and QA career tips by Dipak Bist.',
+  title: { absolute: HOME_TITLE },
+  description: HOME_DESCRIPTION,
   alternates: { canonical: BASE_URL },
   openGraph: {
     type: 'website',
     url: BASE_URL,
-    title: 'Dipak Bist | QA Engineering Blog',
-    description: 'Practical articles on test automation, Playwright, API testing, bug reporting, and QA career tips.',
-    siteName: 'Dipak Bist QA Blog',
+    title: HOME_TITLE,
+    description: HOME_DESCRIPTION,
+    siteName: SITE_NAME,
+    images: [{ url: `${BASE_URL}/og-default.png`, width: 1200, height: 630, alt: SITE_NAME }],
   },
 }
 
 const websiteLd = {
   '@context': 'https://schema.org',
-  '@type': 'WebSite',
-  '@id': `${BASE_URL}/#website`,
-  name: 'Dipak Bist QA Blog',
+  '@type': 'Blog',
+  '@id': `${BASE_URL}/#blog`,
+  name: SITE_NAME,
   url: BASE_URL,
-  description: 'Practical articles on software testing, automation, Playwright, API testing and QA career tips.',
-  author: {
-    '@type': 'Person',
-    name: 'Dipak Bist',
-    url: 'https://dipakbist.com',
-    sameAs: [
-      'https://www.linkedin.com/in/dipakbist08/',
-      'https://github.com/dipakbist08',
-      'https://twitter.com/dipakbist08',
-    ],
-  },
-  potentialAction: {
-    '@type': 'SearchAction',
-    target: { '@type': 'EntryPoint', urlTemplate: `${BASE_URL}/?q={search_term_string}` },
-    'query-input': 'required name=search_term_string',
-  },
+  inLanguage: SITE_LANGUAGE,
+  description: HOME_DESCRIPTION,
+  author: AUTHOR_LD,
+  publisher: AUTHOR_LD,
 }
 
 export default function BlogPage() {
@@ -48,7 +40,10 @@ export default function BlogPage() {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteLd) }} />
-      <Suspense fallback={<div className="mx-auto max-w-6xl px-6 py-12 text-slate-400">Loading…</div>}>
+      {/* The fallback is the full, unfiltered list. It is what crawlers and
+          no-JavaScript readers get; BlogPageContent replaces it with the same
+          view once the URL filters can be read in the browser. */}
+      <Suspense fallback={<BlogPageView allPosts={allPosts} />}>
         <BlogPageContent allPosts={allPosts} />
       </Suspense>
     </>

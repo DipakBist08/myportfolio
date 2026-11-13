@@ -1,0 +1,241 @@
+/* =====================================================
+   Base: reset, typography, browser surfaces, layout primitives
+   ===================================================== */
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+* {
+    margin: 0;
+}
+
+html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    scroll-padding-top: calc(var(--header-height) + 1rem);
+    accent-color: var(--color-accent);
+    caret-color: var(--color-accent);
+    scrollbar-color: var(--neutral-600) transparent;
+}
+
+/* Smooth scrolling only for in-page navigation (a clicked link holds focus),
+   never for the wheel: CSS smooth scrolling on top of the OS's own wheel
+   smoothing makes scrolling feel heavy in Chrome and Edge on Windows. */
+@media (prefers-reduced-motion: no-preference) {
+    html:focus-within {
+        scroll-behavior: smooth;
+    }
+}
+
+body {
+    min-height: 100dvh;
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--font-family-sans);
+    font-size: var(--font-size-md);
+    line-height: var(--line-height-normal);
+    font-optical-sizing: auto;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow-x: clip;
+    transition: background-color var(--duration-slow) var(--ease-standard), color var(--duration-slow) var(--ease-standard);
+}
+
+main {
+    display: block;
+}
+
+::selection {
+    background: rgb(var(--accent-rgb) / 0.35);
+    color: var(--color-text);
+}
+
+img,
+svg,
+video {
+    display: block;
+    max-width: 100%;
+}
+
+img {
+    height: auto;
+}
+
+button,
+input,
+textarea {
+    font: inherit;
+    color: inherit;
+}
+
+button {
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+code,
+kbd,
+pre,
+.mono {
+    font-family: var(--font-family-mono);
+    font-size: 0.9em;
+    font-variant-ligatures: none;
+}
+
+h1,
+h2,
+h3,
+h4 {
+    font-weight: 600;
+    line-height: var(--line-height-snug);
+    letter-spacing: var(--letter-spacing-heading);
+    text-wrap: balance;
+    overflow-wrap: anywhere;
+}
+
+h1 {
+    font-size: var(--font-size-4xl);
+    font-weight: 700;
+    line-height: var(--line-height-tight);
+    letter-spacing: var(--letter-spacing-display);
+}
+
+h2 {
+    font-size: var(--font-size-3xl);
+}
+
+h3 {
+    font-size: var(--font-size-xl);
+}
+
+p,
+li {
+    overflow-wrap: anywhere;
+}
+
+p {
+    max-width: var(--measure);
+    text-wrap: pretty;
+}
+
+strong {
+    font-weight: 600;
+    color: var(--color-text);
+}
+
+a {
+    color: var(--color-accent-text);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.18em;
+    text-decoration-color: rgb(var(--accent-rgb) / 0.45);
+    transition: color var(--duration-fast) var(--ease-standard), text-decoration-color var(--duration-fast) var(--ease-standard);
+}
+
+a:hover {
+    text-decoration-color: currentColor;
+}
+
+:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+    border-radius: var(--radius-sm);
+}
+
+/* ----- Layout primitives ----- */
+.container {
+    width: 100%;
+    max-width: var(--container-max);
+    margin-inline: auto;
+    padding-inline: var(--container-padding);
+}
+
+.section {
+    padding-block: clamp(4rem, 8vw, 7rem);
+}
+
+.section--peak {
+    padding-block: clamp(5rem, 10vw, 8.5rem);
+}
+
+.section__head {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    margin-bottom: clamp(2rem, 5vw, 3.5rem);
+}
+
+.section__lede {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-lg);
+}
+
+/* ----- Utilities ----- */
+.visually-hidden {
+    position: absolute !important;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+}
+
+.text-muted {
+    color: var(--color-text-muted);
+}
+
+.tabular {
+    font-variant-numeric: tabular-nums;
+}
+
+.skip-link {
+    position: fixed;
+    top: var(--space-3);
+    left: var(--space-3);
+    z-index: var(--z-top);
+    padding: var(--space-2) var(--space-4);
+    background: var(--color-accent-strong);
+    color: #fff;
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    transform: translateY(-200%);
+    transition: transform var(--duration-fast) var(--ease-out);
+}
+
+.skip-link:focus-visible {
+    transform: translateY(0);
+}
+
+/* ----- Icons (Phosphor regular, one weight) ----- */
+.icon {
+    width: 1.1em;
+    height: 1.1em;
+    fill: currentColor;
+    flex: none;
+}
+
+/* ----- Reveal gate -----
+   Elements marked data-reveal start hidden ONLY when the inline head
+   script has confirmed motion is wanted (html.anim) AND the motion module
+   has loaded (html.motion). If either is missing, everything is visible. */
+html.anim.motion [data-reveal]:not(.is-in) {
+    opacity: 0;
+}
+
+/* ----- Reduced motion: per-effect alternatives, feedback survives ----- */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+    }
+}
