@@ -104,3 +104,17 @@ _config.yml
 THEME_IMPLEMENTATION.md
 SETUP.md
 posts/
+
+# Playwright output
+playwright-report/
+test-results/
+
+# Python test environment
+.venv/
+.pytest_cache/
+__pycache__/
+
+# TypeScript build output (tsc -b in cms/frontend)
+*.tsbuildinfo
+cms/frontend/vite.config.js
+cms/frontend/vite.config.d.ts

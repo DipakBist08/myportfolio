@@ -1,0 +1,30 @@
+{
+  "name": "myportfolio",
+  "version": "2.0.0",
+  "description": "Dipak Bist's portfolio: a static site with a pytest + Playwright test suite. No build step.",
+  "private": true,
+  "scripts": {
+    "serve": "python3 tools/serve.py 4173",
+    "test": "python3 -m pytest",
+    "test:headed": "python3 -m pytest --headed",
+    "test:setup": "python3 -m venv .venv && .venv/bin/pip install -r requirements-dev.txt && .venv/bin/playwright install chromium",
+    "test:ts": "playwright test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DipakBist08/myportfolio.git"
+  },
+  "author": "Dipak Bist",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/DipakBist08/myportfolio/issues"
+  },
+  "homepage": "https://dipakbist.com.np/",
+  "dependencies": {
+    "framer-motion": "^14.1.0"
+  },
+  "devDependencies": {
+    "@phosphor-icons/core": "^2.1.1",
+    "@playwright/test": "1.62.1"
+  }
+}
