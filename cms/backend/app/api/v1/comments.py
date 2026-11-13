@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session, joinedload
 from typing import Optional
 
+from app.core.reactions import attach_reactions
 from app.database import get_db
 from app.dependencies import get_current_user
 from app.models.user import User
@@ -25,7 +26,9 @@ def list_comments(
         q = q.filter(Comment.post_slug == slug)
     if approved is not None:
         q = q.filter(Comment.is_approved == approved)
-    return q.order_by(Comment.created_at.desc()).offset((page - 1) * page_size).limit(page_size).all()
+    comments = q.order_by(Comment.created_at.desc()).offset((page - 1) * page_size).limit(page_size).all()
+    attach_reactions(db, comments)
+    return comments
 
 
 @router.patch("/{comment_id}/approve", response_model=CommentAdminOut)

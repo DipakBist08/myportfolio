@@ -165,6 +165,32 @@ export interface DashboardStats {
   views_chart: { day: string; views: number }[]
 }
 
+/** GET /api/v1/analytics/traffic: visits to the portfolio and the blog. A
+ *  visit is one page loaded by one visitor (reloads within 30 minutes count
+ *  once); visitors are unique people, counted without cookies. */
+export interface TrafficStats {
+  days: number
+  today: string
+  visits_total: number
+  visitors_total: number
+  visits_today: number
+  visitors_today: number
+  visits_period: number
+  visitors_period: number
+  chart: { day: string; visits: number; visitors: number }[]
+  by_site: { site: 'portfolio' | 'blog'; visits: number; visitors: number }[]
+  top_pages: { site: 'portfolio' | 'blog'; path: string; title: string; visits: number; visitors: number }[]
+  posts: {
+    slug: string
+    title: string
+    views: number
+    readers: number
+    comments: number
+    likes: number
+    dislikes: number
+  }[]
+}
+
 
 // ── Comments ──────────────────────────────────────────────────────────────────
 
@@ -173,6 +199,8 @@ export interface CommentReply {
   author_name: string
   content: string
   created_at: string
+  likes: number
+  dislikes: number
 }
 
 export interface Comment {
@@ -185,4 +213,6 @@ export interface Comment {
   is_approved: boolean
   created_at: string
   replies: CommentReply[]
+  likes: number
+  dislikes: number
 }

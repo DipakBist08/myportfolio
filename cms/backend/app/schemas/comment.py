@@ -1,7 +1,8 @@
 from pydantic import BaseModel, EmailStr, field_validator
-from typing import Optional
+from typing import Literal, Optional
 from datetime import datetime
 import bleach
+import html
 
 
 class CommentCreate(BaseModel):
@@ -26,7 +27,9 @@ class CommentCreate(BaseModel):
         if not v:
             raise ValueError("Comment cannot be empty")
         # Strip all HTML tags — plain text only
-        v = bleach.clean(v, tags=[], strip=True)
+        # The blog renders comments as text (React escapes them), so decode the
+        # entities bleach adds: "Q&A" must not show as "Q&amp;A".
+        v = html.unescape(bleach.clean(v, tags=[], strip=True))
         if len(v) > 2000:
             raise ValueError("Comment must be under 2000 characters")
         return v
@@ -37,6 +40,11 @@ class CommentReply(BaseModel):
     author_name: str
     content: str
     created_at: datetime
+    # Reactions (app.core.reactions.attach_reactions). my_reaction is the
+    # requesting visitor's own: 1 like, -1 dislike, 0 none.
+    likes: int = 0
+    dislikes: int = 0
+    my_reaction: int = 0
     model_config = {"from_attributes": True}
 
 
@@ -48,7 +56,21 @@ class CommentOut(BaseModel):
     content: str
     created_at: datetime
     replies: list[CommentReply] = []
+    likes: int = 0
+    dislikes: int = 0
+    my_reaction: int = 0
     model_config = {"from_attributes": True}
+
+
+class ReactionIn(BaseModel):
+    value: Literal[-1, 0, 1]  # 1 like, -1 dislike, 0 take my reaction back
+
+
+class ReactionOut(BaseModel):
+    comment_id: int
+    likes: int
+    dislikes: int
+    my_reaction: int
 
 
 class CommentAdminOut(CommentOut):

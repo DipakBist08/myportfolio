@@ -98,9 +98,8 @@ def seed():
         {"key": "site_description", "value": "Insights on QA Automation, Testing, and DevOps", "category": "general", "label": "Site Description"},
         {"key": "site_url", "value": "https://yourdomain.com", "category": "general", "label": "Site URL"},
         {"key": "author_name", "value": "Dipak Bist", "category": "general", "label": "Author Name"},
-        {"key": "twitter_handle", "value": "@dipakbist08", "category": "social", "label": "Twitter"},
         {"key": "github_url", "value": "https://github.com/DipakBist08", "category": "social", "label": "GitHub"},
-        {"key": "linkedin_url", "value": "https://linkedin.com/in/dipakbist08", "category": "social", "label": "LinkedIn"},
+        {"key": "linkedin_url", "value": "https://www.linkedin.com/in/dipakbist", "category": "social", "label": "LinkedIn"},
         {"key": "posts_per_page", "value": "10", "category": "blog", "label": "Posts Per Page"},
         {"key": "allow_comments", "value": "false", "category": "blog", "label": "Allow Comments"},
     ]
