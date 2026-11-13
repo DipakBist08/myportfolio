@@ -15,8 +15,11 @@ def _from_address() -> str:
 
 
 async def send_confirmation_email(email: str, name: str, token: str) -> bool:
-    confirm_url = f"{settings.FRONTEND_URL}/confirm?token={token}"
-    blog_url = settings.BACKEND_URL.replace("api.", "blog.")
+    # Was FRONTEND_URL/confirm — but FRONTEND_URL is the CMS admin SPA and it has
+    # no /confirm route, so every confirmation link would have 404'd. Point it at
+    # the API endpoint that actually handles the token.
+    confirm_url = f"{settings.BACKEND_URL.rstrip('/')}/api/v1/subscribers/confirm?token={token}"
+    blog_url = settings.BLOG_URL
 
     if not settings.emails_enabled:
         logger.info("[EMAIL DISABLED] confirm → %s", confirm_url)
