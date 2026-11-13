@@ -1,36 +1,38 @@
-<!--This is my portfolio website -->
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dipak Bist — Software QA Engineer | Playwright &amp; API Testing</title>
     <meta name="description"
         content="Dipak Bist — Software QA Engineer in Kathmandu with 4+ years testing multi-tenant SaaS platforms. Playwright and Python automation, REST API testing with Postman, and manual QA in Agile Scrum teams.">
-    <title>Dipak Bist — Software QA Engineer | Playwright &amp; API Testing</title>
     <link rel="canonical" href="https://dipakbist.com.np/">
     <meta name="author" content="Dipak Bist">
+    <meta name="color-scheme" content="dark light">
+    <meta name="theme-color" content="#0b0b0e" media="(prefers-color-scheme: dark)">
+    <meta name="theme-color" content="#fafafa" media="(prefers-color-scheme: light)">
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 
-    <!-- Open Graph -->
+    <!-- Open Graph. assets/og-image.png is a 1200x630 typographic card rendered from the site's own styles. -->
     <meta property="og:type" content="profile">
     <meta property="og:site_name" content="Dipak Bist">
     <meta property="og:url" content="https://dipakbist.com.np/">
     <meta property="og:title" content="Dipak Bist — Software QA Engineer">
     <meta property="og:description"
         content="4+ years testing multi-tenant SaaS platforms. Playwright and Python automation, REST API testing with Postman, manual QA in Agile Scrum teams.">
-    <!-- TODO: Dipak to supply a 1200x630 share image at assets/og-image.png and point the two
-         tags below at it. profile.png is only 192x192, which most platforms will crop or ignore. -->
-    <meta property="og:image" content="https://dipakbist.com.np/assets/profile.png">
+    <meta property="og:image" content="https://dipakbist.com.np/assets/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
     <meta property="og:image:alt" content="Dipak Bist, Software QA Engineer">
 
     <!-- Twitter card -->
-    <meta name="twitter:card" content="summary">
+    <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Dipak Bist — Software QA Engineer">
     <meta name="twitter:description"
         content="4+ years testing multi-tenant SaaS platforms. Playwright and Python automation, REST API testing with Postman, manual QA in Agile Scrum teams.">
-    <meta name="twitter:image" content="https://dipakbist.com.np/assets/profile.png">
+    <meta name="twitter:image" content="https://dipakbist.com.np/assets/og-image.png">
 
-    <!-- Structured data -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -41,7 +43,7 @@
       "image": "https://dipakbist.com.np/assets/profile.png",
       "email": "mailto:dipakbeest@gmail.com",
       "sameAs": [
-        "https://www.linkedin.com/in/dipakbist08/",
+        "https://www.linkedin.com/in/dipakbist",
         "https://github.com/DipakBist08",
         "https://blog.dipakbist.com.np"
       ],
@@ -97,31 +99,45 @@
     }
     </script>
 
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap"
-        rel="stylesheet">
+    <!-- Theme and motion gates, before first paint. Storage is only READ here;
+         it is written when the visitor clicks the toggle. -->
+    <script>
+        (function () {
+            var html = document.documentElement;
+            window.__pageErrors = [];
+            addEventListener('error', function (e) { window.__pageErrors.push(e.message || 'error'); });
+            addEventListener('unhandledrejection', function (e) { window.__pageErrors.push('unhandled: ' + ((e.reason && e.reason.message) || e.reason)); });
+            try {
+                var s = localStorage.getItem('portfolio-theme');
+                var t = s === 'light' || s === 'dark' ? s : (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+                html.setAttribute('data-theme', t);
+            } catch (e) { html.setAttribute('data-theme', 'dark'); }
+            if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                html.classList.add('anim', 'motion');
+                // If the motion module never arrives, show everything.
+                window.__revealTimer = setTimeout(function () { html.classList.remove('motion'); }, 3000);
+            }
+        })();
+    </script>
 
-    <!-- Styles -->
-    <link rel="stylesheet" href="index.css">
+    <!-- Fonts are self-hosted (assets/fonts). Preload only the display face. -->
+    <link rel="preload" href="assets/fonts/bricolage-grotesque-latin.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="css/tokens.css?v=20261113h">
+    <link rel="stylesheet" href="css/base.css?v=20261113h">
+    <link rel="stylesheet" href="css/site.css?v=20261113h">
 </head>
 
 <body>
     <a href="#main" class="skip-link">Skip to content</a>
+    <div class="progress" aria-hidden="true"><div class="progress__bar"></div></div>
+    <div id="top-sentinel" aria-hidden="true"></div>
 
-    <!-- Header & Navigation -->
-    <header class="header">
-        <nav class="nav container">
-            <a href="#" class="nav__logo">
-                <span class="logo-bracket">&lt;</span>DipakBist<span class="logo-bracket">/&gt;</span>
-            </a>
-            <button class="nav__toggle" id="nav-toggle" aria-label="Toggle navigation">
-                <span class="hamburger"></span>
-            </button>
+    <header class="header" id="site-header">
+        <nav class="nav container" aria-label="Primary">
+            <a href="#home" class="nav__logo"><span class="nav__bracket">&lt;</span>DipakBist<span class="nav__bracket">/&gt;</span></a>
             <div class="nav__right">
-                <ul class="nav__menu" id="nav-menu">
+                <ul id="nav-menu" class="nav__menu">
+                    <li class="nav__indicator" aria-hidden="true"></li>
                     <li class="nav__item"><a href="#home" class="nav__link">Home</a></li>
                     <li class="nav__item"><a href="#about" class="nav__link">About</a></li>
                     <li class="nav__item"><a href="#workflow" class="nav__link">Workflow</a></li>
@@ -131,481 +147,208 @@
                     <li class="nav__item"><a href="#blog" class="nav__link">Blog</a></li>
                     <li class="nav__item"><a href="#contact" class="nav__link nav__link--cta">Contact</a></li>
                 </ul>
-                <!-- Theme Toggle -->
-                <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark/light mode" title="Toggle theme">
-                <svg class="theme-icon theme-icon--sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="5"></circle>
-                    <line x1="12" y1="1" x2="12" y2="3"></line>
-                    <line x1="12" y1="21" x2="12" y2="23"></line>
-                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                    <line x1="1" y1="12" x2="3" y2="12"></line>
-                    <line x1="21" y1="12" x2="23" y2="12"></line>
-                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-                </svg>
-                <svg class="theme-icon theme-icon--moon" viewBox="0 0 24 24" fill="currentColor" stroke="none">
-                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-                </svg>
-            </button>
+                <button id="theme-toggle" class="icon-btn theme-toggle" type="button" aria-pressed="false" aria-label="Switch to light theme">
+                    <svg class="icon icon--sun" viewBox="0 0 256 256" aria-hidden="true"><path d="M120,40V16a8,8,0,0,1,16,0V40a8,8,0,0,1-16,0Zm72,88a64,64,0,1,1-64-64A64.07,64.07,0,0,1,192,128Zm-16,0a48,48,0,1,0-48,48A48.05,48.05,0,0,0,176,128ZM58.34,69.66A8,8,0,0,0,69.66,58.34l-16-16A8,8,0,0,0,42.34,53.66Zm0,116.68-16,16a8,8,0,0,0,11.32,11.32l16-16a8,8,0,0,0-11.32-11.32ZM192,72a8,8,0,0,0,5.66-2.34l16-16a8,8,0,0,0-11.32-11.32l-16,16A8,8,0,0,0,192,72Zm5.66,114.34a8,8,0,0,0-11.32,11.32l16,16a8,8,0,0,0,11.32-11.32ZM48,128a8,8,0,0,0-8-8H16a8,8,0,0,0,0,16H40A8,8,0,0,0,48,128Zm80,80a8,8,0,0,0-8,8v24a8,8,0,0,0,16,0V216A8,8,0,0,0,128,208Zm112-88H216a8,8,0,0,0,0,16h24a8,8,0,0,0,0-16Z"/></svg>
+                    <svg class="icon icon--moon" viewBox="0 0 256 256" aria-hidden="true"><path d="M233.54,142.23a8,8,0,0,0-8-2,88.08,88.08,0,0,1-109.8-109.8,8,8,0,0,0-10-10,104.84,104.84,0,0,0-52.91,37A104,104,0,0,0,136,224a103.09,103.09,0,0,0,62.52-20.88,104.84,104.84,0,0,0,37-52.91A8,8,0,0,0,233.54,142.23ZM188.9,190.34A88,88,0,0,1,65.66,67.11a89,89,0,0,1,31.4-26A106,106,0,0,0,96,56,104.11,104.11,0,0,0,200,160a106,106,0,0,0,14.92-1.06A89,89,0,0,1,188.9,190.34Z"/></svg>
+                </button>
+                <button id="nav-toggle" class="icon-btn nav__toggle" type="button" aria-expanded="false" aria-controls="nav-menu" aria-label="Open menu">
+                    <svg class="icon icon--open" viewBox="0 0 256 256" aria-hidden="true"><path d="M224,128a8,8,0,0,1-8,8H40a8,8,0,0,1,0-16H216A8,8,0,0,1,224,128ZM40,72H216a8,8,0,0,0,0-16H40a8,8,0,0,0,0,16ZM216,184H40a8,8,0,0,0,0,16H216a8,8,0,0,0,0-16Z"/></svg>
+                    <svg class="icon icon--close" viewBox="0 0 256 256" aria-hidden="true"><path d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z"/></svg>
+                </button>
             </div>
         </nav>
     </header>
 
-    <main id="main">
-        <!-- Hero Section -->
+
+    <main id="main" tabindex="-1">
+        <!-- ================= HERO ================= -->
         <section class="hero" id="home" aria-labelledby="hero-heading">
-            <div class="hero__bg-gradient"></div>
-            <canvas id="galaxy-canvas" class="hero__galaxy" aria-hidden="true"></canvas>
-            <!-- Antigravity-style floating orbs -->
-            <div class="floating-orbs" id="floating-orbs">
-                <div class="orb orb--1"></div>
-                <div class="orb orb--2"></div>
-                <div class="orb orb--3"></div>
-                <div class="orb orb--4"></div>
-                <div class="orb orb--5"></div>
-            </div>
-
-
-
-
-
-
-
-
-            <!-- Grid lines background -->
-            <div class="grid-lines"></div>
-            <!-- Mouse follower -->
-            <div class="mouse-follower" id="mouse-follower"></div>
-            <div class="container hero__container">
-                <div class="hero__content">
-                    <span class="hero__greeting animate-fade-in">Hello, I'm</span>
-                    <h1 class="hero__title animate-fade-in-delay-1" id="hero-heading">
-                        <span class="gradient-text">Dipak Bist</span>
-                        <br>Software QA Engineer
+            <div class="hero__bg" aria-hidden="true"></div>
+            <div class="container hero__grid">
+                <div class="hero__copy">
+                    <h1 id="hero-heading" class="hero__title">
+                        <span class="hero__line" data-reveal>Dipak Bist</span>
+                        <span class="hero__line hero__line--role" data-reveal>Software QA Engineer</span>
                     </h1>
-                    <p class="hero__subtitle animate-fade-in-delay-2">
-                        <span class="typing-text" id="typing-text"></span>
-                        <span class="typing-cursor">|</span>
-                    </p>
-                    <p class="hero__description animate-fade-in-delay-3">
-                        I have <strong>4+ years of experience</strong> testing web applications and multi-tenant SaaS
-                        platforms — designing risk-based test suites, automating regression paths with Playwright and
-                        Python, and verifying REST APIs with Postman.
-                    </p>
-                    <div class="hero__buttons animate-fade-in-delay-4">
-                        <a href="#projects" class="btn btn--primary">
-                            <span>View My Work</span>
-                            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2">
-                                <path d="M5 12h14M12 5l7 7-7 7" />
-                            </svg>
-                        </a>
-                        <a href="#contact" class="btn btn--outline">
-                            <span>Contact Me</span>
-                        </a>
+                    <p class="hero__lede" data-reveal>I have <strong>4+ years of experience</strong> testing web applications and multi-tenant SaaS platforms — designing risk-based test suites, automating regression paths with Playwright and Python, and verifying REST APIs with Postman.</p>
+                    <div class="hero__actions" data-reveal>
+                        <a class="btn btn--primary" href="#projects">View my work <svg class="icon" viewBox="0 0 256 256" aria-hidden="true"><path d="M221.66,133.66l-72,72a8,8,0,0,1-11.32-11.32L196.69,136H40a8,8,0,0,1,0-16H196.69L138.34,61.66a8,8,0,0,1,11.32-11.32l72,72A8,8,0,0,1,221.66,133.66Z"/></svg></a>
+                        <a class="btn btn--secondary" href="#contact">Contact</a>
                     </div>
                 </div>
-    
+
+                <div class="hero__spec" data-reveal>
+                    <section class="spec flow" id="flow" aria-labelledby="flow-heading">
+                        <header class="spec__head">
+                            <h2 id="flow-heading" class="spec__file">test_login.py</h2>
+                            <span class="spec__status" id="flow-status">ready</span>
+                            <span class="spec__progress" id="flow-progress" aria-hidden="true"></span>
+                        </header>
+<pre class="flow__code"><code><span class="tok-kw">import</span> os
+
+<span class="tok-kw">import</span> pytest
+<span class="flow__wrap"><span class="tok-kw">from</span> playwright.sync_api <span class="tok-kw">import</span> Page, expect</span>
 
 
-  <div class="hero__visual animate-fade-in-delay-2">
-    <div class="hero__code-window">
-        <div class="code-window__header">
-            <span class="code-dot code-dot--red"></span>
-            <span class="code-dot code-dot--yellow"></span>
-            <span class="code-dot code-dot--green"></span>
-            <!-- TODO: Dipak to supply real snippet — a Page Object Model class or fixture from the
-                 actual Playwright framework. Keep it within the current character count so the
-                 typing/float animation timing is unaffected. -->
-            <span class="code-window__title">test_login.py</span>
-        </div>
-        <div class="code-window__body">
-            <pre><code><span class="code-keyword">import</span> os
-<span class="code-keyword">import</span> pytest
-<span class="code-keyword">from</span> playwright.sync_api <span class="code-keyword">import</span> Page, expect
+<span class="tok-dec">@pytest.fixture</span>(autouse=<span class="tok-kw">True</span>)
+<span class="tok-kw">def</span> <span class="tok-fn">setup</span>(page: Page):
+<span class="flow__step" data-step="1"><span class="flow__lead">    page.goto(</span><wbr><span class="tok-str">"https://app.example.com"</span>)</span>
 
-<span class="code-decorator">@pytest.fixture</span>(autouse=<span class="code-keyword">True</span>)
-<span class="code-keyword">def</span> <span class="code-function">setup</span>(page: Page):
-    page.goto(<span class="code-string">"https://app.com"</span>)
 
-<span class="code-keyword">def</span> <span class="code-function">test_login</span>(page: Page):
-    page.get_by_label(<span class="code-string">"Email"</span>).fill(os.getenv(<span class="code-string">"USER_EMAIL"</span>))
-    page.get_by_label(<span class="code-string">"Password"</span>).fill(os.getenv(<span class="code-string">"USER_PASSWORD"</span>))
-    page.get_by_role(<span class="code-string">"button"</span>, name=<span class="code-string">"Sign in"</span>).click()
-    expect(page).to_have_title(<span class="code-string">"Dashboard"</span>)
-    <span class="code-comment"># ✓ Test passed!</span></code></pre>
-        </div>
-    </div>
-</div>
-</div>
-<a href="#about" class="hero__scroll-indicator">
-    <span>Scroll Down</span>
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M12 5v14M5 12l7 7 7-7" />
-    </svg>
-</a>
-</section>
-
-        <!-- Metrics -->
-        <!-- Every number here is independently verifiable, on purpose. The master brief
-             suggested figures like "300+ automation tests" and "600+ defects logged";
-             those are not in the approved fact set and cannot be evidenced, so they are
-             deliberately absent rather than invented. See the report for what to supply. -->
-        <section class="section metrics" id="metrics" aria-labelledby="metrics-heading">
-            <div class="container">
-                <h2 class="visually-hidden" id="metrics-heading">By the numbers</h2>
-                <ul class="metrics__grid">
-                    <li class="metric" data-animate>
-                        <span class="metric__value" data-count-to="4" data-metric="experience-years"><span class="metric__number">0</span>+</span>
-                        <span class="metric__label">Years in QA</span>
-                        <span class="metric__note">Manual, automation, API and performance</span>
-                    </li>
-                    <li class="metric" data-animate>
-                        <span class="metric__value" data-count-to="3"><span class="metric__number">0</span></span>
-                        <span class="metric__label">Companies</span>
-                        <span class="metric__note">Sterling Wells, E-Signature, Moru</span>
-                    </li>
-                    <li class="metric" data-animate>
-                        <span class="metric__value" data-count-to="10" data-metric="public-repos"><span class="metric__number">0</span></span>
-                        <span class="metric__label">Public repositories</span>
-                        <span class="metric__note">github.com/DipakBist08</span>
-                    </li>
-                    <li class="metric" data-animate>
-                        <span class="metric__value" data-metric="published-articles" data-count-to="3"><span class="metric__number">0</span></span>
-                        <span class="metric__label">Published articles</span>
-                        <span class="metric__note">blog.dipakbist.com.np</span>
-                    </li>
-                </ul>
-            </div>
-        </section>
-
-        <!-- Quality Engineering Workflow -->
-        <section class="section workflow" id="workflow" aria-labelledby="workflow-heading">
-            <div class="container">
-                <div class="section__header">
-                    <span class="section__tag">How I Work</span>
-                    <h2 class="section__title" id="workflow-heading">My Quality Engineering Workflow</h2>
+<span class="tok-kw">def</span> <span class="tok-fn">test_login</span>(page: Page):
+<span class="flow__step" data-step="2"><span class="flow__lead">    page.get_by_label(</span><wbr><span class="tok-str">"Email"</span>)<wbr>.fill(<wbr>os.environ[<wbr><span class="tok-str">"USER_EMAIL"</span>])</span>
+<span class="flow__step" data-step="3"><span class="flow__lead">    page.get_by_label(</span><wbr><span class="tok-str">"Password"</span>)<wbr>.fill(<wbr>os.environ[<wbr><span class="tok-str">"USER_PASSWORD"</span>])</span>
+<span class="flow__step" data-step="4"><span class="flow__lead">    page.get_by_role(</span><wbr><span class="tok-str">"button"</span>, name=<span class="tok-str">"Sign in"</span>)<wbr>.click()</span>
+<span class="flow__step" data-step="5"><span class="flow__lead">    expect(page)</span><wbr>.to_have_title(<wbr><span class="tok-str">"Dashboard"</span>)</span></code></pre>
+                        <div class="flow__run">
+                            <p class="flow__cmd"><span class="flow__prompt" aria-hidden="true">$</span> pytest -v test_login.py</p>
+                            <p class="flow__result" id="flow-result"><span>test_login.py::<wbr>test_login[chromium] <span class="flow__passed">PASSED</span></span><span class="flow__pct"> [100%]</span></p>
+                        </div>
+                        <footer class="flow__foot">
+                            <span id="flow-live" class="visually-hidden" role="status" aria-live="polite"></span>
+                            <button type="button" class="btn btn--text" data-flow-rerun aria-label="Re-run test_login.py"><svg class="icon" viewBox="0 0 256 256" aria-hidden="true"><path d="M224,128a96,96,0,0,1-94.71,96H128A95.38,95.38,0,0,1,62.1,197.8a8,8,0,0,1,11-11.63A80,80,0,1,0,71.43,71.39a3.07,3.07,0,0,1-.26.25L44.59,96H72a8,8,0,0,1,0,16H24a8,8,0,0,1-8-8V56a8,8,0,0,1,16,0V85.8L60.25,60A96,96,0,0,1,224,128Z"/></svg> Re-run</button>
+                        </footer>
+                    </section>
                 </div>
-                <ol class="workflow__list">
-                    <li class="workflow__step" data-animate>
-                        <span class="workflow__num" aria-hidden="true">01</span>
-                        <div class="workflow__body">
-                            <h3 class="workflow__title">Requirements</h3>
-                            <p class="workflow__text">I read the requirement before the ticket, and write down what is ambiguous.</p>
-                        </div>
-                    </li>
-                    <li class="workflow__step" data-animate>
-                        <span class="workflow__num" aria-hidden="true">02</span>
-                        <div class="workflow__body">
-                            <h3 class="workflow__title">Risk analysis</h3>
-                            <p class="workflow__text">Which failures would cost the most? That ranking decides where the effort goes.</p>
-                        </div>
-                    </li>
-                    <li class="workflow__step" data-animate>
-                        <span class="workflow__num" aria-hidden="true">03</span>
-                        <div class="workflow__body">
-                            <h3 class="workflow__title">Test planning</h3>
-                            <p class="workflow__text">Scenarios and cases mapped back to requirements, so coverage is arguable.</p>
-                        </div>
-                    </li>
-                    <li class="workflow__step" data-animate>
-                        <span class="workflow__num" aria-hidden="true">04</span>
-                        <div class="workflow__body">
-                            <h3 class="workflow__title">Manual testing</h3>
-                            <p class="workflow__text">Exploratory passes first — scripted cases only find what they were written for.</p>
-                        </div>
-                    </li>
-                    <li class="workflow__step" data-animate>
-                        <span class="workflow__num" aria-hidden="true">05</span>
-                        <div class="workflow__body">
-                            <h3 class="workflow__title">API validation</h3>
-                            <p class="workflow__text">Contract, auth and error paths checked at the service layer before the UI.</p>
-                        </div>
-                    </li>
-                    <li class="workflow__step" data-animate>
-                        <span class="workflow__num" aria-hidden="true">06</span>
-                        <div class="workflow__body">
-                            <h3 class="workflow__title">Automation</h3>
-                            <p class="workflow__text">Regression-critical journeys move into Playwright so they run every time.</p>
-                        </div>
-                    </li>
-                    <li class="workflow__step" data-animate>
-                        <span class="workflow__num" aria-hidden="true">07</span>
-                        <div class="workflow__body">
-                            <h3 class="workflow__title">Performance</h3>
-                            <p class="workflow__text">JMeter against the paths that carry load, watching where latency turns.</p>
-                        </div>
-                    </li>
-                    <li class="workflow__step" data-animate>
-                        <span class="workflow__num" aria-hidden="true">08</span>
-                        <div class="workflow__body">
-                            <h3 class="workflow__title">Regression</h3>
-                            <p class="workflow__text">The automated suite runs on every change; failures are triaged, not muted.</p>
-                        </div>
-                    </li>
-                    <li class="workflow__step" data-animate>
-                        <span class="workflow__num" aria-hidden="true">09</span>
-                        <div class="workflow__body">
-                            <h3 class="workflow__title">Release validation</h3>
-                            <p class="workflow__text">UAT and a smoke pass against the release build before sign-off.</p>
-                        </div>
-                    </li>
-                    <li class="workflow__step" data-animate>
-                        <span class="workflow__num" aria-hidden="true">10</span>
-                        <div class="workflow__body">
-                            <h3 class="workflow__title">Continuous improvement</h3>
-                            <p class="workflow__text">Every escaped defect becomes a new case and a question about why.</p>
-                        </div>
-                    </li>
-                </ol>
             </div>
         </section>
 
-        <!-- About Section -->
+        <!-- ================= ABOUT ================= -->
         <section class="section about" id="about" aria-labelledby="about-heading">
             <div class="container">
-                <div class="section__header">
-                    <span class="section__tag">Who I Am</span>
-                    <h2 class="section__title" id="about-heading">About Me</h2>
+                <div class="section__head" data-reveal>
+                    <h2 id="about-heading">About Me</h2>
                 </div>
-                <div class="uiux__wrapper" data-animate>
-                    <div class="about__identity">
-                        <!-- TODO: Dipak to supply a higher-resolution portrait (480px+). profile.png is
-                             192x192, so it is rendered at native size here to stay sharp. -->
-                        <img src="assets/profile.png" alt="Dipak Bist, Software QA Engineer, Kathmandu"
-                            class="about__image" loading="lazy" width="192" height="192">
-                        <div class="about__facts">
-                            <span class="tech-tag">4+ Years Experience</span>
-                            <span class="tech-tag">Kathmandu, Nepal</span>
-                            <span class="tech-tag">Open to Opportunities</span>
+                <div class="about__grid">
+                    <div class="about__identity" data-reveal>
+                        <!-- TODO: Dipak to supply a higher-resolution portrait (480px+). profile.png is 192x192,
+                             rendered at 160px here so it stays sharp. -->
+                        <img class="about__portrait" src="assets/profile.png" alt="Dipak Bist, Software QA Engineer, Kathmandu" width="192" height="192" loading="lazy">
+                        <ul class="about__facts" aria-label="Quick facts">
+                            <li class="tag">4+ Years Experience</li>
+                            <li class="tag tag--neutral">Kathmandu, Nepal</li>
+                            <li class="tag tag--neutral">Open to Opportunities</li>
+                        </ul>
+                        <div class="about__evidence">
+                            <p class="about__evidence-title">Evidence for the claims</p>
+                            <ul class="evidence">
+                                <li><a href="https://figsflow.com" target="_blank" rel="noopener noreferrer">FigsFlow, the platform I test <svg class="icon" viewBox="0 0 256 256" aria-hidden="true"><path d="M200,64V168a8,8,0,0,1-16,0V83.31L69.66,197.66a8,8,0,0,1-11.32-11.32L172.69,72H88a8,8,0,0,1,0-16H192A8,8,0,0,1,200,64Z"/></svg></a></li>
+                                <li><a href="https://github.com/DipakBist08/BDD_Framework-" target="_blank" rel="noopener noreferrer">BDD framework on GitHub <svg class="icon" viewBox="0 0 256 256" aria-hidden="true"><path d="M200,64V168a8,8,0,0,1-16,0V83.31L69.66,197.66a8,8,0,0,1-11.32-11.32L172.69,72H88a8,8,0,0,1,0-16H192A8,8,0,0,1,200,64Z"/></svg></a></li>
+                                <li><a href="https://blog.dipakbist.com.np/blog/playwright-api-testing-guide" target="_blank" rel="noopener">Playwright API testing guide <svg class="icon" viewBox="0 0 256 256" aria-hidden="true"><path d="M200,64V168a8,8,0,0,1-16,0V83.31L69.66,197.66a8,8,0,0,1-11.32-11.32L172.69,72H88a8,8,0,0,1,0-16H192A8,8,0,0,1,200,64Z"/></svg></a></li>
+                                <li><a href="https://blog.dipakbist.com.np/blog/how-to-write-good-bug-report" target="_blank" rel="noopener">How I write a bug report <svg class="icon" viewBox="0 0 256 256" aria-hidden="true"><path d="M200,64V168a8,8,0,0,1-16,0V83.31L69.66,197.66a8,8,0,0,1-11.32-11.32L172.69,72H88a8,8,0,0,1,0-16H192A8,8,0,0,1,200,64Z"/></svg></a></li>
+                            </ul>
                         </div>
                     </div>
-                    <div class="about__prose">
-                        <p class="uiux__description">
-                            I am a Software Quality Assurance Engineer with over four years of experience ensuring the
-                            quality, reliability and performance of modern web applications and SaaS platforms. My
-                            expertise spans manual testing, test automation, API validation and performance testing,
-                            with a strong focus on building efficient testing processes that help teams deliver
-                            high-quality software faster.
-                        </p>
-                        <p class="uiux__description">
-                            Currently, I work on <strong>FigsFlow</strong>, a multi-tenant SaaS platform for
-                            accountancy firms, where I validate complex business workflows including proposal
-                            generation, client onboarding, user roles and permissions, subscription management,
-                            billing, document generation and system integrations. Working in a multi-tenant
-                            environment has strengthened my ability to identify issues that arise from feature
-                            interactions, permission models and data isolation rather than focusing solely on
-                            individual functionality.
-                        </p>
-                        <p class="uiux__description">
-                            My testing approach is risk-based. I begin by understanding the business requirements,
-                            analysing potential failure points and designing test scenarios that target the areas with
-                            the greatest impact. This enables me to identify defects early while maintaining efficient
-                            test coverage throughout the development lifecycle.
-                        </p>
-                        <p class="uiux__description">
-                            Alongside manual testing, I design and maintain automated regression suites using
-                            <strong>Playwright</strong> with <strong>Python</strong>, following the <strong>Page
-                            Object Model (POM)</strong> and Behaviour-Driven Development (BDD) principles to create
-                            scalable, maintainable and reliable automation frameworks. I focus on reducing repetitive
-                            testing, improving regression confidence and ensuring automated tests remain stable as
-                            applications evolve.
-                        </p>
-                        <p class="uiux__description">
-                            I also perform comprehensive <strong>API testing</strong> using <strong>Postman</strong>,
-                            validating request and response structures, authentication, business logic, error handling
-                            and data integrity before changes reach the user interface. My experience includes
-                            database validation, log analysis and end-to-end testing across multiple integrated
-                            systems to ensure consistency throughout the application.
-                        </p>
-                        <p class="uiux__description">
-                            Performance and reliability are equally important aspects of my work. I use <strong>Apache
-                            JMeter</strong> to assess application performance under different workloads, helping
-                            identify bottlenecks and ensuring the system performs reliably as user demand increases.
-                        </p>
-                        <p class="uiux__description">
-                            Beyond testing execution, I actively collaborate with developers, product managers and
-                            stakeholders throughout the Software Development Life Cycle. I create clear defect reports
-                            with detailed reproduction steps, severity assessment and supporting evidence, enabling
-                            development teams to resolve issues efficiently. I also contribute to test planning,
-                            release validation and continuous quality improvement across projects.
-                        </p>
-                        <p class="uiux__description">
-                            I continuously invest in expanding my technical skills and improving testing practices. My
-                            current focus includes advanced automation framework architecture, CI/CD integration, API
-                            automation, performance engineering and scalable quality assurance processes. I believe
-                            quality is not achieved through testing alone &mdash; it is built through collaboration,
-                            automation and continuous improvement.
-                        </p>
+                    <div class="about__prose" data-reveal>
+                        <p>I am a <strong>Software Quality Assurance Engineer with over four years of experience</strong> in software testing, test automation and quality engineering, specialising in web applications, mobile applications and SaaS platforms. I focus on building reliable testing strategies, developing scalable automation frameworks and improving software quality throughout the Software Development Life Cycle (SDLC).</p>
+                        <p>Currently, I work at <strong>Sterling Wells on FigsFlow</strong>, a multi-tenant SaaS platform designed for accountancy firms. My responsibilities involve validating complex end-to-end business workflows, including client onboarding, AML and risk assessments, proposal and engagement generation, user roles and permissions, subscription management, billing, document generation and third-party integrations. Working with complex SaaS architecture has strengthened my understanding of business logic, data integrity, access control and tenant-level data isolation.</p>
+                        <p>My technical expertise covers <strong>Manual Testing, Test Automation, API Testing, Performance Testing and End-to-End Testing</strong>. I design and maintain automation frameworks using <strong>Playwright with Python</strong>, applying Page Object Model (POM) and Behaviour-Driven Development (BDD) principles to build maintainable, reusable and reliable automated test suites. I also use <strong>Postman</strong> for REST API testing and <strong>Apache JMeter</strong> for performance and load testing, alongside database validation, log analysis and integration testing.</p>
+                        <details class="disclosure">
+                            <summary>Read the full story <svg class="icon" viewBox="0 0 256 256" aria-hidden="true"><path d="M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,53.66,90.34L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z"/></svg></summary>
+                            <div class="disclosure__body">
+                                <p>A key area of my professional development is <strong>AI-driven Quality Engineering</strong>. I leverage tools such as Claude Code to accelerate test case generation, develop and optimise automation scripts, analyse test failures, investigate defects and improve QA documentation. I also work with AI-assisted workflows integrating Claude with Azure DevOps Boards to streamline test management, bug reporting, work item creation and QA reporting. I am particularly interested in leveraging Model Context Protocol (MCP) to connect AI assistants with testing tools and development environments, creating more intelligent and efficient QA workflows.</p>
+                                <p>Beyond technical testing, I take a risk-based approach to quality assurance, analysing requirements, identifying potential failure points and prioritising test coverage based on business impact. I collaborate closely with developers, product managers and stakeholders in Agile Scrum environments, contributing to test planning, defect management, sprint activities, release validation and continuous quality improvement.</p>
+                                <p><strong>I believe quality engineering goes beyond identifying defects.</strong> It is about preventing issues, improving development processes, building confidence in software releases and delivering reliable products that create real value for users.</p>
+                                <p>I am continuously expanding my expertise in AI-powered testing, advanced automation architecture, CI/CD integration, API automation and modern Quality Engineering practices.</p>
+                            </div>
+                        </details>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Experience Section -->
+        <!-- ================= WORKFLOW ================= -->
+        <section class="section workflow" id="workflow" aria-labelledby="workflow-heading">
+            <div class="container">
+                <div class="section__head" data-reveal>
+                    <h2 id="workflow-heading">My Quality Engineering Workflow</h2>
+                </div>
+                <div class="workflow__loop" data-reveal>
+                    <svg class="workflow__ring" viewBox="-300 -300 600 600" aria-hidden="true" focusable="false">
+                        <defs>
+                            <marker id="workflow-arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                                <path d="M0 0 L10 5 L0 10 Z"></path>
+                            </marker>
+                            <mask id="workflow-return" maskUnits="userSpaceOnUse" x="-300" y="-300" width="600" height="600">
+                                <path class="workflow__reveal" pathLength="1" d="M -158.70 -218.43 A 270 270 0 0 1 -9.42 -269.84"></path>
+                            </mask>
+                        </defs>
+                        <path class="workflow__track" d="M 0 -270 A 270 270 0 1 1 -158.70 -218.43"></path>
+                        <path class="workflow__progress" pathLength="1" d="M 0 -270 A 270 270 0 1 1 -158.70 -218.43"></path>
+                        <path class="workflow__feedback" d="M -158.70 -218.43 A 270 270 0 0 1 -28.22 -268.52" marker-end="url(#workflow-arrow)" mask="url(#workflow-return)"></path>
+                        <circle class="workflow__head" cx="0" cy="-270" r="6"></circle>
+                    </svg>
+                    <div class="workflow__aside">
+                        <p class="workflow__counter" aria-live="off"><span id="steps-done">0</span><small>/10 steps</small></p>
+                        <p class="section__lede">Ten steps, in the order they happen on a real ticket. Each one ticks as you reach it.</p>
+                    </div>
+                    <ol class="steps">
+                        <li class="step" data-side="top" style="--mx: 0.0px; --my: -270.0px; --tx: 0.0px; --ty: -296.0px"><span class="step__mark" aria-hidden="true"></span><div class="step__body"><p class="step__eyebrow"><span class="step__num" aria-hidden="true">01</span> <span class="step__stage">Plan</span></p><h3 class="step__title">Requirements</h3><p class="step__text">I read the requirement before the ticket, and write down what is ambiguous.</p></div></li>
+                        <li class="step" data-side="right" style="--mx: 158.7px; --my: -218.4px; --tx: 241.7px; --ty: -218.4px"><span class="step__mark" aria-hidden="true"></span><div class="step__body"><p class="step__eyebrow"><span class="step__num" aria-hidden="true">02</span></p><h3 class="step__title">Risk analysis</h3><p class="step__text">Which failures would cost the most? That ranking decides where the effort goes.</p></div></li>
+                        <li class="step" data-side="right" style="--mx: 256.8px; --my: -83.4px; --tx: 294.6px; --ty: -83.4px"><span class="step__mark" aria-hidden="true"></span><div class="step__body"><p class="step__eyebrow"><span class="step__num" aria-hidden="true">03</span></p><h3 class="step__title">Test planning</h3><p class="step__text">Scenarios and cases mapped back to requirements, so coverage is arguable.</p></div></li>
+                        <li class="step" data-side="right" style="--mx: 256.8px; --my: 83.4px; --tx: 294.6px; --ty: 83.4px"><span class="step__mark" aria-hidden="true"></span><div class="step__body"><p class="step__eyebrow"><span class="step__num" aria-hidden="true">04</span> <span class="step__stage">Test</span></p><h3 class="step__title">Manual testing</h3><p class="step__text">Exploratory passes first — scripted cases only find what they were written for.</p></div></li>
+                        <li class="step" data-side="right" style="--mx: 158.7px; --my: 218.4px; --tx: 241.7px; --ty: 218.4px"><span class="step__mark" aria-hidden="true"></span><div class="step__body"><p class="step__eyebrow"><span class="step__num" aria-hidden="true">05</span></p><h3 class="step__title">API validation</h3><p class="step__text">Contract, auth and error paths checked at the service layer before the UI.</p></div></li>
+                        <li class="step" data-side="bottom" style="--mx: 0.0px; --my: 270.0px; --tx: 0.0px; --ty: 296.0px"><span class="step__mark" aria-hidden="true"></span><div class="step__body"><p class="step__eyebrow"><span class="step__num" aria-hidden="true">06</span></p><h3 class="step__title">Automation</h3><p class="step__text">Regression-critical journeys move into Playwright so they run every time.</p></div></li>
+                        <li class="step" data-side="left" style="--mx: -158.7px; --my: 218.4px; --tx: -241.7px; --ty: 218.4px"><span class="step__mark" aria-hidden="true"></span><div class="step__body"><p class="step__eyebrow"><span class="step__num" aria-hidden="true">07</span></p><h3 class="step__title">Performance</h3><p class="step__text">JMeter against the paths that carry load, watching where latency turns.</p></div></li>
+                        <li class="step" data-side="left" style="--mx: -256.8px; --my: 83.4px; --tx: -294.6px; --ty: 83.4px"><span class="step__mark" aria-hidden="true"></span><div class="step__body"><p class="step__eyebrow"><span class="step__num" aria-hidden="true">08</span> <span class="step__stage">Release</span></p><h3 class="step__title">Regression</h3><p class="step__text">The automated suite runs on every change; failures are triaged, not muted.</p></div></li>
+                        <li class="step" data-side="left" style="--mx: -256.8px; --my: -83.4px; --tx: -294.6px; --ty: -83.4px"><span class="step__mark" aria-hidden="true"></span><div class="step__body"><p class="step__eyebrow"><span class="step__num" aria-hidden="true">09</span></p><h3 class="step__title">Release validation</h3><p class="step__text">UAT and a smoke pass against the release build before sign-off.</p></div></li>
+                        <li class="step" data-side="left" style="--mx: -158.7px; --my: -218.4px; --tx: -241.7px; --ty: -218.4px"><span class="step__mark" aria-hidden="true"></span><div class="step__body"><p class="step__eyebrow"><span class="step__num" aria-hidden="true">10</span> <span class="step__stage">Learn</span></p><h3 class="step__title">Continuous improvement</h3><p class="step__text">Every escaped defect becomes a new case and a question about why.</p></div></li>
+                    </ol>
+                    <p class="workflow__back"><svg class="icon" viewBox="0 0 256 256" aria-hidden="true"><path d="M224,128a96,96,0,0,1-94.71,96H128A95.38,95.38,0,0,1,62.1,197.8a8,8,0,0,1,11-11.63A80,80,0,1,0,71.43,71.39a3.07,3.07,0,0,1-.26.25L44.59,96H72a8,8,0,0,1,0,16H24a8,8,0,0,1-8-8V56a8,8,0,0,1,16,0V85.8L60.25,60A96,96,0,0,1,224,128Z"/></svg> Then back to 01, Requirements: the loop starts again.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= EXPERIENCE ================= -->
         <section class="section experience" id="experience" aria-labelledby="experience-heading">
             <div class="container">
-                <div class="section__header">
-                    <span class="section__tag">Where I've Worked</span>
-                    <h2 class="section__title" id="experience-heading">Professional Experience</h2>
+                <div class="section__head" data-reveal>
+                    <h2 id="experience-heading">Professional Experience</h2>
                 </div>
-                <ol class="timeline">
-                    <li class="timeline__item">
-                        <span class="timeline__node" aria-hidden="true"></span>
-                        <article class="skill-card" data-animate>
-                            <div class="timeline__head">
-                                <h3>Associate QA Engineer</h3>
-                                <span class="project-card__tag">Current</span>
-                            </div>
-                            <p class="skill-card__description">Sterling Wells &middot; Feb 2024 &ndash; Present &middot;
-                                Product: FigsFlow</p>
-                            <ul class="skill-card__features">
-                                <li class="feature-item">
-                                    <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd"
-                                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                            clip-rule="evenodd" />
-                                    </svg>
-                                    <span>I build end-to-end automation for the FigsFlow platform in Playwright with
-                                        Python, structured around the Page Object Model</span>
-                                </li>
-                                <li class="feature-item">
-                                    <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd"
-                                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                            clip-rule="evenodd" />
-                                    </svg>
-                                    <span>I cover the platform's REST endpoints with Postman collections</span>
-                                </li>
-                                <li class="feature-item">
-                                    <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd"
-                                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                            clip-rule="evenodd" />
-                                    </svg>
-                                    <span>I use Claude Code to speed up QA work — generating test cases, improving
-                                        automation scripts, debugging test failures and assisting with code
-                                        reviews</span>
-                                </li>
-                                <li class="feature-item">
-                                    <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd"
-                                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                            clip-rule="evenodd" />
-                                    </svg>
-                                    <span>I write the test plans, test scenarios and automated test cases</span>
-                                </li>
-                                <li class="feature-item">
-                                    <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd"
-                                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                            clip-rule="evenodd" />
-                                    </svg>
-                                    <span>I run functional, regression, smoke, integration, end-to-end, UAT and
-                                        exploratory testing</span>
-                                </li>
-                                <li class="feature-item">
-                                    <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd"
-                                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                            clip-rule="evenodd" />
-                                    </svg>
-                                    <span>I manage the defect queue in Jira and work in an Agile Scrum team</span>
-                                </li>
-                                <li class="feature-item">
-                                    <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd"
-                                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                            clip-rule="evenodd" />
-                                    </svg>
-                                    <span>I mentor junior QA engineers on manual testing, automation, defect management
-                                        and Agile QA practice</span>
-                                </li>
+                <ol class="timeline" data-reveal data-reveal-group>
+                    <li class="role" data-start="2024-02">
+                        <div class="role__when"><span>Feb 2024 &ndash; Present</span><span class="tag">Current</span></div>
+                        <article>
+                            <div class="role__head"><h3>Associate QA Engineer</h3></div>
+                            <p class="role__org">Sterling Wells &middot; Product: FigsFlow</p>
+                            <ul class="role__points">
+                                <li><strong>Test Automation Engineering:</strong> Design, develop and maintain scalable end-to-end test automation frameworks using Playwright with Python, following the Page Object Model (POM) design pattern to ensure maintainability, reusability and reliability.</li>
+                                <li><strong>AI-Assisted QA Engineering:</strong> Leverage Claude Code and AI-powered development workflows to accelerate test case generation, automation script development, test debugging, failure analysis, code reviews and overall QA productivity.</li>
+                                <li><strong>AI-Driven QA Workflow Integration:</strong> Integrate Azure DevOps Boards with Claude-powered workflows to streamline QA operations, including work item creation, bug reporting, test documentation, ticket analysis, status updates and QA reporting.</li>
+                                <li><strong>MCP-Enabled Testing Workflows:</strong> Explore and utilise Model Context Protocol (MCP) integrations to connect AI assistants with testing tools, development environments and project management systems, enabling context-aware QA workflows and improved testing efficiency.</li>
+                                <li><strong>API Testing:</strong> Design and execute REST API tests using Postman collections, validating endpoint functionality, request/response structures, status codes, data integrity and integration behaviour.</li>
+                                <li><strong>Test Planning &amp; Strategy:</strong> Develop comprehensive test plans, test scenarios, test cases, regression strategies and risk-based testing approaches to ensure adequate functional and business requirement coverage.</li>
+                                <li><strong>Comprehensive Software Testing:</strong> Perform functional, regression, smoke, integration, end-to-end, User Acceptance Testing (UAT) and exploratory testing across FigsFlow modules and workflows.</li>
+                                <li><strong>Defect Management:</strong> Identify, document, prioritise and track defects in Jira and Azure DevOps, providing clear reproduction steps, expected versus actual results, supporting evidence and regression verification.</li>
+                                <li><strong>AI-Powered QA Productivity:</strong> Apply AI tools to improve test coverage, analyse application behaviour, identify potential edge cases, generate test data, investigate failures and optimise repetitive QA activities.</li>
+                                <li><strong>Agile Collaboration:</strong> Work closely with developers, product stakeholders and QA team members in an Agile Scrum environment, participating in sprint activities, requirement analysis, defect triage and release validation.</li>
+                                <li><strong>QA Mentoring &amp; Knowledge Sharing:</strong> Mentor junior QA engineers in manual testing, test design techniques, automation fundamentals, defect reporting, testing best practices and Agile QA processes.</li>
                             </ul>
                         </article>
                     </li>
-                    <li class="timeline__item">
-                        <span class="timeline__node" aria-hidden="true"></span>
-                        <article class="skill-card" data-animate>
-                            <div class="timeline__head">
-                                <h3>QA Analyst</h3>
-                            </div>
-                            <p class="skill-card__description">E-Signature Pvt. Ltd. &middot; Aug 2023 &ndash; Feb 2024
-                            </p>
-                            <ul class="skill-card__features">
-                                <li class="feature-item">
-                                    <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd"
-                                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                            clip-rule="evenodd" />
-                                    </svg>
-                                    <span>I built the test documentation for each release straight from the functional
-                                        requirements, including the execution reports that went back to the team</span>
-                                </li>
-                                <li class="feature-item">
-                                    <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd"
-                                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                            clip-rule="evenodd" />
-                                    </svg>
-                                    <span>I ran the release test cycle end to end, from smoke checks through to user
-                                        acceptance</span>
-                                </li>
-                                <li class="feature-item">
-                                    <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd"
-                                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                            clip-rule="evenodd" />
-                                    </svg>
-                                    <span>I logged defects in Jira, then tracked and verified each fix with the
-                                        developer who made it</span>
-                                </li>
+                    <li class="role" data-start="2023-08">
+                        <div class="role__when"><span>Aug 2023 &ndash; Feb 2024</span></div>
+                        <article>
+                            <div class="role__head"><h3>QA Analyst</h3></div>
+                            <p class="role__org">E-Signature Pvt. Ltd.</p>
+                            <ul class="role__points">
+                                <li><strong>Test Documentation &amp; Planning:</strong> Developed comprehensive test documentation for each software release based on functional requirements, including test plans, test scenarios, test cases and test execution reports to ensure systematic test coverage.</li>
+                                <li><strong>Release Testing &amp; Validation:</strong> Managed end-to-end release testing activities, performing smoke, functional, regression and User Acceptance Testing (UAT) to validate application quality and release readiness.</li>
+                                <li><strong>Defect Management &amp; Collaboration:</strong> Identified, documented and tracked software defects using Jira, providing clear reproduction steps and expected versus actual results while collaborating with developers to verify fixes and ensure successful resolution.</li>
+                                <li><strong>Quality Assurance &amp; Reporting:</strong> Prepared and communicated test execution results, defect summaries and release validation reports to provide stakeholders with clear visibility into software quality and testing progress.</li>
                             </ul>
                         </article>
                     </li>
-                    <li class="timeline__item">
-                        <span class="timeline__node" aria-hidden="true"></span>
-                        <article class="skill-card" data-animate>
-                            <div class="timeline__head">
-                                <h3>Quality Assurance Intern</h3>
-                            </div>
-                            <p class="skill-card__description">Moru Digital Wallet &middot; Mar 2023 &ndash; Aug 2023</p>
-                            <ul class="skill-card__features">
-                                <li class="feature-item">
-                                    <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd"
-                                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                            clip-rule="evenodd" />
-                                    </svg>
-                                    <span>I tested the web and mobile apps by hand against the business
-                                        requirements</span>
-                                </li>
-                                <li class="feature-item">
-                                    <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd"
-                                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                            clip-rule="evenodd" />
-                                    </svg>
-                                    <span>I prepared and executed the test cases for each feature I picked up</span>
-                                </li>
-                                <li class="feature-item">
-                                    <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd"
-                                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                            clip-rule="evenodd" />
-                                    </svg>
-                                    <span>I validated UI and UX behaviour, not just whether a feature worked</span>
-                                </li>
-                                <li class="feature-item">
-                                    <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd"
-                                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                            clip-rule="evenodd" />
-                                    </svg>
-                                    <span>I took part in sprint planning, daily stand-ups, sprint reviews and defect
-                                        triage</span>
-                                </li>
+                    <li class="role" data-start="2023-03">
+                        <div class="role__when"><span>Mar 2023 &ndash; Aug 2023</span></div>
+                        <article>
+                            <div class="role__head"><h3>Quality Assurance Intern</h3></div>
+                            <p class="role__org">Moru Digital Wallet</p>
+                            <ul class="role__points">
+                                <li><strong>Web &amp; Mobile Application Testing:</strong> Performed comprehensive manual testing of web and mobile applications against business requirements, validating functionality, usability, compatibility and application behaviour across different platforms and devices.</li>
+                                <li><strong>Test Case Design &amp; Execution:</strong> Prepared, reviewed and executed test cases for assigned features, covering functional scenarios, positive and negative test cases, edge cases and business requirements.</li>
+                                <li><strong>UI/UX Testing:</strong> Evaluated user interface and user experience across web and mobile applications, ensuring layout consistency, responsive design, intuitive navigation and seamless user interactions.</li>
+                                <li><strong>Agile Team Collaboration:</strong> Actively participated in Agile Scrum ceremonies, including sprint planning, daily stand-ups, sprint reviews and defect triage, collaborating with team members to maintain product quality and support timely issue resolution.</li>
                             </ul>
                         </article>
                     </li>
@@ -613,859 +356,355 @@
             </div>
         </section>
 
-        <!-- Skills Section -->
-        <section class="section skills" id="skills" aria-labelledby="skills-heading">
+        <!-- ================= SKILLS ================= -->
+        <section class="section skills-section" id="skills" aria-labelledby="skills-heading">
             <div class="container">
-                <div class="section__header">
-                    <span class="section__tag">What I Do</span>
-                    <h2 class="section__title" id="skills-heading">Skills &amp; Expertise</h2>
+                <div class="section__head" data-reveal>
+                    <h2 id="skills-heading">Skills &amp; Expertise</h2>
                 </div>
-                <ul class="skills__grid">
-                    <li class="skill-card" data-animate>
-                        <div class="skill-card__icon">
-                            <svg viewBox="0 0 24 24" fill="none">
-                            <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"
-                            stroke="#22c55e" stroke-width="2" stroke-linecap="round" />
-                            <path d="M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke="#22c55e"
-                            stroke-width="2" stroke-linecap="round" />
-                            <path d="M9 12l2 2 4-4" stroke="#22c55e" stroke-width="2" stroke-linecap="round"
-                            stroke-linejoin="round" />
-                            </svg>
-                        </div>
-                        <div class="skill-card__head">
-                            <h3 class="skill-card__title">Manual &amp; Functional Testing</h3>
-                            <span class="skill-tier skill-tier--core">Core</span>
-                        </div>
-                        <p class="skill-card__description">I own the manual coverage for a platform that accountancy practices run their client work through. The judgement call is where to go deep and where a quick check is enough.</p>
-                        <ul class="skill-card__features">
-                            <li class="feature-item">
-                                    <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd"
-                                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                            clip-rule="evenodd" />
-                                    </svg>
-                                <span>Risk-based test design — I rank features by how much damage a failure does, and test the expensive ones hardest</span>
-                            </li>
-                            <li class="feature-item">
-                                    <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd"
-                                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                            clip-rule="evenodd" />
-                                    </svg>
-                                <span>Charter-driven exploratory sessions, to catch what scripted cases never look for</span>
-                            </li>
-                            <li class="feature-item">
-                                    <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd"
-                                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                            clip-rule="evenodd" />
-                                    </svg>
-                                <span>Requirement-to-test traceability, so I can show which case covers which requirement</span>
-                            </li>
+                <ul class="skills" data-reveal data-reveal-group>
+                    <li class="skill">
+                        <div class="skill__head"><h3 class="skill__title">Manual &amp; Functional Testing</h3><span class="tier tier--core">Core</span></div>
+                        <p class="skill__desc">I own the manual coverage for a platform that accountancy practices run their client work through. The judgement call is where to go deep and where a quick check is enough.</p>
+                        <ul class="skill__points">
+                            <li>Risk-based test design — I rank features by how much damage a failure does, and test the expensive ones hardest</li>
+                            <li>Charter-driven exploratory sessions, to catch what scripted cases never look for</li>
+                            <li>Requirement-to-test traceability, so I can show which case covers which requirement</li>
                         </ul>
-                        <a class="skill-card__evidence" href="https://blog.dipakbist.com.np/blog/manual-vs-automation-testing" target="_blank" rel="noopener noreferrer">
-                            <span>Read: when to automate and when not to</span>
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                            <polyline points="15 3 21 3 21 9"></polyline>
-                            <line x1="10" y1="14" x2="21" y2="3"></line>
-                            </svg>
-                        </a>
+                        <div class="skill__foot">
+                            <a class="skill__evidence" href="https://blog.dipakbist.com.np/blog/manual-vs-automation-testing" target="_blank" rel="noopener">Read: when to automate and when not to <svg class="icon" viewBox="0 0 256 256" aria-hidden="true"><path d="M200,64V168a8,8,0,0,1-16,0V83.31L69.66,197.66a8,8,0,0,1-11.32-11.32L172.69,72H88a8,8,0,0,1,0-16H192A8,8,0,0,1,200,64Z"/></svg></a>
+                        </div>
                     </li>
-                    <li class="skill-card" data-animate>
-                        <div class="skill-card__icon">
-                            <svg viewBox="0 0 24 24" fill="none">
-                            <rect x="4" y="4" width="16" height="16" rx="2" stroke="#6366f1" stroke-width="2" />
-                            <circle cx="9" cy="10" r="1.5" fill="#6366f1" />
-                            <circle cx="15" cy="10" r="1.5" fill="#6366f1" />
-                            <path d="M8 15h8" stroke="#6366f1" stroke-width="2" stroke-linecap="round" />
-                            <path d="M2 8h2M20 8h2M2 16h2M20 16h2M8 2v2M16 2v2M8 20v2M16 20v2" stroke="#6366f1"
-                            stroke-width="2" stroke-linecap="round" />
-                            </svg>
-                        </div>
-                        <div class="skill-card__head">
-                            <h3 class="skill-card__title">Test Automation</h3>
-                            <span class="skill-tier skill-tier--core">Core</span>
-                        </div>
-                        <p class="skill-card__description">Playwright with Python is my primary stack, and Selenium with Behave covers my earlier BDD work. I lean on fixtures and shared selectors so a suite stays cheap to maintain as the product moves.</p>
-                        <ul class="skill-card__features">
-                            <li class="feature-item">
-                                    <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd"
-                                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                            clip-rule="evenodd" />
-                                    </svg>
-                                <span>Pytest fixtures for setup, teardown and pre-authenticated sessions</span>
-                            </li>
-                            <li class="feature-item">
-                                    <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd"
-                                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                            clip-rule="evenodd" />
-                                    </svg>
-                                <span>One source of truth for selectors, so a UI change is a one-line fix</span>
-                            </li>
-                            <li class="feature-item">
-                                    <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd"
-                                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                            clip-rule="evenodd" />
-                                    </svg>
-                                <span>Allure reporting, and the same suite run across Chromium, Firefox and WebKit</span>
-                            </li>
+                    <li class="skill">
+                        <div class="skill__head"><h3 class="skill__title">Test Automation</h3><span class="tier tier--core">Core</span></div>
+                        <p class="skill__desc">Playwright with Python is my primary stack, and Selenium with Behave covers my earlier BDD work. I lean on fixtures and shared selectors so a suite stays cheap to maintain as the product moves.</p>
+                        <ul class="skill__points">
+                            <li>Pytest fixtures for setup, teardown and pre-authenticated sessions</li>
+                            <li>One source of truth for selectors, so a UI change is a one-line fix</li>
+                            <li>Allure reporting, and the same suite run across Chromium, Firefox and WebKit</li>
                         </ul>
-                        <div class="skill-card__tools">
-                            <span class="skill-tool" title="Playwright" aria-label="Playwright" role="img">
-                                <svg viewBox="0 0 24 24" fill="none">
-                                <path d="M7 3a4 4 0 00-4 4v6a4 4 0 004 4h10a4 4 0 004-4V7a4 4 0 00-4-4H7z"
-                                stroke="#2dd4bf" stroke-width="2" />
-                                <circle cx="9" cy="9" r="1.5" fill="#2dd4bf" />
-                                <circle cx="15" cy="9" r="1.5" fill="#2dd4bf" />
-                                <path d="M7 13a5 5 0 0010 0" stroke="#2dd4bf" stroke-width="2" stroke-linecap="round" />
-                                <path d="M12 17v4M8 21h8" stroke="#2dd4bf" stroke-width="2" stroke-linecap="round" />
-                                </svg>
-                            </span>
-                            <span class="skill-tool" title="Selenium" aria-label="Selenium" role="img">
-                                <svg viewBox="0 0 24 24" fill="none">
-                                <circle cx="12" cy="12" r="2" fill="#43b02a" />
-                                <ellipse cx="12" cy="12" rx="10" ry="4" stroke="#43b02a" stroke-width="2"
-                                transform="rotate(0 12 12)" />
-                                <ellipse cx="12" cy="12" rx="10" ry="4" stroke="#43b02a" stroke-width="2"
-                                transform="rotate(60 12 12)" />
-                                <ellipse cx="12" cy="12" rx="10" ry="4" stroke="#43b02a" stroke-width="2"
-                                transform="rotate(120 12 12)" />
-                                </svg>
-                            </span>
-                            <span class="skill-tool" title="Python" aria-label="Python" role="img">
-                                <svg viewBox="0 0 128 128">
-                                <linearGradient id="python-original-a" gradientUnits="userSpaceOnUse" x1="70.252"
-                                y1="1237.476" x2="170.659" y2="1151.089"
-                                gradientTransform="matrix(.563 0 0 -.568 -29.215 707.817)">
-                                <stop offset="0" stop-color="#5A9FD4" />
-                                <stop offset="1" stop-color="#306998" />
-                                </linearGradient>
-                                <linearGradient id="python-original-b" gradientUnits="userSpaceOnUse" x1="209.474"
-                                y1="1098.811" x2="173.62" y2="1149.537"
-                                gradientTransform="matrix(.563 0 0 -.568 -29.215 707.817)">
-                                <stop offset="0" stop-color="#FFD43B" />
-                                <stop offset="1" stop-color="#FFE873" />
-                                </linearGradient>
-                                <path fill="url(#python-original-a)"
-                                d="M63.391 1.988c-4.222.02-8.252.379-11.8 1.007-10.45 1.846-12.346 5.71-12.346 12.837v9.411h24.693v3.137H29.977c-7.176 0-13.46 4.313-15.426 12.521-2.268 9.405-2.368 15.275 0 25.096 1.755 7.311 5.947 12.519 13.124 12.519h8.491V67.234c0-8.151 7.051-15.34 15.426-15.34h24.665c6.866 0 12.346-5.654 12.346-12.548V15.833c0-6.693-5.646-11.72-12.346-12.837-4.244-.706-8.645-1.027-12.866-1.008zM50.037 9.557c2.55 0 4.634 2.117 4.634 4.721 0 2.593-2.083 4.69-4.634 4.69-2.56 0-4.633-2.097-4.633-4.69-.001-2.604 2.073-4.721 4.633-4.721z"
-                                transform="translate(0 10.26)" />
-                                <path fill="url(#python-original-b)"
-                                d="M91.682 28.38v10.966c0 8.5-7.208 15.655-15.426 15.655H51.591c-6.756 0-12.346 5.783-12.346 12.549v23.515c0 6.691 5.818 10.628 12.346 12.547 7.816 2.297 15.312 2.713 24.665 0 6.216-1.801 12.346-5.423 12.346-12.547v-9.412H63.938v-3.138h37.012c7.176 0 9.852-5.005 12.348-12.519 2.578-7.735 2.467-15.174 0-25.096-1.774-7.145-5.161-12.521-12.348-12.521h-9.268zM77.809 87.927c2.561 0 4.634 2.097 4.634 4.692 0 2.602-2.074 4.719-4.634 4.719-2.55 0-4.633-2.117-4.633-4.719 0-2.595 2.083-4.692 4.633-4.692z"
-                                transform="translate(0 10.26)" />
-                                <radialGradient id="python-original-c" cx="1825.678" cy="444.45" r="26.743"
-                                gradientTransform="matrix(0 -.24 -1.055 0 532.979 557.576)"
-                                gradientUnits="userSpaceOnUse">
-                                <stop offset="0" stop-color="#B8B8B8" stop-opacity=".498" />
-                                <stop offset="1" stop-color="#7F7F7F" stop-opacity="0" />
-                                </radialGradient>
-                                <path opacity=".444" fill="url(#python-original-c)"
-                                d="M97.309 119.597c0 3.543-14.816 6.416-33.091 6.416-18.276 0-33.092-2.873-33.092-6.416 0-3.544 14.815-6.417 33.092-6.417 18.275 0 33.091 2.872 33.091 6.417z" />
-                                </svg>
-                            </span>
+                        <div class="skill__foot">
+                            <ul class="tools" aria-label="Tools">
+                                <li class="tool" title="Playwright"><svg viewBox="0 0 24 24" fill="none" role="img" aria-label="Playwright"><path d="M7 3a4 4 0 00-4 4v6a4 4 0 004 4h10a4 4 0 004-4V7a4 4 0 00-4-4H7z" stroke="#2dd4bf" stroke-width="2"/><circle cx="9" cy="9" r="1.5" fill="#2dd4bf"/><circle cx="15" cy="9" r="1.5" fill="#2dd4bf"/><path d="M7 13a5 5 0 0010 0" stroke="#2dd4bf" stroke-width="2" stroke-linecap="round"/><path d="M12 17v4M8 21h8" stroke="#2dd4bf" stroke-width="2" stroke-linecap="round"/></svg></li>
+                                <li class="tool" title="Selenium"><svg viewBox="0 0 24 24" fill="none" role="img" aria-label="Selenium"><circle cx="12" cy="12" r="2" fill="#43b02a"/><ellipse cx="12" cy="12" rx="10" ry="4" stroke="#43b02a" stroke-width="2"/><ellipse cx="12" cy="12" rx="10" ry="4" stroke="#43b02a" stroke-width="2" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="10" ry="4" stroke="#43b02a" stroke-width="2" transform="rotate(120 12 12)"/></svg></li>
+                                <li class="tool" title="Python"><svg viewBox="0 0 128 128" role="img" aria-label="Python"><linearGradient id="python-original-a" gradientUnits="userSpaceOnUse" x1="70.252" y1="1237.476" x2="170.659" y2="1151.089" gradientTransform="matrix(.563 0 0 -.568 -29.215 707.817)"><stop offset="0" stop-color="#5A9FD4"/><stop offset="1" stop-color="#306998"/></linearGradient><linearGradient id="python-original-b" gradientUnits="userSpaceOnUse" x1="209.474" y1="1098.811" x2="173.62" y2="1149.537" gradientTransform="matrix(.563 0 0 -.568 -29.215 707.817)"><stop offset="0" stop-color="#FFD43B"/><stop offset="1" stop-color="#FFE873"/></linearGradient><path fill="url(#python-original-a)" d="M63.391 1.988c-4.222.02-8.252.379-11.8 1.007-10.45 1.846-12.346 5.71-12.346 12.837v9.411h24.693v3.137H29.977c-7.176 0-13.46 4.313-15.426 12.521-2.268 9.405-2.368 15.275 0 25.096 1.755 7.311 5.947 12.519 13.124 12.519h8.491V67.234c0-8.151 7.051-15.34 15.426-15.34h24.665c6.866 0 12.346-5.654 12.346-12.548V15.833c0-6.693-5.646-11.72-12.346-12.837-4.244-.706-8.645-1.027-12.866-1.008zM50.037 9.557c2.55 0 4.634 2.117 4.634 4.721 0 2.593-2.083 4.69-4.634 4.69-2.56 0-4.633-2.097-4.633-4.69-.001-2.604 2.073-4.721 4.633-4.721z" transform="translate(0 10.26)"/><path fill="url(#python-original-b)" d="M91.682 28.38v10.966c0 8.5-7.208 15.655-15.426 15.655H51.591c-6.756 0-12.346 5.783-12.346 12.549v23.515c0 6.691 5.818 10.628 12.346 12.547 7.816 2.297 15.312 2.713 24.665 0 6.216-1.801 12.346-5.423 12.346-12.547v-9.412H63.938v-3.138h37.012c7.176 0 9.852-5.005 12.348-12.519 2.578-7.735 2.467-15.174 0-25.096-1.774-7.145-5.161-12.521-12.348-12.521h-9.268zM77.809 87.927c2.561 0 4.634 2.097 4.634 4.692 0 2.602-2.074 4.719-4.634 4.719-2.55 0-4.633-2.117-4.633-4.719 0-2.595 2.083-4.692 4.633-4.692z" transform="translate(0 10.26)"/></svg></li>
+                            </ul>
+                            <a class="skill__evidence" href="https://github.com/DipakBist08/BDD_Framework-" target="_blank" rel="noopener noreferrer">See the BDD framework on GitHub <svg class="icon" viewBox="0 0 256 256" aria-hidden="true"><path d="M200,64V168a8,8,0,0,1-16,0V83.31L69.66,197.66a8,8,0,0,1-11.32-11.32L172.69,72H88a8,8,0,0,1,0-16H192A8,8,0,0,1,200,64Z"/></svg></a>
                         </div>
-                        <a class="skill-card__evidence" href="https://github.com/DipakBist08/BDD_Framework-" target="_blank" rel="noopener noreferrer">
-                            <span>See the BDD framework on GitHub</span>
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                            <polyline points="15 3 21 3 21 9"></polyline>
-                            <line x1="10" y1="14" x2="21" y2="3"></line>
-                            </svg>
-                        </a>
                     </li>
-                    <li class="skill-card" data-animate>
-                        <div class="skill-card__icon">
-                            <svg viewBox="0 0 24 24" fill="none">
-                            <path d="M12 2v4M8 6v4M16 6v4" stroke="#8b5cf6" stroke-width="2"
-                            stroke-linecap="round" />
-                            <rect x="6" y="10" width="12" height="8" rx="2" stroke="#8b5cf6" stroke-width="2" />
-                            <path d="M12 18v4" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round" />
-                            </svg>
-                        </div>
-                        <div class="skill-card__head">
-                            <h3 class="skill-card__title">API Testing</h3>
-                            <span class="skill-tier skill-tier--core">Core</span>
-                        </div>
-                        <p class="skill-card__description">I work at the service layer as well as in the browser. In practice that means Postman collections per environment, plus Python Requests for the checks I want living inside the automated suite.</p>
-                        <ul class="skill-card__features">
-                            <li class="feature-item">
-                                    <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd"
-                                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                            clip-rule="evenodd" />
-                                    </svg>
-                                <span>Auth and refresh-token flows, including expiry and re-issue</span>
-                            </li>
-                            <li class="feature-item">
-                                    <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd"
-                                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                            clip-rule="evenodd" />
-                                    </svg>
-                                <span>Status code, header and JSON Schema response validation</span>
-                            </li>
-                            <li class="feature-item">
-                                    <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd"
-                                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                            clip-rule="evenodd" />
-                                    </svg>
-                                <span>Environment-driven runs, so one collection covers dev and staging</span>
-                            </li>
+                    <li class="skill">
+                        <div class="skill__head"><h3 class="skill__title">API Testing</h3><span class="tier tier--core">Core</span></div>
+                        <p class="skill__desc">I work at the service layer as well as in the browser. In practice that means Postman collections per environment, plus Python Requests for the checks I want living inside the automated suite.</p>
+                        <ul class="skill__points">
+                            <li>Auth and refresh-token flows, including expiry and re-issue</li>
+                            <li>Status code, header and JSON Schema response validation</li>
+                            <li>Environment-driven runs, so one collection covers dev and staging</li>
                         </ul>
-                        <div class="skill-card__tools">
-                            <span class="skill-tool" title="Postman" aria-label="Postman" role="img">
-                                <svg viewBox="0 0 24 24" fill="none">
-                                <circle cx="12" cy="12" r="10" stroke="#ff6c37" stroke-width="2" />
-                                <path d="M13 2l-8 11h7l-1 9 8-11h-7l1-9z" fill="#ff6c37" />
-                                </svg>
-                            </span>
+                        <div class="skill__foot">
+                            <ul class="tools" aria-label="Tools">
+                                <li class="tool" title="Postman"><svg viewBox="0 0 24 24" fill="none" role="img" aria-label="Postman"><circle cx="12" cy="12" r="10" stroke="#ff6c37" stroke-width="2"/><path d="M13 2l-8 11h7l-1 9 8-11h-7l1-9z" fill="#ff6c37"/></svg></li>
+                            </ul>
+                            <a class="skill__evidence" href="https://blog.dipakbist.com.np/blog/playwright-api-testing-guide" target="_blank" rel="noopener">Read: testing REST APIs with Playwright <svg class="icon" viewBox="0 0 256 256" aria-hidden="true"><path d="M200,64V168a8,8,0,0,1-16,0V83.31L69.66,197.66a8,8,0,0,1-11.32-11.32L172.69,72H88a8,8,0,0,1,0-16H192A8,8,0,0,1,200,64Z"/></svg></a>
                         </div>
-                        <a class="skill-card__evidence" href="https://blog.dipakbist.com.np/blog/playwright-api-testing-guide" target="_blank" rel="noopener noreferrer">
-                            <span>Read: testing REST APIs with Playwright</span>
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                            <polyline points="15 3 21 3 21 9"></polyline>
-                            <line x1="10" y1="14" x2="21" y2="3"></line>
-                            </svg>
-                        </a>
                     </li>
-                    <li class="skill-card" data-animate>
-                        <div class="skill-card__icon">
-                            <svg viewBox="0 0 24 24" fill="none">
-                            <rect x="3" y="3" width="18" height="18" rx="2" stroke="#06b6d4" stroke-width="2" />
-                            <path d="M3 9h18M9 3v18" stroke="#06b6d4" stroke-width="2" />
-                            <rect x="5" y="11" width="2" height="3" fill="#06b6d4" rx="0.5" />
-                            <rect x="5" y="15" width="2" height="2" fill="#06b6d4" rx="0.5" />
-                            <rect x="11" y="11" width="2" height="4" fill="#06b6d4" rx="0.5" />
-                            <rect x="11" y="16" width="2" height="2" fill="#06b6d4" rx="0.5" />
-                            <rect x="17" y="11" width="2" height="2" fill="#06b6d4" rx="0.5" />
-                            </svg>
-                        </div>
-                        <div class="skill-card__head">
-                            <h3 class="skill-card__title">Test Management &amp; Agile QA</h3>
-                            <span class="skill-tier skill-tier--core">Core</span>
-                        </div>
-                        <p class="skill-card__description">I keep the QA side of a Scrum team legible — what is under test, what is blocked and what is ready. Defects live in Jira or Azure DevOps Boards depending on the project.</p>
-                        <ul class="skill-card__features">
-                            <li class="feature-item">
-                                    <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd"
-                                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                            clip-rule="evenodd" />
-                                    </svg>
-                                <span>Defects triaged, prioritised and driven through to verified, not just logged</span>
-                            </li>
-                            <li class="feature-item">
-                                    <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd"
-                                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                            clip-rule="evenodd" />
-                                    </svg>
-                                <span>I take the QA slot in refinement so testability is agreed before build starts</span>
-                            </li>
-                            <li class="feature-item">
-                                    <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd"
-                                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                            clip-rule="evenodd" />
-                                    </svg>
-                                <span>Confluence for test documentation the rest of the team can actually find</span>
-                            </li>
+                    <li class="skill">
+                        <div class="skill__head"><h3 class="skill__title">Test Management &amp; Agile QA</h3><span class="tier tier--core">Core</span></div>
+                        <p class="skill__desc">I keep the QA side of a Scrum team legible — what is under test, what is blocked and what is ready. Defects live in Jira or Azure DevOps Boards depending on the project.</p>
+                        <ul class="skill__points">
+                            <li>Defects triaged, prioritised and driven through to verified, not just logged</li>
+                            <li>I take the QA slot in refinement so testability is agreed before build starts</li>
+                            <li>Confluence for test documentation the rest of the team can actually find</li>
                         </ul>
-                        <div class="skill-card__tools">
-                            <span class="skill-tool" title="Jira" aria-label="Jira" role="img">
-                                <svg viewBox="0 0 24 24" fill="none">
-                                <path d="M12 2L2 12l10 10 10-10L12 2z" stroke="#0052cc" stroke-width="2"
-                                stroke-linecap="round" stroke-linejoin="round" />
-                                <path d="M12 2v20" stroke="#0052cc" stroke-width="2" stroke-linecap="round" />
-                                <path d="M2 12h20" stroke="#0052cc" stroke-width="2" stroke-linecap="round" />
-                                <circle cx="12" cy="12" r="3" fill="#0052cc" />
-                                </svg>
-                            </span>
-                            <span class="skill-tool" title="Azure DevOps Board" aria-label="Azure DevOps Board" role="img">
-                                <svg viewBox="0 0 128 128">
-                                <path fill="#0078D4"
-                                d="M64 8L8 38v52l56 30 56-30V38L64 8zm0 12l44 23.5v41L64 108 20 84.5v-41L64 20z" />
-                                <path fill="#0078D4" d="M64 42L40 54v24l24 12 24-12V54L64 42z" />
-                                </svg>
-                            </span>
+                        <div class="skill__foot">
+                            <ul class="tools" aria-label="Tools">
+                                <li class="tool" title="Jira"><svg viewBox="0 0 24 24" fill="none" role="img" aria-label="Jira"><path d="M12 2L2 12l10 10 10-10L12 2z" stroke="#0052cc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 2v20" stroke="#0052cc" stroke-width="2" stroke-linecap="round"/><path d="M2 12h20" stroke="#0052cc" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="3" fill="#0052cc"/></svg></li>
+                                <li class="tool" title="Azure DevOps Boards"><svg viewBox="0 0 128 128" role="img" aria-label="Azure DevOps Boards"><path fill="#0078D4" d="M64 8L8 38v52l56 30 56-30V38L64 8zm0 12l44 23.5v41L64 108 20 84.5v-41L64 20z"/><path fill="#0078D4" d="M64 42L40 54v24l24 12 24-12V54L64 42z"/></svg></li>
+                            </ul>
+                            <a class="skill__evidence" href="https://blog.dipakbist.com.np/blog/how-to-write-good-bug-report" target="_blank" rel="noopener">Read: writing a bug report that gets fixed <svg class="icon" viewBox="0 0 256 256" aria-hidden="true"><path d="M200,64V168a8,8,0,0,1-16,0V83.31L69.66,197.66a8,8,0,0,1-11.32-11.32L172.69,72H88a8,8,0,0,1,0-16H192A8,8,0,0,1,200,64Z"/></svg></a>
                         </div>
-                        <a class="skill-card__evidence" href="https://blog.dipakbist.com.np/blog/how-to-write-good-bug-report" target="_blank" rel="noopener noreferrer">
-                            <span>Read: writing a bug report that gets fixed</span>
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                            <polyline points="15 3 21 3 21 9"></polyline>
-                            <line x1="10" y1="14" x2="21" y2="3"></line>
-                            </svg>
-                        </a>
                     </li>
-                    <li class="skill-card" data-animate>
-                        <div class="skill-card__icon">
-                            <svg viewBox="0 0 24 24" fill="none">
-                            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke="#f59e0b" stroke-width="2"
-                            stroke-linecap="round" stroke-linejoin="round" />
-                            </svg>
-                        </div>
-                        <div class="skill-card__head">
-                            <h3 class="skill-card__title">Performance Testing</h3>
-                            <span class="skill-tier skill-tier--growing">Growing</span>
-                        </div>
-                        <p class="skill-card__description">The area I am actively building. I use JMeter to find where response times start to degrade, rather than assuming a page is fast because it feels fast on my machine.</p>
-                        <ul class="skill-card__features">
-                            <li class="feature-item">
-                                    <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd"
-                                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                            clip-rule="evenodd" />
-                                    </svg>
-                                <span>Load and spike scenarios modelled on realistic concurrent usage</span>
-                            </li>
-                            <li class="feature-item">
-                                    <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd"
-                                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                            clip-rule="evenodd" />
-                                    </svg>
-                                <span>Response time, throughput and error-rate analysis</span>
-                            </li>
-                            <li class="feature-item">
-                                    <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd"
-                                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                            clip-rule="evenodd" />
-                                    </svg>
-                                <span>Reports that show where the ceiling actually is</span>
-                            </li>
+                    <li class="skill">
+                        <div class="skill__head"><h3 class="skill__title">Performance Testing</h3><span class="tier">Growing</span></div>
+                        <p class="skill__desc">The area I am actively building. I use JMeter to find where response times start to degrade, rather than assuming a page is fast because it feels fast on my machine.</p>
+                        <ul class="skill__points">
+                            <li>Load and spike scenarios modelled on realistic concurrent usage</li>
+                            <li>Response time, throughput and error-rate analysis</li>
+                            <li>Reports that show where the ceiling actually is</li>
                         </ul>
                     </li>
-                    <li class="skill-card" data-animate>
-                        <div class="skill-card__icon">
-                            <svg viewBox="0 0 24 24" fill="none">
-                            <circle cx="6" cy="6" r="3" stroke="#ec4899" stroke-width="2" />
-                            <circle cx="6" cy="18" r="3" stroke="#ec4899" stroke-width="2" />
-                            <circle cx="18" cy="18" r="3" stroke="#ec4899" stroke-width="2" />
-                            <path d="M6 9v6M18 15a9 9 0 00-9-9" stroke="#ec4899" stroke-width="2"
-                            stroke-linecap="round" />
-                            </svg>
-                        </div>
-                        <div class="skill-card__head">
-                            <h3 class="skill-card__title">Databases &amp; Version Control</h3>
-                            <span class="skill-tier skill-tier--working">Working</span>
-                        </div>
-                        <p class="skill-card__description">I use SQL to confirm that what the interface claims actually reached the database, and I work in Git the same way the developers on my team do.</p>
-                        <ul class="skill-card__features">
-                            <li class="feature-item">
-                                    <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd"
-                                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                            clip-rule="evenodd" />
-                                    </svg>
-                                <span>SQL queries to check a workflow wrote what it was supposed to write</span>
-                            </li>
-                            <li class="feature-item">
-                                    <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd"
-                                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                            clip-rule="evenodd" />
-                                    </svg>
-                                <span>Feature branches for automation work, merged through pull request</span>
-                            </li>
-                            <li class="feature-item">
-                                    <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd"
-                                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                            clip-rule="evenodd" />
-                                    </svg>
-                                <span>Code review on test code, in both directions</span>
-                            </li>
+                    <li class="skill">
+                        <div class="skill__head"><h3 class="skill__title">Databases &amp; Version Control</h3><span class="tier">Working</span></div>
+                        <p class="skill__desc">I use SQL to confirm that what the interface claims actually reached the database, and I work in Git the same way the developers on my team do.</p>
+                        <ul class="skill__points">
+                            <li>SQL queries to check a workflow wrote what it was supposed to write</li>
+                            <li>Feature branches for automation work, merged through pull request</li>
+                            <li>Code review on test code, in both directions</li>
                         </ul>
-                        <div class="skill-card__tools">
-                            <span class="skill-tool" title="Git" aria-label="Git" role="img">
-                                <svg viewBox="0 0 128 128">
-                                <path fill="#F05032"
-                                d="M124.742 58.378L69.625 3.264c-3.172-3.174-8.32-3.174-11.497 0L46.685 14.71l14.518 14.518c3.375-1.139 7.243-.375 9.932 2.314 2.703 2.706 3.462 6.607 2.293 9.993L87.42 55.529c3.385-1.167 7.292-.413 9.994 2.295 3.78 3.777 3.78 9.9 0 13.679-3.78 3.78-9.901 3.78-13.683 0-2.842-2.844-3.545-7.019-2.105-10.521L68.578 47.933l-.002 34.341c.922.455 1.791 1.063 2.559 1.828 3.778 3.777 3.778 9.898 0 13.683-3.779 3.777-9.904 3.777-13.679 0-3.778-3.784-3.778-9.905 0-13.683.934-.933 2.014-1.638 3.167-2.11V47.333c-1.153-.472-2.231-1.172-3.167-2.111-2.862-2.86-3.551-7.06-2.083-10.576L41.056 20.333 3.264 58.123c-3.174 3.174-3.174 8.324 0 11.499l55.117 55.114c3.174 3.174 8.322 3.174 11.499 0l54.858-54.858c3.174-3.176 3.174-8.327.004-11.5z" />
-                                </svg>
-                            </span>
-                            <span class="skill-tool" title="GitHub" aria-label="GitHub" role="img">
-                                <svg viewBox="0 0 128 128">
-                                <path fill-rule="evenodd" clip-rule="evenodd" fill="currentColor"
-                                d="M64 5.103c-33.347 0-60.388 27.035-60.388 60.388 0 26.682 17.303 49.317 41.297 57.303 3.017.56 4.125-1.31 4.125-2.905 0-1.44-.056-6.197-.082-11.243-16.8 3.653-20.345-7.125-20.345-7.125-2.747-6.98-6.705-8.836-6.705-8.836-5.48-3.748.413-3.67.413-3.67 6.063.425 9.257 6.223 9.257 6.223 5.386 9.23 14.127 6.562 17.573 5.02.542-3.903 2.107-6.568 3.834-8.076-13.413-1.525-27.514-6.704-27.514-29.843 0-6.593 2.36-11.98 6.223-16.21-.628-1.52-2.695-7.662.584-15.98 0 0 5.07-1.623 16.61 6.19C53.7 35 58.867 34.327 64 34.304c5.13.023 10.3.694 15.127 2.033 11.526-7.813 16.59-6.19 16.59-6.19 3.287 8.317 1.22 14.46.593 15.98 3.872 4.23 6.215 9.617 6.215 16.21 0 23.194-14.127 28.3-27.574 29.796 2.167 1.874 4.097 5.55 4.097 11.183 0 8.08-.07 14.583-.07 16.572 0 1.607 1.088 3.49 4.148 2.897 23.98-7.994 41.263-30.622 41.263-57.294C124.388 32.14 97.35 5.104 64 5.104z" />
-                                </svg>
-                            </span>
+                        <div class="skill__foot">
+                            <ul class="tools" aria-label="Tools">
+                                <li class="tool" title="Git"><svg viewBox="0 0 128 128" role="img" aria-label="Git"><path fill="#F05032" d="M124.742 58.378L69.625 3.264c-3.172-3.174-8.32-3.174-11.497 0L46.685 14.71l14.518 14.518c3.375-1.139 7.243-.375 9.932 2.314 2.703 2.706 3.462 6.607 2.293 9.993L87.42 55.529c3.385-1.167 7.292-.413 9.994 2.295 3.78 3.777 3.78 9.9 0 13.679-3.78 3.78-9.901 3.78-13.683 0-2.842-2.844-3.545-7.019-2.105-10.521L68.578 47.933l-.002 34.341c.922.455 1.791 1.063 2.559 1.828 3.778 3.777 3.778 9.898 0 13.683-3.779 3.777-9.904 3.777-13.679 0-3.778-3.784-3.778-9.905 0-13.683.934-.933 2.014-1.638 3.167-2.11V47.333c-1.153-.472-2.231-1.172-3.167-2.111-2.862-2.86-3.551-7.06-2.083-10.576L41.056 20.333 3.264 58.123c-3.174 3.174-3.174 8.324 0 11.499l55.117 55.114c3.174 3.174 8.322 3.174 11.499 0l54.858-54.858c3.174-3.176 3.174-8.327.004-11.5z"/></svg></li>
+                                <li class="tool" title="GitHub"><svg viewBox="0 0 128 128" role="img" aria-label="GitHub"><path fill-rule="evenodd" clip-rule="evenodd" fill="currentColor" d="M64 5.103c-33.347 0-60.388 27.035-60.388 60.388 0 26.682 17.303 49.317 41.297 57.303 3.017.56 4.125-1.31 4.125-2.905 0-1.44-.056-6.197-.082-11.243-16.8 3.653-20.345-7.125-20.345-7.125-2.747-6.98-6.705-8.836-6.705-8.836-5.48-3.748.413-3.67.413-3.67 6.063.425 9.257 6.223 9.257 6.223 5.386 9.23 14.127 6.562 17.573 5.02.542-3.903 2.107-6.568 3.834-8.076-13.413-1.525-27.514-6.704-27.514-29.843 0-6.593 2.36-11.98 6.223-16.21-.628-1.52-2.695-7.662.584-15.98 0 0 5.07-1.623 16.61 6.19C53.7 35 58.867 34.327 64 34.304c5.13.023 10.3.694 15.127 2.033 11.526-7.813 16.59-6.19 16.59-6.19 3.287 8.317 1.22 14.46.593 15.98 3.872 4.23 6.215 9.617 6.215 16.21 0 23.194-14.127 28.3-27.574 29.796 2.167 1.874 4.097 5.55 4.097 11.183 0 8.08-.07 14.583-.07 16.572 0 1.607 1.088 3.49 4.148 2.897 23.98-7.994 41.263-30.622 41.263-57.294C124.388 32.14 97.35 5.104 64 5.104z"/></svg></li>
+                            </ul>
                         </div>
                     </li>
                 </ul>
             </div>
         </section>
 
-
-
-        <!-- AI in Quality Engineering -->
+        <!-- ================= AI ================= -->
         <section class="section ai" id="ai" aria-labelledby="ai-heading">
             <div class="container">
-                <div class="section__header">
-                    <span class="section__tag">Tooling</span>
-                    <h2 class="section__title" id="ai-heading">How I Use AI in Quality Engineering</h2>
+                <div class="section__head" data-reveal>
+                    <h2 id="ai-heading">How I Use AI in Quality Engineering</h2>
                 </div>
-                <div class="uiux__wrapper" data-animate>
-                    <div class="about__prose">
-                        <p class="uiux__description">I use <strong>Claude Code</strong> as a working tool, the same
-                            way I use an IDE or a debugger. It is good at breadth — drafting cases, scaffolding page
-                            objects, reading a stack trace back to me. It is not good at deciding what matters, and I
-                            do not ask it to.</p>
-                        <p class="uiux__description">Everything it produces gets reviewed before it reaches a suite or
-                            a ticket. If I could not defend a generated test in review, it does not go in. The
-                            engineering judgement stays mine; the typing is what I delegate.</p>
-                        <!-- TODO: Dipak to confirm whether ChatGPT and GitHub Copilot should be listed here.
-                             The master brief names them, but section 3's approved fact set mentions only
-                             Claude Code, so they are not claimed. -->
+                <div class="ai__grid">
+                    <div class="ai__prose" data-reveal>
+                        <p>I integrate AI into my Quality Engineering workflow to improve efficiency, accelerate test development and streamline repetitive QA activities. I use <strong>Claude Code</strong> as an engineering assistant across test design, automation development, debugging and QA documentation.</p>
+                        <p>My approach is built around human oversight and engineering judgement. AI helps accelerate implementation, explore scenarios and reduce repetitive work, while I remain responsible for test strategy, risk assessment, technical decisions and quality validation.</p>
+                        <p>Every AI-generated output is critically reviewed, validated against business requirements and refined before being introduced into the automation framework or project workflow. AI supports my engineering process; it does not replace the reasoning behind it.</p>
                     </div>
-                    <ul class="ai__uses">
-                        <li class="ai__use">
-                            <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
-                            <div>
-                                <h3 class="ai__use-title">Test case generation</h3>
-                                <p class="ai__use-text">I describe a feature and its edge cases, then edit the output down. It is faster at breadth than I am; the judgement about what matters stays mine.</p>
-                            </div>
-                        </li>
-                        <li class="ai__use">
-                            <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
-                            <div>
-                                <h3 class="ai__use-title">Automation scaffolding</h3>
-                                <p class="ai__use-text">Page objects and fixtures get drafted, then reviewed line by line before they enter the suite.</p>
-                            </div>
-                        </li>
-                        <li class="ai__use">
-                            <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
-                            <div>
-                                <h3 class="ai__use-title">Debugging failures</h3>
-                                <p class="ai__use-text">Pasting a stack trace and the surrounding code shortens the loop between a red test and a root cause.</p>
-                            </div>
-                        </li>
-                        <li class="ai__use">
-                            <svg class="feature-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
-                            <div>
-                                <h3 class="ai__use-title">Code review support</h3>
-                                <p class="ai__use-text">A second read on my own test code before I raise the pull request.</p>
-                            </div>
-                        </li>
-                    </ul>
+                    <!-- TODO: Dipak to confirm whether ChatGPT and GitHub Copilot should be listed here.
+                         Only Claude Code is in the approved fact set, so only Claude Code is claimed. -->
+                    <div class="ai__apply">
+                        <h3 class="ai__apply-title" data-reveal>How I Apply AI</h3>
+                        <ul class="uses" data-reveal data-reveal-group>
+                            <li class="use"><span class="use__num" aria-hidden="true">01</span><div><h4 class="use__title">Intelligent Test Case Generation</h4><p class="use__text">Use Claude Code to analyse functional requirements, explore edge cases, identify negative scenarios and generate structured test cases. Review and refine scenarios to ensure meaningful coverage and alignment with business logic.</p></div></li>
+                            <li class="use"><span class="use__num" aria-hidden="true">02</span><div><h4 class="use__title">Test Automation Development</h4><p class="use__text">Leverage AI to scaffold Playwright automation scripts, Page Object Model (POM) classes, reusable components, fixtures and test utilities. Review generated code for maintainability, reliability and framework consistency.</p></div></li>
+                            <li class="use"><span class="use__num" aria-hidden="true">03</span><div><h4 class="use__title">Automated Failure Analysis &amp; Debugging</h4><p class="use__text">Use AI to analyse test failures, stack traces, execution logs and application behaviour to investigate potential root causes, accelerate debugging and reduce troubleshooting time.</p></div></li>
+                            <li class="use"><span class="use__num" aria-hidden="true">04</span><div><h4 class="use__title">AI-Assisted Code Review</h4><p class="use__text">Use Claude Code as a secondary review assistant to identify potential code issues, improve test structure, detect duplication and assess automation quality before changes are integrated into the framework.</p></div></li>
+                            <li class="use"><span class="use__num" aria-hidden="true">05</span><div><h4 class="use__title">Azure DevOps &amp; MCP Integration</h4><p class="use__text">Connect Claude Code with Azure DevOps Boards through MCP-based workflows to streamline work item creation, defect reporting, task management and QA reporting. Use existing board context to generate structured tickets and reports, with human review before submission.</p></div></li>
+                        </ul>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <!-- Projects Section -->
+        <!-- ================= PROJECTS ================= -->
         <section class="section projects" id="projects" aria-labelledby="projects-heading">
             <div class="container">
-                <div class="section__header">
-                    <span class="section__tag">My Work</span>
-                    <h2 class="section__title" id="projects-heading">Projects</h2>
+                <div class="section__head" data-reveal>
+                    <h2 id="projects-heading">Projects</h2>
                 </div>
-                <div class="projects__grid">
-                    <article class="project-card" data-animate>
-                        <div class="project-card__image">
-                            <div class="project-card__overlay">
-                                <span class="project-card__tag">SaaS Platform</span>
-                            </div>
-                            <div class="project-logo">
-                                <img src="assets/figsflow-logo.png" alt="FigsFlow product logo"
-                                    class="project-logo__img" loading="lazy" width="921" height="691">
-                            </div>
+                <article class="project project--featured" data-reveal>
+                    <div class="project__media">
+                        <img src="assets/figsflow-wordmark-iris.svg" alt="FigsFlow logo" width="494" height="152" loading="lazy">
+                    </div>
+                    <div class="project__body">
+                        <div class="project__kicker"><span class="project__type">SaaS Platform</span><span class="project__result">Active &middot; Current Project</span></div>
+                        <div class="project__heading">
+                            <h3 class="project__title">FigsFlow</h3>
+                            <p class="project__tagline">End-to-End Accounting Practice Management SaaS Platform</p>
                         </div>
-                        <div class="project-card__content">
-                            <h3 class="project-card__title">FigsFlow</h3>
-                            <p class="project-card__description">The practice-management platform I test day to day. My coverage runs across proposal generation, engagement workflows, client onboarding and the compliance steps behind them, along with the permission boundaries that keep one practice&rsquo;s data away from another&rsquo;s. Automated end-to-end journeys in Playwright, API suites in Postman, work items tracked in Azure DevOps Boards, and UAT before a release goes out.</p>
-                            <div class="project-card__tech">
-                                <span class="tech-tag">Playwright</span>
-                                <span class="tech-tag">Python</span>
-                                <span class="tech-tag">Postman</span>
-                                <span class="tech-tag">Azure DevOps Boards</span>
-                                <span class="tech-tag">UAT</span>
-                            </div>
-                            <div class="project-card__results">
-                                <div class="result">
-                                    <span class="result__value">Active</span>
-                                    <span class="result__label">Current Project</span>
+                        <p class="project__desc">FigsFlow is a comprehensive, multi-tenant SaaS platform designed to transform how accounting firms, bookkeepers and tax professionals manage their business operations and client relationships.</p>
+                        <p class="project__desc">The practice-management platform I test day to day. My coverage runs across proposal generation, engagement workflows, client onboarding and the compliance steps behind them, along with the permission boundaries that keep one practice&rsquo;s data away from another&rsquo;s. Automated end-to-end journeys in Playwright, API suites in Postman, work items tracked in Azure DevOps Boards, and UAT before a release goes out.</p>
+                        <details class="disclosure">
+                            <summary>More about FigsFlow <svg class="icon" viewBox="0 0 256 256" aria-hidden="true"><path d="M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,53.66,90.34L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z"/></svg></summary>
+                            <div class="disclosure__body project__more">
+                                <p class="project__desc">The platform brings together the entire client lifecycle within a unified ecosystem, covering client relationship management (CRM), proposal and quotation generation, service pricing, engagement letter management, client onboarding, Anti-Money Laundering (AML) compliance, risk assessments, job management, time tracking, billing and client collaboration.</p>
+                                <p class="project__desc">By connecting essential business processes through integrated workflows, FigsFlow helps firms streamline administrative operations, reduce manual processes, maintain consistent client information and improve operational efficiency.</p>
+                                <p class="project__desc">The platform also supports configurable workflows, role-based access controls, document generation, digital signing and third-party integrations, enabling accounting practices to manage complex business operations through a centralised and scalable solution.</p>
+                                <div>
+                                    <h4 class="project__subhead" id="figsflow-capabilities">Core capabilities</h4>
+                                    <ul class="capabilities" aria-labelledby="figsflow-capabilities">
+                                        <li>Client Relationship Management (CRM)</li>
+                                        <li>Proposal &amp; Quotation Management</li>
+                                        <li>Service &amp; Pricing Configuration</li>
+                                        <li>Engagement Letter Generation</li>
+                                        <li>Client Onboarding &amp; Due Diligence</li>
+                                        <li>AML &amp; Compliance Management</li>
+                                        <li>Risk Assessment &amp; Enhanced Due Diligence (EDD)</li>
+                                        <li>Job &amp; Workflow Management</li>
+                                        <li>Time Tracking &amp; Billing</li>
+                                        <li>Document Management &amp; Digital Signatures</li>
+                                        <li>Client Portal &amp; Collaboration</li>
+                                        <li>Third-Party Integrations &amp; Automation</li>
+                                    </ul>
                                 </div>
                             </div>
-                            <div class="project-card__links">
-                                <a href="https://figsflow.com" target="_blank" rel="noopener noreferrer" class="project-link project-link--demo">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
-                                    <span>Visit FigsFlow</span>
-                                </a>
-                            </div>
+                        </details>
+                        <ul class="tags" aria-label="Technologies"><li class="tag tag--neutral">Playwright</li><li class="tag tag--neutral">Python</li><li class="tag tag--neutral">Postman</li><li class="tag tag--neutral">Azure DevOps Boards</li><li class="tag tag--neutral">UAT</li></ul>
+                        <div class="project__foot">
+                            <a class="project__link" href="https://figsflow.com" target="_blank" rel="noopener noreferrer">Visit FigsFlow <svg class="icon" viewBox="0 0 256 256" aria-hidden="true"><path d="M200,64V168a8,8,0,0,1-16,0V83.31L69.66,197.66a8,8,0,0,1-11.32-11.32L172.69,72H88a8,8,0,0,1,0-16H192A8,8,0,0,1,200,64Z"/></svg></a>
                         </div>
-                    </article>
-                    <article class="project-card" data-animate>
-                        <div class="project-card__image">
-                            <div class="project-card__overlay">
-                                <span class="project-card__tag">API Testing</span>
+                    </div>
+                </article>
+                <ul class="projects__grid" data-reveal data-reveal-group>
+                    <li>
+                        <article class="project">
+                            <div class="project__kicker"><span class="project__type">API Testing</span></div>
+                            <h3 class="project__title">REST API Testing Framework</h3>
+                            <p class="project__desc">A reusable framework for testing REST services in Python. It exercises sign-in and token renewal, validates response bodies against a schema instead of eyeballing them, and reads its base URL and credentials from configuration so a single suite serves every environment. Postman collections cover the exploratory work alongside it.</p>
+                            <ul class="tags" aria-label="Technologies"><li class="tag tag--neutral">Python</li><li class="tag tag--neutral">Requests</li><li class="tag tag--neutral">JSON Schema</li><li class="tag tag--neutral">Postman</li></ul>
+                            <!-- TODO: Dipak to publish this repository and supply the URL, then replace the skip line with a link. -->
+                            <div class="project__foot"><p class="project__skip">Repository not public yet</p></div>
+                        </article>
+                    </li>
+                    <li>
+                        <article class="project">
+                            <div class="project__kicker"><span class="project__type">Fintech</span></div>
+                            <h3 class="project__title">Digital Wallet QA (Mobile &amp; Web)</h3>
+                            <p class="project__desc">Hands-on QA for a digital wallet, covering both the mobile app and the web side. I wrote and ran the functional cases, checked the interface against the designs at several screen sizes, and joined the triage sessions where incoming defects were prioritised. All manual work — no automation on this one.</p>
+                            <ul class="tags" aria-label="Technologies"><li class="tag tag--neutral">Manual QA</li><li class="tag tag--neutral">Mobile</li><li class="tag tag--neutral">Web</li><li class="tag tag--neutral">Jira</li></ul>
+                            <!-- No public link: internal employed work. -->
+                            <div class="project__foot"><p class="project__skip">Internal work, no public link</p></div>
+                        </article>
+                    </li>
+                    <li>
+                        <article class="project">
+                            <div class="project__kicker"><span class="project__type">BDD</span></div>
+                            <h3 class="project__title">BDD Test Framework</h3>
+                            <p class="project__desc">Selenium, Python and Behave driving the Swag Labs demo shop. Feature files describe the behaviour in plain language, step definitions do the driving, and each run leaves a report behind. It is the shape I would use to make acceptance criteria executable on a real product.</p>
+                            <ul class="tags" aria-label="Technologies"><li class="tag tag--neutral">Selenium</li><li class="tag tag--neutral">Python</li><li class="tag tag--neutral">Behave</li><li class="tag tag--neutral">Gherkin</li></ul>
+                            <div class="project__foot">
+                                <a class="project__link" href="https://github.com/DipakBist08/BDD_Framework-" target="_blank" rel="noopener noreferrer">View the code <svg class="icon" viewBox="0 0 256 256" aria-hidden="true"><path d="M200,64V168a8,8,0,0,1-16,0V83.31L69.66,197.66a8,8,0,0,1-11.32-11.32L172.69,72H88a8,8,0,0,1,0-16H192A8,8,0,0,1,200,64Z"/></svg></a>
                             </div>
-                            <div class="project-placeholder project-placeholder--2">
-                                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"
-                                        stroke="currentColor" stroke-width="2" />
-                                    <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" stroke="currentColor" stroke-width="2"
-                                        stroke-linecap="round" />
-                                </svg>
+                        </article>
+                    </li>
+                    <li>
+                        <article class="project">
+                            <div class="project__kicker"><span class="project__type">Community</span><span class="project__result">Founder &middot; Community organisation</span></div>
+                            <h3 class="project__title">Dreamer's Youth Club</h3>
+                            <p class="project__desc">I founded Dreamer's Youth Club, a community organisation in Kanchanpur working on youth civic engagement, education and community action &mdash; and I built and maintain its website. It is a vibe-coded React build: I set the structure, content and design direction, leaned on AI for the implementation, and did the cross-device and accessibility checks myself before it went live.</p>
+                            <ul class="tags" aria-label="Technologies"><li class="tag tag--neutral">React</li><li class="tag tag--neutral">Vibe-coded</li><li class="tag tag--neutral">Responsive</li><li class="tag tag--neutral">SEO</li></ul>
+                            <div class="project__foot">
+                                <a class="project__link" href="https://www.dreamersyouthclub.org.np/" target="_blank" rel="noopener noreferrer">Visit the site <svg class="icon" viewBox="0 0 256 256" aria-hidden="true"><path d="M200,64V168a8,8,0,0,1-16,0V83.31L69.66,197.66a8,8,0,0,1-11.32-11.32L172.69,72H88a8,8,0,0,1,0-16H192A8,8,0,0,1,200,64Z"/></svg></a>
                             </div>
-                        </div>
-                        <div class="project-card__content">
-                            <h3 class="project-card__title">REST API Testing Framework</h3>
-                            <p class="project-card__description">A reusable framework for testing REST services in Python. It exercises sign-in and token renewal, validates response bodies against a schema instead of eyeballing them, and reads its base URL and credentials from configuration so a single suite serves every environment. Postman collections cover the exploratory work alongside it.</p>
-                            <div class="project-card__tech">
-                                <span class="tech-tag">Python</span>
-                                <span class="tech-tag">Requests</span>
-                                <span class="tech-tag">JSON Schema</span>
-                                <span class="tech-tag">Postman</span>
-                            </div>
-                            <!-- TODO: Dipak to publish this repository and supply the URL, then add a Code
-                                 button here. Deliberately left link-free rather than pointing at the GitHub
-                                 profile root. -->
-                        </div>
-                    </article>
-                    <article class="project-card" data-animate>
-                        <div class="project-card__image">
-                            <div class="project-card__overlay">
-                                <span class="project-card__tag">Fintech</span>
-                            </div>
-                            <div class="project-placeholder project-placeholder--3">
-                                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                    <rect x="5" y="2" width="14" height="20" rx="2" stroke="currentColor"
-                                        stroke-width="2" />
-                                    <path d="M12 18h.01" stroke="currentColor" stroke-width="2"
-                                        stroke-linecap="round" />
-                                </svg>
-                            </div>
-                        </div>
-                        <div class="project-card__content">
-                            <h3 class="project-card__title">Digital Wallet QA (Mobile &amp; Web)</h3>
-                            <p class="project-card__description">Hands-on QA for a digital wallet, covering both the mobile app and the web side. I wrote and ran the functional cases, checked the interface against the designs at several screen sizes, and joined the triage sessions where incoming defects were prioritised. All manual work — no automation on this one.</p>
-                            <div class="project-card__tech">
-                                <span class="tech-tag">Manual QA</span>
-                                <span class="tech-tag">Mobile</span>
-                                <span class="tech-tag">Web</span>
-                                <span class="tech-tag">Jira</span>
-                            </div>
-                            <!-- No public link: this was internal employed work, and the employer product domain
-                                 could not be verified from its rendered markup, so nothing is linked rather than
-                                 risk linking the wrong company. -->
-                        </div>
-                    </article>
-                    <article class="project-card" data-animate>
-                        <div class="project-card__image">
-                            <div class="project-card__overlay">
-                                <span class="project-card__tag">BDD</span>
-                            </div>
-                            <div class="project-placeholder project-placeholder--1">
-                                <svg viewBox="0 0 24 24" fill="none">
-                                <rect x="2" y="3" width="13" height="10" rx="1" stroke="currentColor" stroke-width="2" />
-                                <path d="M2 6h13" stroke="currentColor" stroke-width="2" />
-                                <circle cx="5" cy="4.5" r="0.5" fill="currentColor" />
-                                <circle cx="7" cy="4.5" r="0.5" fill="currentColor" />
-                                <circle cx="9" cy="4.5" r="0.5" fill="currentColor" />
-                                <rect x="9" y="11" width="13" height="10" rx="1" stroke="currentColor" stroke-width="2" />
-                                <path d="M9 14h13" stroke="currentColor" stroke-width="2" />
-                                <circle cx="12" cy="12.5" r="0.5" fill="currentColor" />
-                                <circle cx="14" cy="12.5" r="0.5" fill="currentColor" />
-                                <circle cx="16" cy="12.5" r="0.5" fill="currentColor" />
-                                </svg>
-                            </div>
-                        </div>
-                        <div class="project-card__content">
-                            <h3 class="project-card__title">BDD Test Framework</h3>
-                            <p class="project-card__description">Selenium, Python and Behave driving the Swag Labs demo shop. Feature files describe the behaviour in plain language, step definitions do the driving, and each run leaves a report behind. It is the shape I would use to make acceptance criteria executable on a real product.</p>
-                            <div class="project-card__tech">
-                                <span class="tech-tag">Selenium</span>
-                                <span class="tech-tag">Python</span>
-                                <span class="tech-tag">Behave</span>
-                                <span class="tech-tag">Gherkin</span>
-                            </div>
-                            <div class="project-card__links">
-                                <a href="https://github.com/DipakBist08/BDD_Framework-" target="_blank" rel="noopener noreferrer" class="project-link project-link--code">
-                                    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0 1 12 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg>
-                                    <span>View the code</span>
-                                </a>
-                            </div>
-                        </div>
-                    </article>
-                    <article class="project-card" data-animate>
-                        <div class="project-card__image">
-                            <div class="project-card__overlay">
-                                <span class="project-card__tag">Community</span>
-                            </div>
-                            <div class="project-placeholder project-placeholder--4">
-                                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                    <path d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H2v-2a4 4 0 013-3.87m4-2.13a4 4 0 100-8 4 4 0 000 8zm7-4a3 3 0 11-2.4-2.94"
-                                        stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round" />
-                                </svg>
-                            </div>
-                        </div>
-                        <div class="project-card__content">
-                            <h3 class="project-card__title">Dreamer's Youth Club</h3>
-                            <p class="project-card__description">I founded Dreamer's Youth Club, a community
-                                organisation in Kanchanpur working on youth civic engagement, education and community
-                                action &mdash; and I built and maintain its website. It is a vibe-coded React build: I
-                                set the structure, content and design direction, leaned on AI for the implementation,
-                                and did the cross-device and accessibility checks myself before it went live.</p>
-                            <div class="project-card__tech">
-                                <span class="tech-tag">React</span>
-                                <span class="tech-tag">Vibe-coded</span>
-                                <span class="tech-tag">Responsive</span>
-                                <span class="tech-tag">SEO</span>
-                            </div>
-                            <div class="project-card__results">
-                                <div class="result">
-                                    <span class="result__value">Founder</span>
-                                    <span class="result__label">Community organisation</span>
-                                </div>
-                            </div>
-                            <div class="project-card__links">
-                                <a href="https://www.dreamersyouthclub.org.np/" target="_blank"
-                                    rel="noopener noreferrer" class="project-link project-link--demo">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
-                                    <span>Visit the site</span>
-                                </a>
-                            </div>
-                        </div>
-                    </article>
-                </div>
+                        </article>
+                    </li>
+                </ul>
+                <!-- QA Artefacts section intentionally not rendered: github.com/DipakBist08/QADocs has no files yet.
+                     TODO: Dipak to push anonymised PDFs (test plan, test case suite, bug report template, test
+                     summary report, RTM), then add one card per document here. -->
             </div>
         </section>
 
-        <!-- QA Artefacts Section — INTENTIONALLY NOT RENDERED.
-             Spec 5.8 asks for a grid of viewable work samples (test plan, test case suite, bug
-             report template, test summary report, RTM) linked from github.com/DipakBist08/QADocs.
-             That repository currently has no files in it (GitHub API reports size: 0), so every
-             card would be an empty placeholder — and the spec forbids rendering empty cards.
-             An empty section reads worse to a hiring manager than no section at all, so this is
-             held back rather than shipped hollow.
-
-             TODO: Dipak to push anonymised PDFs to QADocs — no client names, no real user data,
-             no live URLs. Once they are there this becomes a normal section: reuse
-             .section/.section__header plus the .skills__grid + .skill-card pattern, one card per
-             document, each with a .skill-card__evidence link to the file. -->
-
-        <!-- Blog Section -->
-        <!-- NOTE: these three posts are hard-coded. There is no feed request here on purpose
-             (no new network calls, and the posts' cover images are remote). When a new post
-             goes live on blog.dipakbist.com.np, update this block by hand. -->
-        <section class="section blog-strip" id="blog" aria-labelledby="blog-heading">
+        <!-- ================= BLOG ================= -->
+        <section class="section blog" id="blog" aria-labelledby="blog-heading">
             <div class="container">
-                <div class="section__header">
-                    <span class="section__tag">Writing</span>
-                    <h2 class="section__title" id="blog-heading">From the Blog</h2>
+                <div class="section__head" data-reveal>
+                    <h2 id="blog-heading">From the Blog</h2>
                 </div>
-                <div class="blog__grid">
-                    <a class="blog-card" data-animate href="https://blog.dipakbist.com.np/blog/how-to-write-good-bug-report" target="_blank" rel="noopener noreferrer">
-                        <div class="blog-card__thumb-placeholder" aria-hidden="true">&#128030;</div>
-                        <div class="blog-card__body">
-                            <div class="blog-card__meta">
-                                <span class="blog-card__category">Bug Reporting</span>
-                                <span class="blog-card__time">08/01/2025</span>
-                            </div>
-                            <h3 class="blog-card__title">How to Write a Good Bug Report: The Complete QA Guide</h3>
-                            <p class="blog-card__excerpt">A vague bug report gets ignored. A precise one gets fixed the same day.</p>
-                            <div class="blog-card__footer">
-                                <div class="blog-card__tags">
-                                    <span class="blog-card__tag">QA Fundamentals</span>
-                                </div>
-                                <span class="blog-card__read">Read post &rarr;</span>
-                            </div>
+                <!-- NOTE: these three posts are hard-coded on purpose (no feed request). When a new post goes live on
+                     blog.dipakbist.com.np, update this block by hand. -->
+                <ol class="posts" data-reveal data-reveal-group>
+                    <li class="post">
+                        <div class="post__meta"><time datetime="2025-01-08">08/01/2025</time><span>Bug Reporting</span></div>
+                        <div>
+                            <h3 class="post__title"><a href="https://blog.dipakbist.com.np/blog/how-to-write-good-bug-report" target="_blank" rel="noopener">How to Write a Good Bug Report: The Complete QA Guide</a></h3>
+                            <p class="post__excerpt">A vague bug report gets ignored. A precise one gets fixed the same day.</p>
+                            <span class="tag tag--neutral">QA Fundamentals</span>
                         </div>
-                    </a>
-                    <a class="blog-card" data-animate href="https://blog.dipakbist.com.np/blog/playwright-api-testing-guide" target="_blank" rel="noopener noreferrer">
-                        <div class="blog-card__thumb-placeholder" aria-hidden="true">&#128225;</div>
-                        <div class="blog-card__body">
-                            <div class="blog-card__meta">
-                                <span class="blog-card__category">API Testing</span>
-                                <span class="blog-card__time">10/12/2024</span>
-                            </div>
-                            <h3 class="blog-card__title">Playwright API Testing Guide: Test REST APIs Without a Browser</h3>
-                            <p class="blog-card__excerpt">Playwright is not only for driving browsers &mdash; its request layer makes fast, reliable REST tests.</p>
-                            <div class="blog-card__footer">
-                                <div class="blog-card__tags">
-                                    <span class="blog-card__tag">Python</span>
-                                </div>
-                                <span class="blog-card__read">Read post &rarr;</span>
-                            </div>
+                        <svg class="icon post__arrow" viewBox="0 0 256 256" aria-hidden="true"><path d="M200,64V168a8,8,0,0,1-16,0V83.31L69.66,197.66a8,8,0,0,1-11.32-11.32L172.69,72H88a8,8,0,0,1,0-16H192A8,8,0,0,1,200,64Z"/></svg>
+                    </li>
+                    <li class="post">
+                        <div class="post__meta"><time datetime="2024-12-10">10/12/2024</time><span>API Testing</span></div>
+                        <div>
+                            <h3 class="post__title"><a href="https://blog.dipakbist.com.np/blog/playwright-api-testing-guide" target="_blank" rel="noopener">Playwright API Testing Guide: Test REST APIs Without a Browser</a></h3>
+                            <p class="post__excerpt">Playwright is not only for driving browsers &mdash; its request layer makes fast, reliable REST tests.</p>
+                            <span class="tag tag--neutral">Python</span>
                         </div>
-                    </a>
-                    <a class="blog-card" data-animate href="https://blog.dipakbist.com.np/blog/manual-vs-automation-testing" target="_blank" rel="noopener noreferrer">
-                        <div class="blog-card__thumb-placeholder" aria-hidden="true">&#9878;</div>
-                        <div class="blog-card__body">
-                            <div class="blog-card__meta">
-                                <span class="blog-card__category">Manual Testing</span>
-                                <span class="blog-card__time">15/11/2024</span>
-                            </div>
-                            <h3 class="blog-card__title">Manual Testing vs Automation Testing: When to Use Which</h3>
-                            <p class="blog-card__excerpt">The real strengths and trade-offs of each, and a practical way to decide.</p>
-                            <div class="blog-card__footer">
-                                <div class="blog-card__tags">
-                                    <span class="blog-card__tag">Test Strategy</span>
-                                </div>
-                                <span class="blog-card__read">Read post &rarr;</span>
-                            </div>
+                        <svg class="icon post__arrow" viewBox="0 0 256 256" aria-hidden="true"><path d="M200,64V168a8,8,0,0,1-16,0V83.31L69.66,197.66a8,8,0,0,1-11.32-11.32L172.69,72H88a8,8,0,0,1,0-16H192A8,8,0,0,1,200,64Z"/></svg>
+                    </li>
+                    <li class="post">
+                        <div class="post__meta"><time datetime="2024-11-15">15/11/2024</time><span>Manual Testing</span></div>
+                        <div>
+                            <h3 class="post__title"><a href="https://blog.dipakbist.com.np/blog/manual-vs-automation-testing" target="_blank" rel="noopener">Manual Testing vs Automation Testing: When to Use Which</a></h3>
+                            <p class="post__excerpt">The real strengths and trade-offs of each, and a practical way to decide.</p>
+                            <span class="tag tag--neutral">Test Strategy</span>
                         </div>
-                    </a>
-                </div>
-                <div class="blog__footer">
-                    <a class="btn btn--outline" href="https://blog.dipakbist.com.np" target="_blank" rel="noopener noreferrer">
-                        <span>View all posts</span>
-                    </a>
-                </div>
+                        <svg class="icon post__arrow" viewBox="0 0 256 256" aria-hidden="true"><path d="M200,64V168a8,8,0,0,1-16,0V83.31L69.66,197.66a8,8,0,0,1-11.32-11.32L172.69,72H88a8,8,0,0,1,0-16H192A8,8,0,0,1,200,64Z"/></svg>
+                    </li>
+                </ol>
+                <p class="posts__more" data-reveal><a class="btn btn--secondary" href="https://blog.dipakbist.com.np" target="_blank" rel="noopener">View all posts</a></p>
             </div>
         </section>
 
-        <!-- Contact Section -->
-        <section class="section contact" id="contact" aria-labelledby="contact-heading">
-            <div class="container">
-                <div class="contact__wrapper">
-                    <div class="contact__content" data-animate>
-                        <span class="section__tag">Let's Connect</span>
-                        <h2 class="section__title" id="contact-heading">Get in Touch</h2>
-                        <p class="contact__description">
-                            I am open to QA roles, remote or Kathmandu-based. If you want to talk about testing on
-                            your product, I would like to hear from you.
-                        </p>
-                        <div class="contact__buttons">
-                            <a href="mailto:dipakbeest@gmail.com" class="btn btn--primary btn--large">
-                                <svg class="btn-icon btn-icon--left" viewBox="0 0 24 24" fill="none">
-                                    <path
-                                        d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"
-                                        stroke="currentColor" stroke-width="2" />
-                                    <path d="M22 6l-10 7L2 6" stroke="currentColor" stroke-width="2"
-                                        stroke-linecap="round" />
-                                </svg>
-                                <span>Send Email</span>
-                            </a>
-                            <a href="https://www.linkedin.com/in/dipakbist08/" target="_blank" rel="noopener noreferrer"
-                                class="btn btn--linkedin btn--large">
-                                <svg class="btn-icon btn-icon--left" viewBox="0 0 24 24" fill="currentColor">
-                                    <path
-                                        d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
-                                </svg>
-                                <span>Connect on LinkedIn</span>
-                            </a>
-                        </div>
-                        <p class="contact__direct">Or copy my address directly:
-                            <a href="mailto:dipakbeest@gmail.com">dipakbeest@gmail.com</a>
-                        </p>
+        <!-- ================= CONTACT ================= -->
+        <section class="section section--peak contact" id="contact" aria-labelledby="contact-heading">
+            <div class="container contact__grid">
+                <div class="contact__copy" data-reveal>
+                    <h2 id="contact-heading" class="contact__title">Get in Touch</h2>
+                    <p class="section__lede">I am open to QA roles, remote or Kathmandu-based. If you want to talk about testing on your product, I would like to hear from you.</p>
+                    <div class="contact__actions">
+                        <a class="btn btn--primary btn--large" href="mailto:dipakbeest@gmail.com"><svg class="icon" viewBox="0 0 256 256" aria-hidden="true"><path d="M224,48H32a8,8,0,0,0-8,8V192a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A8,8,0,0,0,224,48ZM203.43,64,128,133.15,52.57,64ZM216,192H40V74.19l82.59,75.71a8,8,0,0,0,10.82,0L216,74.19V192Z"/></svg> Send email</a>
+                        <a class="btn btn--secondary btn--large" href="https://www.linkedin.com/in/dipakbist" target="_blank" rel="noopener noreferrer"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg> Connect on LinkedIn</a>
                     </div>
-
-
-                    <div class="contact__visual" data-animate>
-                        <div class="contact-card">
-                            <div class="contact-card__avatar">
-                                <img src="assets/profile.png" alt="Portrait of Dipak Bist" loading="lazy" width="192"
-                                    height="192">
-                            </div>
-                            <h3 class="contact-card__name">Dipak Bist</h3>
-                            <p class="contact-card__title">Software QA Engineer</p>
-                            <div class="contact-card__info">
-                                <div class="info-item">
-                                    <svg viewBox="0 0 24 24" fill="none">
-                                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" stroke="currentColor"
-                                            stroke-width="2" />
-                                        <circle cx="12" cy="10" r="3" stroke="currentColor" stroke-width="2" />
-                                    </svg>
-                                    <span>Available Worldwide (Remote)</span>
-                                </div>
-                                <div class="info-item">
-                                    <svg viewBox="0 0 24 24" fill="none">
-                                        <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor"
-                                            stroke-width="2" />
-                                        <path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" stroke-width="2"
-                                            stroke-linecap="round" />
-                                    </svg>
-                                    <span>4+ Years Experience</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-
+                    <p class="contact__direct">Or copy my address directly: <code class="contact__email">dipakbeest@gmail.com</code> <button type="button" class="btn btn--secondary copy-btn" id="copy-email" data-copy="dipakbeest@gmail.com"><svg class="icon" viewBox="0 0 256 256" aria-hidden="true"><path d="M216,32H88a8,8,0,0,0-8,8V80H40a8,8,0,0,0-8,8V216a8,8,0,0,0,8,8H168a8,8,0,0,0,8-8V176h40a8,8,0,0,0,8-8V40A8,8,0,0,0,216,32ZM160,208H48V96H160Zm48-48H176V88a8,8,0,0,0-8-8H96V48H208Z"/></svg> Copy</button><span id="copy-status" class="visually-hidden" role="status" aria-live="polite"></span></p>
                 </div>
+                <form id="contact-form" class="contact__form" data-reveal action="https://formsubmit.co/dipakbeest@gmail.com" method="POST" novalidate aria-labelledby="contact-form-title">
+                    <h3 id="contact-form-title" class="contact__form-title">Send a message</h3>
+                    <input type="hidden" name="_subject" value="New message from dipakbist.com.np">
+                    <input type="hidden" name="_template" value="table">
+                    <input type="hidden" name="_captcha" value="false">
+                    <div class="contact__honey" aria-hidden="true"><label for="contact-honey">Leave this empty</label><input id="contact-honey" type="text" name="_honey" tabindex="-1" autocomplete="off"></div>
+                    <div class="contact__form-row">
+                        <div class="field">
+                            <label for="contact-name">Your name</label>
+                            <input id="contact-name" name="name" type="text" autocomplete="name" required maxlength="100" aria-describedby="contact-name-error">
+                            <p id="contact-name-error" class="field__hint is-error"></p>
+                        </div>
+                        <div class="field">
+                            <label for="contact-email">Your email</label>
+                            <input id="contact-email" name="email" type="email" inputmode="email" autocomplete="email" placeholder="name@example.com" required maxlength="254" aria-describedby="contact-email-error">
+                            <p id="contact-email-error" class="field__hint is-error"></p>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label for="contact-message">Message</label>
+                        <textarea id="contact-message" name="message" rows="5" required maxlength="5000" aria-describedby="contact-message-error"></textarea>
+                        <p id="contact-message-error" class="field__hint is-error"></p>
+                    </div>
+                    <div class="contact__form-actions">
+                        <button id="contact-submit" type="submit" class="btn btn--primary">Send message</button>
+                        <p id="contact-feedback" class="subscribe__feedback" role="status" aria-live="polite"></p>
+                    </div>
+                </form>
             </div>
         </section>
     </main>
 
-    <!-- Footer -->
+    <!-- ================= FOOTER ================= -->
     <footer class="footer">
-        <!-- Subscribe strip -->
         <div class="footer__subscribe">
-            <div class="container">
-                <div class="blog__subscribe-content">
-                    <div>
-                        <h3 class="blog__subscribe-title">Stay Updated</h3>
-                        <p class="blog__subscribe-text">Get notified when I publish new QA tutorials and insights.</p>
-                    </div>
-                    <form class="blog__subscribe-form" id="subscribe-form" onsubmit="handleSubscribe(event)">
-                        <input type="email" class="blog__subscribe-input" id="subscribe-email" placeholder="your@email.com" required autocomplete="email" />
-                        <button type="submit" class="btn btn--primary blog__subscribe-btn" id="subscribe-btn">Subscribe</button>
-                    </form>
+            <div class="container subscribe">
+                <div class="subscribe__intro">
+                    <h2>Stay Updated</h2>
+                    <p>Get notified when I publish new QA tutorials and insights.</p>
                 </div>
-                <p class="blog__subscribe-feedback" id="subscribe-feedback" role="status" aria-live="polite"></p>
+                <form id="subscribe-form" class="subscribe__form" novalidate>
+                    <div class="field">
+                        <label for="subscribe-email">Email address</label>
+                        <input id="subscribe-email" name="email" type="email" inputmode="email" autocomplete="email" placeholder="name@example.com" required aria-describedby="subscribe-hint subscribe-feedback">
+                    </div>
+                    <button id="subscribe-btn" type="submit" class="btn btn--primary">Subscribe</button>
+                    <p id="subscribe-hint" class="field__hint">One email per new article. Unsubscribe any time.</p>
+                    <p id="subscribe-feedback" class="subscribe__feedback" role="status" aria-live="polite"></p>
+                </form>
             </div>
         </div>
-        <div class="container footer__container">
+        <div class="container footer__grid">
             <div class="footer__brand">
-                <a href="#" class="nav__logo">
-                    <span class="logo-bracket">&lt;</span>DipakBist<span class="logo-bracket">/&gt;</span>
-                </a>
+                <a href="#home" class="nav__logo"><span class="nav__bracket">&lt;</span>DipakBist<span class="nav__bracket">/&gt;</span></a>
                 <p class="footer__tagline">Software QA Engineer — automation, API and manual testing.</p>
             </div>
-            <div class="footer__links">
-                <a href="https://www.linkedin.com/in/dipakbist08/" target="_blank" rel="noopener noreferrer"
-                    class="footer__social footer__social--linkedin" aria-label="LinkedIn">
-                    <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path
-                            d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
-                    </svg>
-                    <span>Follow on LinkedIn</span>
-                </a>
-                <a href="https://github.com/DipakBist08" target="_blank" rel="noopener noreferrer"
-                    class="footer__social" aria-label="GitHub">
-                    <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path
-                            d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z" />
-                    </svg>
-                </a>
-                <a href="https://www.instagram.com/dipak.beest/" target="_blank" rel="noopener noreferrer"
-                    class="footer__social" aria-label="Instagram">
-                    <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-                    </svg>
-                </a>
-                <a href="https://www.facebook.com/profile.php?id=61585825412139" target="_blank" rel="noopener noreferrer"
-                    class="footer__social" aria-label="Facebook">
-                    <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                    </svg>
-                </a>
-                <!-- YouTube link removed: https://www.youtube.com/@dipakbist-QA returns HTTP 404, verified with a
-                     browser user-agent. A social icon that leads nowhere costs more trust than a missing one.
-                     TODO: Dipak to supply the correct channel handle and this block can go straight back in. -->
-            </div>
-            <div class="footer__copyright">
+            <ul class="footer__social" aria-label="Elsewhere">
+                <li><a href="https://www.linkedin.com/in/dipakbist" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg><span>Follow on LinkedIn</span></a></li>
+                <li><a href="https://github.com/DipakBist08" target="_blank" rel="noopener noreferrer" aria-label="GitHub"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg></a></li>
+                <li><a href="https://www.instagram.com/dipak.beest/" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg></a></li>
+            </ul>
+            <div class="footer__meta">
                 <p>&copy; <span id="current-year">2026</span> Dipak Bist. All rights reserved.</p>
+                <p><a href="mailto:dipakbeest@gmail.com?subject=Bug%20report%3A%20dipakbist.com.np"><svg class="icon" viewBox="0 0 256 256" aria-hidden="true"><path d="M144,92a12,12,0,1,1,12,12A12,12,0,0,1,144,92ZM100,80a12,12,0,1,0,12,12A12,12,0,0,0,100,80Zm116,64A87.76,87.76,0,0,1,213,167l22.24,9.72A8,8,0,0,1,232,192a7.89,7.89,0,0,1-3.2-.67L207.38,182a88,88,0,0,1-158.76,0L27.2,191.33A7.89,7.89,0,0,1,24,192a8,8,0,0,1-3.2-15.33L43,167A87.76,87.76,0,0,1,40,144v-8H16a8,8,0,0,1,0-16H40v-8a87.76,87.76,0,0,1,3-23L20.8,79.33a8,8,0,1,1,6.4-14.66L48.62,74a88,88,0,0,1,158.76,0l21.42-9.36a8,8,0,0,1,6.4,14.66L213,89.05a87.76,87.76,0,0,1,3,23v8h24a8,8,0,0,1,0,16H216ZM56,120H200v-8a72,72,0,0,0-144,0Zm64,95.54V136H56v8A72.08,72.08,0,0,0,120,215.54ZM200,144v-8H136v79.54A72.08,72.08,0,0,0,200,144Z"/></svg> Found a bug on this page? Report it</a> &middot; Last updated 13/10/2026</p>
             </div>
         </div>
     </footer>
 
-    <!-- Back to top -->
-    <button id="back-to-top" aria-label="Back to top" title="Back to top">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-            <path d="M12 5l-7 7h14l-7-7z" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-    </button>
 
-    <script src="script.js"></script>
+    <button id="back-to-top" class="totop" type="button" aria-label="Back to top"><svg class="icon" viewBox="0 0 256 256" aria-hidden="true"><path d="M205.66,117.66a8,8,0,0,1-11.32,0L136,59.31V216a8,8,0,0,1-16,0V59.31L61.66,117.66a8,8,0,0,1-11.32-11.32l72-72a8,8,0,0,1,11.32,0l72,72A8,8,0,0,1,205.66,117.66Z"/></svg></button>
+
+    <!-- Framer Motion's vanilla DOM build (framer-motion@14.1.0, MIT), then the page modules. -->
+    <script src="assets/vendor/framer-motion-dom.js" defer></script>
+    <script type="module" src="js/main.js?v=20261113h" onerror="document.documentElement.classList.remove('motion')"></script>
 </body>
 
 </html>
