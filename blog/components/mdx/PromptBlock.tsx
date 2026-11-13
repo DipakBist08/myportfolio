@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { PIcon } from './icons'
 
 interface PromptBlockProps {
   title?: string
@@ -9,56 +10,43 @@ interface PromptBlockProps {
   tip?: string
 }
 
-export default function PromptBlock({ title = 'AI Prompt', context, prompt, tip }: PromptBlockProps) {
+export default function PromptBlock({ title = 'AI prompt', context, prompt, tip }: PromptBlockProps) {
   const [copied, setCopied] = useState(false)
 
   const copy = async () => {
-    await navigator.clipboard.writeText(prompt)
+    try { await navigator.clipboard.writeText(prompt) } catch { return }
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
 
   return (
-    <div className="my-5 rounded-xl border border-secondary/30 bg-secondary/5 overflow-hidden">
-      {/* Header */}
-      <div className="flex items-center justify-between border-b border-secondary/20 bg-secondary/10 px-4 py-2.5">
-        <div className="flex items-center gap-2">
-          <svg className="h-4 w-4 text-secondary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" />
-            <path d="M12 16v-4M12 8h.01" strokeLinecap="round" />
-          </svg>
-          <span className="text-sm font-semibold text-secondary">{title}</span>
-        </div>
+    <section className="panel" aria-label={title}>
+      <div className="panel-head">
+        <p className="panel-title m-0"><PIcon name="chatCenteredText" className="h-4 w-4 text-primary-light" /> {title}</p>
         <button
+          type="button"
           onClick={copy}
-          className="flex items-center gap-1.5 rounded-md border border-secondary/30 bg-surface-card/80 px-2.5 py-1 text-xs text-slate-400 hover:text-secondary transition-colors"
+          className="ml-auto inline-flex min-h-8 items-center gap-1 rounded-md border border-line bg-surface-card px-2.5 text-xs text-muted transition-colors hover:border-primary hover:text-ink light:bg-white"
         >
-          {copied ? '✓ Copied!' : 'Copy Prompt'}
+          <PIcon name={copied ? 'check' : 'copy'} className="h-3.5 w-3.5" /> {copied ? 'Copied' : 'Copy prompt'}
         </button>
       </div>
 
-      <div className="p-4 space-y-3">
-        {/* Context */}
+      <div className="space-y-4 p-4">
         {context && (
           <div>
-            <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-slate-500">Context / Role</p>
-            <p className="text-sm text-slate-400 italic">{context}</p>
+            <span className="panel-label">Context / role</span>
+            <p className="m-0 text-sm text-muted">{context}</p>
           </div>
         )}
-
-        {/* Prompt */}
-        <div className="rounded-lg bg-surface-darker/50 border border-slate-700/50 p-4">
-          <p className="whitespace-pre-wrap text-sm text-slate-200 light:text-slate-700 leading-relaxed">{prompt}</p>
-        </div>
-
-        {/* Tip */}
+        <p className="panel-code m-0 font-sans text-[0.9375rem] leading-relaxed">{prompt}</p>
         {tip && (
-          <p className="flex items-start gap-2 text-xs text-slate-500">
-            <span>💡</span>
+          <p className="m-0 flex items-start gap-2 text-sm text-muted">
+            <PIcon name="lightbulb" className="mt-0.5 h-4 w-4 shrink-0 text-primary-light" />
             <span>{tip}</span>
           </p>
         )}
       </div>
-    </div>
+    </section>
   )
 }

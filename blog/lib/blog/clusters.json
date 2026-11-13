@@ -1,0 +1,58 @@
+[
+  {
+    "slug": "playwright-python",
+    "name": "Playwright with Python",
+    "category": "Playwright",
+    "pillarSlug": "playwright-python-guide",
+    "intro": "Hands-on guides to browser test automation with Playwright and Python: pytest fixtures, page objects, saved login state, flaky tests, reports and CI. Every code example is run before it is published."
+  },
+  {
+    "slug": "api-testing",
+    "name": "API testing",
+    "category": "API Testing",
+    "pillarSlug": "api-testing-guide",
+    "intro": "API testing for QA engineers: Playwright and Python Requests, Postman collections, JSON Schema validation, authentication and refresh tokens, and negative tests. Every code example is run before it is published."
+  },
+  {
+    "slug": "qa-fundamentals",
+    "name": "QA fundamentals",
+    "category": "QA Fundamentals",
+    "pillarSlug": "qa-fundamentals-guide",
+    "intro": "The core skills of software QA: writing bug reports that get fixed, deciding what to automate, exploratory testing, test design, traceability and release checks."
+  },
+  {
+    "slug": "multi-tenant-saas",
+    "name": "Testing multi-tenant SaaS",
+    "category": "SaaS Testing",
+    "pillarSlug": "multi-tenant-saas-testing-guide",
+    "intro": "How to test multi-tenant SaaS products: data isolation between tenants, roles and permissions, and tenant-specific configuration, with test matrices and runnable examples."
+  },
+  {
+    "slug": "bdd-behave",
+    "name": "BDD with Behave",
+    "category": "BDD",
+    "pillarSlug": "behave-python-bdd-guide",
+    "intro": "Behavior-driven development in Python with Behave and Selenium: writing clear Gherkin, structuring the framework, hooks, page objects and reports."
+  },
+  {
+    "slug": "jmeter-performance",
+    "name": "Performance testing with JMeter",
+    "category": "Performance Testing",
+    "pillarSlug": "jmeter-performance-testing-guide",
+    "intro": "Performance testing with Apache JMeter: load and spike tests, thread group settings, reading the results, and fixing common errors."
+  },
+  {
+    "slug": "ai-lab",
+    "name": "AI Lab",
+    "category": "AI Lab",
+    "pillarSlug": "ai-in-qa-guide",
+    "intro": "Hands-on experiments with AI tools in QA work, always with human review: drafting test cases, reviewing AI-written tests, and where AI should not be trusted in testing."
+  },
+  {
+    "slug": "qa-careers",
+    "name": "QA careers",
+    "category": "QA Career",
+    "pillarSlug": "how-to-become-qa-engineer-in-nepal",
+    "intro": "Starting and growing a career in software QA, especially in Nepal and South Asia: skills, interviews, and moving from manual testing into automation."
+  }
+]

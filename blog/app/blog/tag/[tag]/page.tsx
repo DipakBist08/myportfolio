@@ -1,11 +1,13 @@
 import { Metadata } from 'next'
+import Link from 'next/link'
+import { notFound } from 'next/navigation'
 import { getAllPostsMeta } from '@/lib/blog/mdx'
-import { filterByTag, getAllTags, sortPostsByDate, slugify } from '@/lib/blog/utils'
+import { getAllTags, sortPostsByDate, slugify } from '@/lib/blog/utils'
+import { AUTHOR_LD, BASE_URL, SITE_NAME } from '@/lib/blog/site'
 import BlogCard from '@/components/blog/BlogCard'
 import TagBadge from '@/components/blog/TagBadge'
-import Link from 'next/link'
+import { Reveal, StaggerItem, StaggerList } from '@/components/motion/Reveal'
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://blog.dipakbist.com.np'
 
 interface Params {
   params: { tag: string }
@@ -16,36 +18,47 @@ export async function generateStaticParams() {
   return tags.map((tag) => ({ tag: slugify(tag) }))
 }
 
+export const dynamicParams = false
+
+const MIN_POSTS_TO_INDEX = 3 // same threshold as app/sitemap.ts
+
+function resolveTag(slug: string) {
+  const allPosts = getAllPostsMeta()
+  const allTags = getAllTags(allPosts)
+  const label = allTags.find((t) => slugify(t) === slug)
+  const posts = sortPostsByDate(allPosts.filter((p) => p.tags.some((t) => slugify(t) === slug)))
+  return { allTags, label, posts }
+}
+
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
+  const { label, posts } = resolveTag(params.tag)
+  if (!label) return {}
   const url = `${BASE_URL}/blog/tag/${params.tag}`
   return {
-    title: `#${params.tag} articles`,
-    description: `Browse all articles tagged with #${params.tag} — software testing, automation and QA insights by Dipak Bist.`,
+    title: `Articles tagged ${label}`,
+    description: `Articles tagged ${label} on the ${SITE_NAME}.`,
     alternates: { canonical: url },
-    openGraph: {
-      type: 'website',
-      url,
-      title: `#${params.tag} — Dipak Bist QA Blog`,
-      description: `All articles tagged #${params.tag}.`,
-      siteName: 'Dipak Bist QA Blog',
-    },
+    // A tag with fewer than 3 posts is a thin page that repeats the category
+    // hubs: it stays usable and its links are followed, but it is kept out of
+    // the index and the sitemap (app/sitemap.ts uses the same threshold).
+    ...(posts.length < MIN_POSTS_TO_INDEX ? { robots: { index: false, follow: true } } : {}),
   }
 }
 
 export default async function TagPage({ params }: Params) {
-  const allPosts = getAllPostsMeta()
-  const allTags = getAllTags(allPosts)
-  const posts = sortPostsByDate(filterByTag(allPosts, params.tag))
+  const { allTags, label, posts } = resolveTag(params.tag)
+  if (!label) notFound()
+  const tagLabel = label
   const tagUrl = `${BASE_URL}/blog/tag/${params.tag}`
 
   const collectionLd = {
     '@context': 'https://schema.org',
     '@type': 'CollectionPage',
     '@id': tagUrl,
-    name: `#${params.tag} articles`,
-    description: `All articles tagged #${params.tag} on Dipak Bist QA Blog.`,
+    name: `Articles tagged ${tagLabel}`,
+    description: `All articles tagged ${tagLabel} on the ${SITE_NAME}.`,
     url: tagUrl,
-    author: { '@type': 'Person', name: 'Dipak Bist', url: 'https://dipakbist.com' },
+    author: AUTHOR_LD,
     hasPart: posts.map((p) => ({
       '@type': 'BlogPosting',
       headline: p.title,
@@ -57,49 +70,40 @@ export default async function TagPage({ params }: Params) {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionLd) }} />
-    <div className="mx-auto max-w-6xl px-6 py-12">
-      {/* Header */}
-      <div className="mb-10">
-        <Link href="/" className="mb-4 flex items-center gap-1.5 text-sm text-slate-500 hover:text-primary-light transition-colors">
-          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M19 12H5M12 5l-7 7 7 7" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-          All Posts
-        </Link>
-        <div className="flex items-center gap-3">
-          <span className="section-tag">Tag</span>
-        </div>
-        <h1 className="mt-2 font-heading text-3xl font-bold text-slate-100 light:text-slate-900">
-          #{params.tag}
-        </h1>
-        <p className="mt-1 text-slate-400 light:text-slate-600">
-          {posts.length} article{posts.length !== 1 ? 's' : ''}
-        </p>
-      </div>
+      <div className="container-page pb-16 pt-10 sm:pt-14">
+        <Reveal as="header" className="mb-10">
+          <Link href="/" className="mono-label inline-flex min-h-11 items-center gap-1 text-muted no-underline hover:text-ink">
+            &larr; All articles
+          </Link>
+          <h1 className="mt-2 text-[clamp(2rem,1.5rem+2vw,3rem)] font-bold leading-[1.05] tracking-[-0.03em] text-ink">
+            {tagLabel}
+          </h1>
+          <p className="mt-3 text-muted">
+            {posts.length} article{posts.length !== 1 ? 's' : ''} with this tag
+          </p>
+        </Reveal>
 
-      {/* Posts */}
-      {posts.length > 0 ? (
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {posts.map((post) => (
-            <BlogCard key={post.slug} post={post} />
-          ))}
-        </div>
-      ) : (
-        <p className="text-slate-400">No posts found for this tag.</p>
-      )}
-
-      {/* Other tags */}
-      <section className="mt-14 border-t border-slate-700/30 pt-8 light:border-slate-200">
-        <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-500">Other Tags</h2>
-        <div className="flex flex-wrap gap-2">
-          {allTags
-            .filter((t) => slugify(t) !== params.tag)
-            .map((t) => (
-              <TagBadge key={t} tag={t} size="md" />
+        {posts.length > 0 ? (
+          <StaggerList className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {posts.map((post) => (
+              <StaggerItem key={post.slug}><BlogCard post={post} /></StaggerItem>
             ))}
-        </div>
-      </section>
-    </div>
+          </StaggerList>
+        ) : (
+          <p className="text-muted">No posts found for this tag.</p>
+        )}
+
+        <section className="mt-16 border-t border-line pt-8">
+          <h2 className="mono-label mb-4 uppercase tracking-[0.06em]">Other tags</h2>
+          <ul className="flex flex-wrap gap-2">
+            {allTags
+              .filter((t) => slugify(t) !== params.tag)
+              .map((t) => (
+                <li key={t}><TagBadge tag={t} size="md" /></li>
+              ))}
+          </ul>
+        </section>
+      </div>
     </>
   )
 }

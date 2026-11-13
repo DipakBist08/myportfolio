@@ -1,81 +1,93 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import ShareLinks from './ShareLinks'
 
 interface ShareButtonsProps {
   title: string
-  url?: string
+  /** The page's canonical URL. Required, so the links are complete in the server HTML. */
+  url: string
+  /** A one-line summary, used in the email body and the device share sheet. */
+  text?: string
+  /** Visible label before the buttons. */
+  label?: string
 }
 
-export default function ShareButtons({ title, url }: ShareButtonsProps) {
+const PILL =
+  'flex h-8 items-center gap-1.5 rounded-lg border border-line px-3 text-xs text-muted transition-colors hover:border-primary hover:text-ink'
+
+/**
+ * Share a post on LinkedIn, Facebook, X, WhatsApp, Telegram, Reddit or by
+ * email (ShareLinks), copy its link, or, on devices that support it (most
+ * phones), open the system share sheet, which reaches every other installed
+ * app: Instagram, Messenger, Viber, Slack, SMS and more.
+ *
+ * The "More" button is in the server HTML from the start and only becomes
+ * visible once the browser reports share support, so nothing moves on load.
+ */
+export default function ShareButtons({ title, url, text, label = 'Share' }: ShareButtonsProps) {
   const [copied, setCopied] = useState(false)
-  const [shareUrl, setShareUrl] = useState(url ?? '')
+  const [canShare, setCanShare] = useState(false)
 
   useEffect(() => {
-    if (!url) setShareUrl(window.location.href)
-  }, [url])
-
-  const encoded = encodeURIComponent(shareUrl)
-  const encodedTitle = encodeURIComponent(title)
+    setCanShare(typeof navigator !== 'undefined' && typeof navigator.share === 'function')
+  }, [])
 
   const copyLink = async () => {
-    await navigator.clipboard.writeText(shareUrl)
+    try {
+      await navigator.clipboard.writeText(url)
+    } catch {
+      return // clipboard blocked: the share links still work
+    }
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
 
+  const openShareSheet = async () => {
+    try {
+      await navigator.share({ title, text, url })
+    } catch {
+      /* the reader closed the sheet */
+    }
+  }
+
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <span className="text-xs text-slate-500">Share:</span>
-
-      {/* Twitter / X */}
-      <a
-        href={`https://twitter.com/intent/tweet?text=${encodedTitle}&url=${encoded}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label="Share on X/Twitter"
-        className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-700/50 text-slate-400 hover:border-primary/40 hover:text-primary-light transition-colors"
-      >
-        <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-        </svg>
-      </a>
-
-      {/* LinkedIn */}
-      <a
-        href={`https://www.linkedin.com/sharing/share-offsite/?url=${encoded}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label="Share on LinkedIn"
-        className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-700/50 text-slate-400 hover:border-primary/40 hover:text-primary-light transition-colors"
-      >
-        <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452z" />
-        </svg>
-      </a>
-
-      {/* Copy link */}
-      <button
-        onClick={copyLink}
-        aria-label="Copy link"
-        className="flex h-8 items-center gap-1.5 rounded-lg border border-slate-700/50 px-3 text-xs text-slate-400 hover:border-primary/40 hover:text-primary-light transition-colors"
-      >
+      <ShareLinks title={title} url={url} text={text} label={label} />
+      <button type="button" onClick={copyLink} className={PILL} aria-live="polite">
         {copied ? (
           <>
-            <svg className="h-3.5 w-3.5 text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg className="h-3.5 w-3.5 text-pass" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
               <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
-            <span className="text-green-400">Copied!</span>
+            <span className="text-pass">Copied!</span>
           </>
         ) : (
           <>
-            <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
               <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" strokeLinecap="round" strokeLinejoin="round" />
               <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
             Copy link
           </>
         )}
+      </button>
+
+      <button
+        type="button"
+        onClick={openShareSheet}
+        className={`${PILL} ${canShare ? '' : 'invisible'}`}
+        aria-hidden={!canShare}
+        tabIndex={canShare ? 0 : -1}
+        aria-label="More ways to share"
+      >
+        <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+          <circle cx="18" cy="5" r="3" />
+          <circle cx="6" cy="12" r="3" />
+          <circle cx="18" cy="19" r="3" />
+          <path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98" strokeLinecap="round" />
+        </svg>
+        More
       </button>
     </div>
   )

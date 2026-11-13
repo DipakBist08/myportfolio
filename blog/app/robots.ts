@@ -1,14 +1,12 @@
 import { MetadataRoute } from 'next'
+import { BASE_URL } from '@/lib/blog/site'
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://blog.dipakbist.com.np'
-
+/* Every crawler is allowed, including AI search crawlers (GPTBot, OAI-SearchBot,
+   PerplexityBot, ClaudeBot, Google-Extended and the rest): there is no
+   per-bot rule and nothing is disallowed. */
 export default function robots(): MetadataRoute.Robots {
   return {
-    rules: {
-      userAgent: '*',
-      allow: '/',
-      disallow: [],
-    },
+    rules: { userAgent: '*', allow: '/' },
     sitemap: `${BASE_URL}/sitemap.xml`,
   }
 }

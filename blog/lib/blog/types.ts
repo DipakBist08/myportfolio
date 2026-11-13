@@ -1,6 +1,7 @@
 export type Difficulty = 'beginner' | 'intermediate' | 'advanced'
 
 export type Category =
+  | 'QA Fundamentals'
   | 'Manual Testing'
   | 'Automation Testing'
   | 'API Testing'
@@ -12,14 +13,41 @@ export type Category =
   | 'CI/CD'
   | 'Git & GitHub'
   | 'Tools & Tips'
-  | 'AI & QA'
+  | 'AI Lab'
+  | 'Playwright'
+  | 'SaaS Testing'
+  | 'BDD'
+  | 'Performance Testing'
 
+export interface FaqItem {
+  q: string
+  a: string
+}
+
+/**
+ * Front matter as written in content/blog/*.mdx.
+ *
+ * Dates: new posts use `datePublished` / `dateModified`; the older `date` /
+ * `updatedAt` names are still accepted. lib/blog/mdx.ts normalises both into
+ * `date` and `updatedAt`, which is what the rest of the code reads.
+ * The full standard is in docs/POST_TEMPLATE.md and enforced by scripts/seo-lint.mjs.
+ */
 export interface PostFrontmatter {
   title: string
   description: string
   date: string
   updatedAt?: string
+  datePublished?: string
+  dateModified?: string
   slug: string
+  primaryQuery?: string
+  secondaryQueries?: string[]
+  /** Cluster slug from lib/blog/clusters.ts. */
+  cluster?: string
+  isPillar?: boolean
+  /** Tool versions the code was run against, e.g. "Playwright for Python 1.49, Python 3.12". */
+  testedWith?: string
+  faq?: FaqItem[]
   tags: string[]
   category: Category
   coverImage?: string

@@ -1,242 +1,294 @@
 ---
-title: "How to Write a Good Bug Report: The Complete QA Guide"
-description: "Learn the anatomy of a high-quality bug report that developers actually act on — with templates, real examples, severity/priority guidelines, and common mistakes to avoid."
-date: "2025-01-08"
+title: "Bug Report Example: How to Write One That Gets Fixed"
+description: "A complete bug report example, a copy-ready template, severity vs priority with clear examples, and the matching fields in Jira and Azure DevOps."
 slug: "how-to-write-good-bug-report"
-tags: ["Bug Reporting", "Manual Testing", "QA Fundamentals", "Jira", "Communication"]
-category: "Bug Reporting"
+primaryQuery: "bug report example"
+secondaryQueries:
+  - "how to write a bug report"
+  - "bug report template"
+  - "severity vs priority examples"
+  - "bug report fields jira azure devops"
+cluster: "qa-fundamentals"
+isPillar: false
+datePublished: "2025-01-08"
+dateModified: "2026-11-12"
+draft: false
+category: "QA Fundamentals"
+tags: ["Bug Reporting", "Manual Testing", "Jira", "Azure DevOps"]
 author: "Dipak Bist"
-excerpt: "A vague bug report gets ignored. A precise one gets fixed the same day. Learn exactly how to write bug reports that developers love and managers understand."
+excerpt: "A vague bug report sits in the backlog. A precise one gets reproduced on the first try. Here is a complete example, a template to copy, and the same fields in Jira and Azure DevOps."
 featured: true
 difficulty: "beginner"
-tools: ["Jira", "GitHub Issues", "TestRail", "Loom", "Snagit"]
-keywords: ["how to write bug report", "bug report template", "severity priority", "defect report", "QA bug tracking"]
-coverImage: "https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?w=800&h=450&fit=crop"
+tools: ["Jira", "Azure DevOps", "Browser DevTools"]
+faq:
+  - q: "What makes a good bug report?"
+    a: "A good bug report lets someone who was not there reproduce the bug without asking you anything. It has a specific title, numbered steps with test data, separate expected and actual results, the exact environment and build, and evidence such as a screenshot, recording or log. It also says how often the bug happens."
+  - q: "What is the difference between severity and priority?"
+    a: "Severity describes how badly the defect affects the system; priority describes how soon the team should fix it. QA usually proposes severity from the technical impact, while priority is set during triage with the product owner, because it depends on business factors such as deadlines, affected users and available workarounds."
+  - q: "What is the difference between a bug, a defect and an issue?"
+    a: "In everyday QA use, bug and defect mean the same thing: the software does not meet its requirements or its expected behavior. Issue is broader. In trackers such as Jira, an issue (now often called a work item) is any tracked item, and Bug is one type, next to Task and Story."
+  - q: "How long should a bug report title be?"
+    a: "Short enough to read in a list view, usually one line: the area, what broke, and the condition. 'Checkout: total shows $0 after applying a coupon' works; 'Checkout bug' does not. Put details in the steps, not the title, and avoid words like 'broken' or 'doesn't work' that say nothing."
+  - q: "Can you show an example of a good bug report?"
+    a: "A good example: title 'Login: form submits with empty email, no validation error (Chrome)'; steps: open /login, leave both fields empty, click Sign in; expected: an 'Email is required' error and no request sent; actual: a spinner, then nothing; plus the browser, OS and build, a screen recording, and how often it happens."
 ---
 
-A vague bug report like *"the page doesn't load"* can sit in the backlog for weeks.
+A good bug report lets a developer who was not there reproduce the bug on the first try. It has a specific title, numbered steps with the test data you used, separate expected and actual results, the exact environment, and evidence. Below is a complete bug report example, a template you can copy, and how the same fields map to Jira and Azure DevOps.
 
-A precise, well-structured bug report with steps, environment details, and evidence gets reproduced in 5 minutes and fixed the same day.
+{/* [ADD YOUR EXPERIENCE: a short, anonymized story of a bug report that bounced back to you, or one you received, and the single missing detail that caused the back-and-forth. No employer, product or client names.] */}
 
-Here's how to write the second kind.
+<KeyTakeaways>
+- Write for someone who has never seen your screen and has five minutes to investigate.
+- One action per step, with the exact test data you used.
+- Keep expected and actual results separate, and quote error messages exactly.
+- Severity is impact, priority is urgency. Propose severity; let triage set priority.
+- Attach evidence, and remove passwords, tokens and personal data from it first.
+</KeyTakeaways>
 
-## Why Bug Report Quality Matters
+## What does a good bug report example look like?
 
-Your bug report is a **communication tool**. The reader (developer, tech lead, PM) was not there when you found the bug. They need enough context to:
-
-1. Reproduce it independently
-2. Understand the impact
-3. Prioritise it correctly
-4. Verify the fix later
-
-A bad report creates back-and-forth, delays, and frustration on both sides.
-
-## The Anatomy of a Good Bug Report
-
-Every bug report should answer these questions:
-
-| Field | Purpose |
-|-------|---------|
-| **Title** | What broke, in one clear sentence |
-| **Severity** | How bad is the impact? |
-| **Priority** | How urgent is the fix? |
-| **Environment** | Where does it happen? |
-| **Preconditions** | What must be true before reproducing |
-| **Steps** | Exact reproduction steps |
-| **Expected** | What should happen |
-| **Actual** | What actually happens |
-| **Evidence** | Screenshot, video, logs |
-
-## Severity vs Priority
-
-These are often confused. They are **different**:
-
-- **Severity** = Technical impact on functionality
-- **Priority** = Business urgency of the fix
-
-A broken admin import feature may be **Severity: High** but **Priority: Medium** if only 2 clients use it. A typo on the homepage may be **Severity: Low** but **Priority: High** if it's visible to millions.
-
-| Severity | Definition |
-|----------|------------|
-| Critical | App crash, data loss, security breach — zero workaround |
-| High | Major feature broken, workaround exists but is painful |
-| Medium | Feature partially broken, workaround available |
-| Low | Minor visual issue, typo, cosmetic defect |
-
-## A Real Bug Report Example
+Here is a complete report for a real-world kind of defect: a form that should reject empty input but submits anyway, in one browser only. Every field answers a question the developer would otherwise have to ask.
 
 <BugReport
   id="QA-1042"
-  title="Login form submits with empty email field — no validation error shown"
+  title="Login: form submits with an empty email field, no validation error (Chrome)"
   severity="high"
   priority="P2"
   status="open"
-  environment="Chrome 120 | macOS 14 | Staging (v2.4.1)"
+  environment="Chrome 158.0 | Windows 11 | Staging, build 2.4.1"
   reportedBy="Dipak Bist"
-  assignedTo="Dev Team"
-  preconditions="Navigate to the login page. Both fields are empty."
-  testData={`Email: (empty)\nPassword: (empty)\nBrowser: Chrome 120.0.6099.130\nOS: macOS Sonoma 14.2`}
+  assignedTo="Web team"
+  preconditions="Signed out. Login page open at https://staging.example.com/login. Both fields empty."
+  testData={`Email: (empty)\nPassword: (empty)`}
   steps={[
-    "Open https://staging.app.com/login",
-    "Leave the email field empty",
-    "Leave the password field empty",
-    "Click the 'Sign In' button"
+    "Open https://staging.example.com/login",
+    "Leave the Email field empty",
+    "Leave the Password field empty",
+    "Click Sign in"
   ]}
-  expected="Inline validation error appears: 'Email is required'. Form is not submitted."
-  actual="Form submission is triggered. Spinner appears for 2 seconds, then disappears. No error is shown. User remains on login page."
-  attachments="Screen recording: loom.com/share/abc123 | Console log: no errors"
-  notes="Reproduced consistently in Chrome. Not reproduced in Firefox (correct validation shows). Safari untested."
+  expected="An inline error, 'Email is required', appears under the Email field. No sign-in request is sent."
+  actual="A sign-in request is sent (POST /api/session returns 400). A spinner shows for about 2 seconds, then disappears. No error message appears, and the user stays on the login page."
+  attachments="Screen recording (12 seconds). Network tab export of the POST /api/session request and its response. Browser console: no errors."
+  notes="Happens every time in Chrome (5 of 5 tries). Does not happen in Firefox 159.0, where the error shows correctly. Safari not tested."
 />
 
-## Title Formatting
+Why this example works:
 
-Your title is the most-read part of the report. Use this formula:
+- **The title names the area, the failure and the condition.** A developer scanning the backlog knows what it is without opening it.
+- **The steps start from a known state.** The preconditions say signed out and which page, so nobody guesses the starting point.
+- **Expected and actual are concrete.** The expected result quotes the message; the actual result includes what the network shows, not only what the screen shows.
+- **The notes narrow it down.** "Every time in Chrome, never in Firefox" tells the developer where to look before they open the code.
 
-```
-[Feature/Area] + What broke + Context
-```
+## Which fields should every bug report include?
 
-**Poor titles:**
+Every report needs enough for someone else to reproduce the bug, judge its impact, and later verify the fix. These fields cover that:
+
+| Field | What to write | Example |
+|---|---|---|
+| Title | Area, what broke, and the condition | Checkout: total shows $0 after applying a coupon |
+| Environment | Browser or app version, OS, test environment, build | Chrome 158.0, Windows 11, staging build 2.4.1 |
+| Preconditions | The state before step 1 | Signed in as a customer with one item in the cart |
+| Test data | The exact values you used | Coupon code SAVE10 |
+| Steps | Numbered, one action each | 1. Open the cart. 2. Enter SAVE10. 3. Click Apply |
+| Expected result | What the requirement says should happen | Total drops by 10% |
+| Actual result | What happened, with exact messages | Total shows $0.00; no error |
+| Frequency | Always, sometimes (how often), or once | 3 of 3 tries |
+| Severity | Impact on the system | High |
+| Priority | Proposed urgency, confirmed in triage | P2 |
+| Evidence | Recording, screenshot, logs, network export | Screen recording attached |
+
+## How do you write a bug report title?
+
+Use the pattern **area: what broke + condition**. The title is the most-read part of the report, so it should make sense in a list view with nothing else around it.
+
+**Weak titles:**
 - "Login doesn't work"
 - "Bug on checkout page"
 - "App crashes"
 
-**Good titles:**
-- "Login form submits with empty email — no validation shown (Chrome)"
-- "Checkout: order total shows $0 when coupon code applied"
-- "PDF export crashes on reports > 500 rows (Safari)"
+**Strong titles:**
+- "Login: form submits with empty email, no validation error (Chrome)"
+- "Checkout: order total shows $0 after applying a coupon"
+- "Reports: PDF export crashes on reports over 500 rows (Safari)"
 
-## Steps to Reproduce
+## How do you write steps to reproduce?
 
-Steps must be **atomic** (one action per step), **specific**, and **complete**:
+Write one action per step, in order, from a known starting state, with the exact data you used. The last step is the one where the bug shows. If a step depends on something you did earlier, such as being signed in, move it into the preconditions.
+
+**Weak steps:**
+> Go to the cart and apply a coupon. Total is wrong.
+
+**Strong steps:**
+> 1. Sign in as `customer.qa@example.com`.
+> 2. Add one "Basic plan" to the cart.
+> 3. Open the cart.
+> 4. Type `SAVE10` into the Coupon field and click **Apply**.
+
+Before you submit, follow your own steps once more, exactly as written. If you cannot reproduce it from the text alone, neither can the developer.
+
+## How do you write the expected and actual results?
+
+State the expected result from the requirement, and the actual result as exactly as you can: quote messages word for word, and include what the network or console shows. Never write "it doesn't work": say what happened instead.
+
+**Weak:**
+> Expected: It works.
+> Actual: It doesn't work.
+
+**Strong:**
+> Expected: Clicking **Place order** shows the toast "Order placed!" and opens `/orders/123` within 2 seconds.
+> Actual: Clicking **Place order** shows a spinner for 10 seconds, then a blank page. No toast. The URL stays `/checkout`. `POST /api/orders` returns `500`.
+
+For an API bug, paste the request (method, URL and body) and the response (status and body). If an automated test found it, its failure output is evidence too; see [how to test REST APIs with Playwright in Python](/blog/playwright-api-testing-guide).
+
+## What is the difference between severity and priority?
+
+Severity is how badly the defect affects the system; priority is how soon the team should fix it. They are set separately because they often disagree: a crash in a rarely used screen can be severe but not urgent, and a typo on the home page can be trivial but urgent.
+
+| | Low priority | High priority |
+|---|---|---|
+| **High severity** | A rarely used admin export crashes, and a workaround exists | Checkout fails for every customer |
+| **Low severity** | A typo on an internal settings page | The company name is misspelled on the home page |
+
+Azure DevOps documents the same idea with an example: a rarely used link that crashes a page might get **Severity 2 - High** but **Priority 3**, because the experience is severe but rare ([Microsoft's guide to managing bugs in Azure Boards](https://learn.microsoft.com/en-us/azure/devops/boards/backlogs/manage-bugs?view=azure-devops)). Its four severity levels are a good default if your team has none:
+
+| Severity | Meaning |
+|---|---|
+| 1 - Critical | A component or the whole system stops, or data is badly corrupted, and there is no workaround |
+| 2 - High | The same impact as critical, but an acceptable workaround exists |
+| 3 - Medium | The system gives incorrect, incomplete or inconsistent results |
+| 4 - Low | A minor or cosmetic problem with an acceptable workaround |
+
+## How do the fields map to Jira and Azure DevOps?
+
+Both tools have a place for every field above, but the names differ, and Jira has no severity field out of the box.
+
+| Bug report field | Jira | Azure DevOps (Bug work item) |
+|---|---|---|
+| Title | Summary | Title |
+| Steps, expected and actual | Description | Repro Steps |
+| Environment | Environment, if your project shows it; otherwise the description | System Info |
+| Build or version | Affects versions, if your project uses versions | Found In Build |
+| Severity | Not there by default: an admin adds it as a custom field | Severity (1 - Critical to 4 - Low) |
+| Priority | Priority | Priority (1 is the highest) |
+| Evidence | Attachments | Attachments |
+| Fixed in | Fix versions | Integrated in Build |
+
+Two notes on these tools:
+
+- **Severity in Jira.** Jira Software projects do not include a Severity field by default, so teams usually add a single-select custom field. Sites that also use Jira Service Management may already have one ([Atlassian Community discussion](https://community.atlassian.com/t5/Jira-questions/Why-there-is-no-Severity-Field-for-Issue-Type-Bug/qaq-p/1117643)).
+- **Regressions in Azure DevOps.** Microsoft's guidance is not to reopen a closed bug when the problem comes back, but to open a new bug and link it to the old one with a Related link.
+
+## What evidence should you attach?
+
+Attach at least one piece of evidence, and pick the one that shows the problem fastest:
+
+1. **A screen recording** for anything involving timing, animation or several steps.
+2. **A screenshot** with the problem area marked.
+3. **The browser console output**, copied in full, not just the first line.
+4. **A network export** of the failing request: in DevTools, open the Network tab and save the request and its response.
+5. **Server logs**, if you have access, with the timestamp of your test.
+
+<Callout type="warning" title="Clean your evidence before you attach it">
+  Screenshots, logs and network exports can contain passwords, session tokens, API keys and customer data. A browser network export (HAR file) includes cookies and authorization headers. Remove or mask them before you attach anything to a ticket.
+</Callout>
+
+## What are the most common bug report mistakes?
+
+<QAChecklist
+  title="Check before you submit"
+  items={[
+    { text: "The title names the area, what broke and the condition" },
+    { text: "Steps are numbered, one action each, from a known starting state" },
+    { text: "The test data you used is written down" },
+    { text: "Expected and actual results are separate and concrete" },
+    { text: "Error messages are quoted exactly" },
+    { text: "Browser or app version, OS, environment and build are listed" },
+    { text: "Frequency is stated: always, sometimes (how often), or once" },
+    { text: "Evidence is attached, with secrets and personal data removed" },
+    { text: "You searched for an existing report of the same bug" },
+    { text: "You reproduced it once more by following your own steps" },
+  ]}
+/>
+
+## Bug report template (copy-ready)
+
+Copy this into Jira, Azure DevOps or GitHub Issues, and delete any line that does not apply.
+
+```markdown title="bug-report-template.md"
+## Title
+[Area]: what broke + condition
+
+## Environment
+- Browser or app version:
+- OS:
+- Test environment and URL:
+- Build or version:
+- User role or account type:
+
+## Severity: [ Critical | High | Medium | Low ]
+## Priority (proposed): [ P1 | P2 | P3 | P4 ]
+
+## Preconditions
+The state before step 1.
+
+## Test data
+The exact values used.
+
+## Steps to reproduce
+1.
+2.
+3.
+
+## Expected result
+What the requirement or design says should happen.
+
+## Actual result
+What happens instead. Quote error messages exactly.
+
+## Frequency
+Always / Sometimes (x of y tries) / Once
+
+## Evidence
+- Recording:
+- Screenshot:
+- Console or network output:
+
+## Notes
+- Workaround:
+- Other browsers or devices tried:
+- Related tickets:
+```
+
+## How does a bug report become a regression test?
+
+Once the bug is fixed, its steps and expected result are a ready-made test case: run them to verify the fix, then keep them in the regression suite so the bug cannot quietly return.
 
 <TestCase
-  id="BUG-VERIFY-001"
-  title="Verify login validation bug — regression check after fix"
-  preconditions="On the login page at /login. User NOT logged in."
+  id="REG-1042"
+  title="Login rejects an empty email field"
+  objective="Verify the fix for QA-1042 and guard against a regression"
+  preconditions="Signed out, on /login, both fields empty"
   testData={`Email: (empty)\nPassword: (empty)`}
   steps={[
-    { action: "Navigate to /login", expected: "Login page visible, both fields empty" },
-    { action: "Leave email field blank", expected: "Field remains empty" },
-    { action: "Leave password field blank", expected: "Field remains empty" },
-    { action: "Click 'Sign In' button", expected: "Validation error displayed: 'Email is required'. Form NOT submitted." },
+    { action: "Leave the Email field empty", expected: "The field stays empty" },
+    { action: "Leave the Password field empty", expected: "The field stays empty" },
+    { action: "Click Sign in", expected: "'Email is required' appears under the Email field and no sign-in request is sent" },
   ]}
   priority="high"
   type="Regression"
   author="Dipak Bist"
 />
 
-## Evidence That Developers Love
+A check like this runs on every release, so it is a good candidate for automation. To decide case by case, use this [checklist for when to automate a test](/blog/manual-vs-automation-testing).
 
-Attach **at least one** of these:
+## Can AI help you write better bug reports?
 
-1. **Screenshot** — annotated with red arrows/boxes (use Snagit, CleanShot)
-2. **Screen recording** — shows the exact flow (use Loom, QuickTime)
-3. **Console logs** — browser DevTools > Console tab (copy full output)
-4. **Network trace** — DevTools > Network tab, filter for the failed request
-5. **Logs** — server-side logs if accessible
-
-<Callout type="tip" title="Video is Worth a Thousand Words">
-  A 30-second Loom recording showing the exact bug is worth more than 3 paragraphs of description. Always record when the bug involves timing, animation, or multi-step interaction.
-</Callout>
-
-## Common Bug Report Mistakes
-
-<QAChecklist
-  title="Before Submitting — Avoid These Mistakes"
-  items={[
-    { text: "Title is specific (not just 'Bug on page X')" },
-    { text: "Steps are numbered and atomic (one action per step)" },
-    { text: "Environment is specified (browser, OS, version)" },
-    { text: "Expected AND actual result are clearly separate" },
-    { text: "Evidence is attached (screenshot or recording)" },
-    { text: "I checked if this is already reported (no duplicate)" },
-    { text: "I can reproduce it consistently before reporting" },
-    { text: "Severity and priority are set correctly" },
-  ]}
-/>
-
-## Writing the Expected and Actual Result
-
-This is the most commonly done wrong. Be explicit:
-
-**Weak:**
-> Expected: It works
-> Actual: It doesn't work
-
-**Strong:**
-> Expected: Clicking "Submit" displays a success toast ("Order placed!") and redirects to /orders/123 within 2 seconds.
-> Actual: Clicking "Submit" shows a loading spinner for 10 seconds, then displays a blank white screen. No toast. URL remains /checkout.
-
-## Environment Details to Always Include
-
-```
-Browser: Chrome 120.0.6099.130
-OS: macOS Sonoma 14.2.1 / Windows 11 22H2
-Screen resolution: 1440x900
-Environment: Staging (https://staging.app.com) | Build v2.4.1
-User role: admin / free-tier / guest
-Network: VPN on / corporate Wi-Fi
-```
-
-<Callout type="warning" title="The 'It Works on My Machine' Problem">
-  Missing environment details is the #1 cause of "I can't reproduce it" responses. Be precise. Different OS, browser version, or user role can produce completely different behaviour.
-</Callout>
-
-## Bug Report Template (Copy-Ready)
-
-<CommandBlock
-  command="Use this template in Jira, GitHub Issues, or TestRail"
-  shell="template"
-  description="Copy the template below into your bug tracking system"
-/>
-
-```markdown filename="bug-report-template.md"
-## Title
-[Feature] Brief one-line description of the bug
-
-## Environment
-- Browser:
-- OS:
-- App version/build:
-- Test environment URL:
-- User role/account type:
-
-## Severity: [ Critical | High | Medium | Low ]
-## Priority: [ P1 | P2 | P3 | P4 ]
-
-## Preconditions
-What must be true / set up before running these steps.
-
-## Steps to Reproduce
-1. Go to ...
-2. Click on ...
-3. Enter ...
-4. Observe ...
-
-## Expected Result
-What should happen according to the spec/design.
-
-## Actual Result
-What actually happens. Include error messages verbatim.
-
-## Evidence
-- Screenshot: [attach]
-- Recording: [link]
-- Console logs: [paste or attach]
-
-## Notes / Additional Context
-- Does it reproduce consistently? (Always / Sometimes / Once)
-- Workaround available? Yes/No
-- Related tickets:
-```
-
-## Using AI to Improve Your Bug Reports
+Yes, for spotting what is missing. An AI tool can point out a vague title, a missing environment or merged steps. It cannot know how your product should behave, so the expected result must come from the requirement, and it should never see real customer data, passwords or internal URLs.
 
 <PromptBlock
-  title="Improve My Bug Report"
-  context="You are a Senior QA Engineer who writes clear, precise bug reports."
-  prompt={`Review this bug report and improve it:
+  title="Review my bug report"
+  context="You are a senior QA engineer who writes clear, precise bug reports."
+  prompt={`Review this bug report draft:
 
 Title: Login broken
 Steps: Go to login page, click sign in
@@ -244,22 +296,12 @@ Expected: should work
 Actual: doesn't work
 
 Rewrite it with:
-- A clear, specific title
-- Complete numbered steps to reproduce
-- Explicit expected vs actual result
-- Suggested severity and priority
-- Questions to ask to fill in missing environment details`}
-  tip="Paste your draft bug report and let AI identify what's missing or unclear before you submit."
+- A specific title: area, what broke, condition
+- Numbered steps, one action each
+- Separate expected and actual results
+- A suggested severity, with your reason
+- A list of the questions I must answer to fill in what is missing`}
+  tip="Replace names, emails, tokens and internal URLs with placeholders before you paste a draft into any AI tool."
 />
 
-## Key Takeaways
-
-- Severity ≠ Priority — understand the difference and set both correctly
-- Steps must be atomic, numbered, and reproducible by anyone
-- Always include Expected **and** Actual results separately
-- Evidence (screenshot/recording) dramatically reduces back-and-forth
-- A great title is specific: **what** broke, **where**, under what **condition**
-
-<Callout type="success" title="The Golden Rule">
-  Write your bug report as if the reader has never seen your screen, knows nothing about what you were doing, and has 5 minutes to investigate. Give them everything they need to reproduce it immediately.
-</Callout>
+For more on core QA skills, see all [QA fundamentals articles](/blog/category/qa-fundamentals).

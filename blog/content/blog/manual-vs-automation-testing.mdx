@@ -1,168 +1,197 @@
 ---
-title: "Manual Testing vs Automation Testing: When to Use Which"
-description: "A practical breakdown of manual and automation testing — what each is best at, when to choose one over the other, and how to blend both for maximum quality."
-date: "2024-11-15"
+title: "When to Automate a Test: A Practical Checklist"
+description: "When to automate a test and when not to: a 7-question checklist, a manual vs automation testing comparison, and a tested Playwright example to start with."
 slug: "manual-vs-automation-testing"
-tags: ["Manual Testing", "Automation Testing", "Test Strategy", "QA Fundamentals"]
-category: "Manual Testing"
+primaryQuery: "when to automate a test"
+secondaryQueries:
+  - "manual testing vs automation testing"
+  - "what should not be automated"
+  - "when not to automate tests"
+cluster: "qa-fundamentals"
+isPillar: false
+datePublished: "2024-11-15"
+dateModified: "2026-11-12"
+testedWith: "Playwright for Python 1.65.1, pytest-playwright 0.10.0, pytest 9.2.0, Chromium 158.0.8127.18, Python 3.12.3"
+draft: false
+category: "QA Fundamentals"
+tags: ["Manual Testing", "Automation Testing", "Test Strategy"]
 author: "Dipak Bist"
-excerpt: "Understand the real strengths and trade-offs of manual vs automation testing, and learn a practical framework for deciding which approach fits your project."
+excerpt: "Automate a test when it runs often, stays stable and has a result code can check. Keep it manual when it needs judgment. Seven yes-or-no questions make the call for any single test."
 featured: true
 difficulty: "beginner"
-tools: ["Selenium", "Playwright", "Postman", "Jira"]
-keywords: ["manual testing vs automation testing", "when to automate tests", "QA strategy", "test pyramid", "software testing"]
-coverImage: "https://images.unsplash.com/photo-1484788984921-03950022c38b?w=800&h=450&fit=crop"
+tools: ["Playwright", "pytest", "Python"]
+faq:
+  - q: "Can automation testing completely replace manual testing?"
+    a: "No. Automation checks what you already know to check: it repeats the same steps and compares results with fixed expectations. It cannot notice a confusing screen, a missing requirement or a risk nobody wrote a test for. Exploratory and usability testing need a person, so in practice the two are combined."
+  - q: "Should I automate tests before the feature is stable?"
+    a: "Usually not at the UI level. If the screens and flows still change every sprint, UI tests break for reasons that are not bugs, and maintenance eats the time they save. Automate at the API or unit level first, where contracts change less, and add UI automation once the flow is signed off."
+  - q: "How do you decide what percentage of tests to automate?"
+    a: "Don't start from a percentage. Decide test by test: automate the checks that run often, have stable steps and a clear expected result, and cost more to run by hand than to maintain. The percentage is an outcome of those decisions, and it differs between products, teams and test levels."
+  - q: "Does the same checklist apply to API tests?"
+    a: "Yes, and API tests usually pass it more easily. API contracts change less often than screens, the checks are precise, and the tests run fast without a browser. That is the idea behind the test pyramid: many fast API and unit tests, and fewer browser tests for the journeys only a browser can prove."
+  - q: "What should not be automated?"
+    a: "Skip automation for one-off checks, features that are about to change, tests that need human judgment such as usability or whether a design looks right, and flows you cannot make deterministic, such as real payment providers or CAPTCHAs. Exploratory testing also stays manual, because its value is in what the tester decides to try next."
 ---
 
-One of the most common questions in QA is: **"Should we automate this?"**
+Automate a test when it runs often, its steps and expected result are stable, and running it by hand costs more than keeping the automation working. Keep it manual when it needs human judgment, runs once, or covers a feature that is still changing. The checklist below turns that into seven yes-or-no questions you can apply to any single test.
 
-The answer is almost always: *it depends*. Let me break it down properly.
+{/* [ADD YOUR EXPERIENCE: one sentence on how your team decides what to automate today, or the question that comes up most often when you plan automation. Keep it generic.] */}
 
-## What is Manual Testing?
+<KeyTakeaways>
+- Decide test by test, not with a target percentage.
+- Automate checks that repeat, stay stable, and have a result code can verify.
+- Keep exploratory, usability and one-off checks manual.
+- Automate at the lowest level that can catch the bug: unit or API before the UI.
+- Judge automation by the real bugs it catches, not by how many tests exist.
+</KeyTakeaways>
 
-Manual testing is the process of a human tester interacting with the application — clicking buttons, filling forms, observing behaviour — without using any automation scripts.
+## How do you decide whether to automate a test?
 
-**Core strengths:**
-- Exploratory discovery of unexpected bugs
-- UI/UX and visual defect detection
-- Ad-hoc and usability testing
-- Testing workflows that are too complex to automate economically
-- Short-term tasks (one-time smoke test, release check)
-
-<Callout type="tip" title="When Manual Shines">
-  Manual testing is irreplaceable for exploratory testing — when you don't yet know what you're looking for. A well-designed exploratory session often surfaces more high-impact bugs than scripted automation.
-</Callout>
-
-## What is Automation Testing?
-
-Automation testing uses scripts and frameworks (Selenium, Playwright, pytest) to execute test cases automatically, verify results, and report pass/fail status without human intervention.
-
-**Core strengths:**
-- Regression testing (fast, repeatable)
-- Data-driven and boundary testing
-- CI/CD pipeline integration
-- Load and performance testing at scale
-- Repeating the same actions across browsers/environments
-
-## The Test Pyramid
-
-The test pyramid gives us a model for balancing test types:
-
-```
-         /\
-        /E2E\       (Few — slow, expensive, high value)
-       /------\
-      / Integration\  (Some — validate component interactions)
-     /------------\
-    /   Unit Tests  \   (Many — fast, cheap, reliable)
-   /----------------\
-```
-
-The base should be rich unit tests. Integration tests confirm module interactions. E2E tests validate critical user journeys.
-
-## Side-by-Side Comparison
-
-| Criteria | Manual Testing | Automation Testing |
-|----------|---------------|-------------------|
-| Speed | Slow per run | Fast once built |
-| Upfront cost | Low | High (build time) |
-| Maintenance | Low | High (flaky tests, UI changes) |
-| ROI over time | Diminishing | Increases with runs |
-| Best for | Exploratory, UX, one-off | Regression, smoke, CI/CD |
-| Human judgment | High | None |
-| Accuracy | Variable | Consistent |
-
-## Decision Framework
-
-Use this checklist to decide whether to automate a test:
+Answer these seven questions for the one test in front of you. The first three are must-haves; the rest decide when, and at which level, to automate.
 
 <QAChecklist
-  title="Automate This Test?"
+  title="Should this test be automated?"
   items={[
-    { text: "The test runs more than 3 times per sprint" },
-    { text: "The steps are deterministic and predictable" },
-    { text: "The functionality is stable (not changing every sprint)" },
-    { text: "Automation build time < time saved within 3 months" },
-    { text: "The test doesn't rely on subjective human judgment" },
-    { text: "The team has skills to maintain the automation" },
+    { text: "1. It will run many times: every build, every sprint, or before every release" },
+    { text: "2. The same input gives the same result: no human judgment, no randomness" },
+    { text: "3. Code can check the expected result: a value, a status, a message, an element" },
+    { text: "4. The feature is stable: its flow is signed off and not being redesigned" },
+    { text: "5. The test can create and clean up its own data" },
+    { text: "6. Over the next few months, running it by hand costs more than building and maintaining it" },
+    { text: "7. Someone on the team can fix it when it breaks" },
   ]}
 />
 
-If most items are checked — automate. If fewer than 3 — keep it manual.
+How to read the answers:
 
-## Common Mistakes
+- **Yes to all seven:** automate it now.
+- **No to question 1, 2 or 3:** keep it manual. Automation will not pay back, or it cannot check the result.
+- **Yes to 1 to 3, but no to any of 4 to 7:** automate later, or at a lower level. An API test is often stable while the UI is not.
 
-### Automating Too Early
+## How does the checklist work on real tests?
 
-Automating a feature before it's stable means rewriting your tests every sprint. Wait until the core functionality is signed off.
+Here are three typical tests run through the checklist:
 
-<Callout type="warning" title="Anti-Pattern: Automating Flaky Flows">
-  Automating unstable or intermittent user flows creates flaky tests that erode trust in the test suite. Invest time in reliable test isolation first.
-</Callout>
+| Question | Sign in with valid credentials | "Is the new onboarding flow easy to follow?" | Monthly invoice PDF |
+|---|---|---|---|
+| 1. Runs many times | Yes: every build | Yes: every design change | No: once a month |
+| 2. Same input, same result | Yes | No: it is a judgment | Yes for the numbers |
+| 3. Code can check the result | Yes: the URL and heading | No | The totals yes, the look no |
+| 4. Stable feature | Yes | No: still in design | Yes |
+| 5. Creates its own data | Yes: a test account | Not relevant | Yes |
+| 6. Cheaper automated | Yes | No | For the totals |
+| 7. Someone can maintain it | Yes | Not relevant | Yes |
+| **Decision** | **Automate as a UI smoke test** | **Keep manual: usability** | **Automate the totals at API level; check the layout by hand** |
 
-### Abandoning Manual Testing Entirely
+The third column is the common case: one feature, two decisions. Split the test along the line between what code can check and what needs a person.
 
-Full automation is a myth. Some things simply cannot (or should not) be automated:
-- Accessibility audits requiring human judgment
-- First impressions of a new design
-- Exploratory sessions for new features
+{/* [ADD YOUR EXPERIENCE: one test from your own work that you decided not to automate, and the checklist question that decided it. Keep it generic.] */}
 
-### Measuring Success by Test Count
+## What should not be automated?
 
-A team with 2,000 passing tests and zero bug coverage is worse than a team with 50 well-targeted tests catching real regressions. Quality over quantity.
+Keep these manual, or automate only the part that code can check:
 
-## A Blended Approach
+- **Exploratory testing.** Its value is in what the tester decides to try next. Write a charter, not a script.
+- **Usability, and look and feel.** Code can check that a button exists, not whether people understand it. Visual regression tools catch changes, but a person still decides whether a change is right.
+- **One-off checks.** A data migration you run once does not repay the effort of automating it.
+- **Features that are still changing.** UI tests written now break with every redesign, for reasons that are not bugs.
+- **Flows you cannot make deterministic.** Real payment providers, CAPTCHAs and third-party emails. Test your side of them with stubs at the API level instead.
+- **Accessibility, beyond the basics.** Automated scanners catch some problems, such as missing alt text or low contrast, but not whether a screen reader user can finish the task.
 
-The most effective QA strategy uses both:
+The Ministry of Testing community has a long thread on [what should not be automated](https://club.ministryoftesting.com/t/what-should-not-be-automated/43058), with examples from many teams.
 
-<Steps
-  steps={[
-    {
-      title: "Write unit + integration tests (developer-owned)",
-      description: "Cover logic, edge cases, and module boundaries."
-    },
-    {
-      title: "Automate high-value E2E journeys",
-      description: "Login, checkout, critical business flows that run every build."
-    },
-    {
-      title: "Run exploratory sessions for new features",
-      description: "Use session-based testing with time-boxed charters."
-    },
-    {
-      title: "Manual regression for UI-sensitive areas",
-      description: "Pixel-perfect layout checks, animations, and complex UX."
-    }
-  ]}
-/>
+## Manual vs automation testing: how do they compare?
 
-## Automation Example: Playwright Login Test
+Manual testing is a person running the test and judging the result. Automation testing is code running the test and comparing the result with fixed expectations. Each is strong where the other is weak:
 
-```python filename="tests/test_login.py"
-import pytest
+| | Manual testing | Automation testing |
+|---|---|---|
+| Best at | New features, exploring, usability, one-off checks | Regression, smoke tests, many data combinations |
+| Finds | New and unexpected problems | Regressions in behavior that is already checked |
+| Cost to start | Low | High: writing and debugging the tests |
+| Cost to repeat | The same effort every run | Low per run, plus maintenance when the product changes |
+| Speed per run | Slow | Fast once built |
+| Judgment | Yes | None: only what the code asserts |
+| Consistency | Varies between runs and testers | The same steps every run |
+| Runs in CI | No | Yes |
+
+## Where should automated tests sit?
+
+As low in the stack as the check allows. The test pyramid describes the balance: many fast unit tests at the base, fewer integration and API tests in the middle, and the fewest end-to-end UI tests at the top, because UI tests are the slowest and break most easily. Martin Fowler's [Practical Test Pyramid](https://martinfowler.com/articles/practical-test-pyramid.html) explains it with examples, and Google's testing blog argues the same point in [Just Say No to More End-to-End Tests](https://testing.googleblog.com/2015/04/just-say-no-to-more-end-to-end-tests.html).
+
+In practice:
+
+- **Unit tests**, usually written by developers, check logic and edge cases.
+- **API tests** check business rules, permissions and data without a browser. See [how to write Playwright API tests in Python](/blog/playwright-api-testing-guide).
+- **UI tests** check the few journeys that only make sense in a browser, such as signing in or checking out.
+
+## What is a good first test to automate?
+
+Signing in with valid credentials passes all seven questions, which makes it a common first UI test. Here it is in Playwright for Python, with its negative twin:
+
+```python title="tests/test_login.py"
+import re
+
 from playwright.sync_api import Page, expect
 
-def test_login_with_valid_credentials(page: Page):
-    page.goto("https://app.example.com/login")
-    page.fill('[name="email"]', "qa@example.com")
-    page.fill('[name="password"]', "SecurePass123")
-    page.click('[type="submit"]')
 
-    # Assert we land on the dashboard
-    expect(page).to_have_url("https://app.example.com/dashboard")
-    expect(page.locator("h1")).to_contain_text("Welcome")
+def test_login_with_valid_credentials(page: Page):
+    page.goto("/login")
+
+    page.get_by_label("Email").fill("qa.user@example.com")
+    page.get_by_label("Password").fill("correct-horse-battery")
+    page.get_by_role("button", name="Sign in").click()
+
+    expect(page).to_have_url(re.compile(r"/dashboard$"))
+    expect(page.get_by_role("heading", level=1)).to_have_text("Welcome, QA User")
+
+
+def test_login_with_wrong_password_shows_an_error(page: Page):
+    page.goto("/login")
+
+    page.get_by_label("Email").fill("qa.user@example.com")
+    page.get_by_label("Password").fill("wrong-password")
+    page.get_by_role("button", name="Sign in").click()
+
+    expect(page.get_by_role("alert")).to_have_text("Email or password is incorrect.")
+    expect(page).to_have_url(re.compile(r"/login$"))
 ```
 
-Compare this to what manual testing catches — a broken tooltip on the email field, an odd colour in dark mode, or unexpected lag. Neither replaces the other.
+Three things make this test hold up:
 
-## Key Takeaways
+- **The locators are what a user sees:** a label, a button name, a heading. They survive markup changes better than CSS selectors; see [Playwright's guide to locators](https://playwright.dev/python/docs/locators).
+- **`expect` waits.** Each assertion retries until it passes or times out, so there are no `sleep()` calls. See [Playwright's assertions](https://playwright.dev/python/docs/test-assertions).
+- **`page.goto("/login")` is relative.** pytest-playwright passes the `base_url` fixture to every browser context, so the app's address lives in one place.
 
-- **Manual testing** = human judgment, discovery, UX, short-lived tasks
-- **Automation testing** = speed, repeatability, regression, CI/CD
-- Use the **test pyramid** to guide the ratio
-- **Don't automate flaky or rapidly changing features**
-- The best QA teams use both strategically
+The tests run against a small local login app that starts with the test session, so they run anywhere. The [login test example project on GitHub](https://github.com/DipakBist08/myportfolio/tree/main/blog/examples/manual-vs-automation-testing) has the app and its `conftest.py`. This is the run for this article:
 
-<Callout type="success" title="Bottom Line">
-  The goal is not 100% automation coverage — it's maximum confidence in your software quality per unit of QA effort. Manual and automation testing are complementary, not competing.
-</Callout>
+```text
+tests/test_login.py::test_login_with_valid_credentials[chromium] PASSED  [ 50%]
+tests/test_login.py::test_login_with_wrong_password_shows_an_error[chromium] PASSED [100%]
+
+============================== 2 passed in 1.21s ===============================
+```
+
+Now compare what a manual tester notices on the same screen: an error message that confuses people, a password field that hides the Caps Lock warning, a layout that breaks on a small phone. Neither kind of testing replaces the other.
+
+## How do you know if your test automation is working?
+
+Measure what it catches and what it costs, not how many tests exist:
+
+- **Real bugs caught before release.** If the suite has not caught one in months, it may be checking the wrong things.
+- **False failures.** How often does a red build turn out to be a flaky or outdated test? Each one costs a person's time and the team's trust.
+- **Run time.** A suite that takes too long stops being run on every change.
+
+A team with 2,000 tests that never catch anything gets less from automation than a team with 50 well-chosen tests that catch real regressions.
+
+## What are the most common automation mistakes?
+
+- **Automating too early.** UI tests for a feature still in design break every sprint. Wait until the flow is signed off, or test the API first.
+- **Automating a flaky flow without fixing it.** Flaky tests teach the team to ignore red builds. Fix the test isolation or the timing first.
+- **Dropping manual testing entirely.** Automation only checks what you already thought of. Keep exploratory sessions for new features.
+- **Putting every check in the UI.** Checks that could run as API tests take longer and break more often as UI tests.
+- **Counting tests instead of results.** See the previous section.
+
+When an automated check does catch a real bug, report it so it gets fixed fast; this [bug report example](/blog/how-to-write-good-bug-report) shows what to include.
+
+For more on test strategy and core QA skills, see all [QA fundamentals articles](/blog/category/qa-fundamentals).

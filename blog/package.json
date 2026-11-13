@@ -4,13 +4,17 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "node scripts/generate-rss.mjs && next build",
+    "build": "node scripts/seo-lint.mjs && next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "seo:lint": "node scripts/seo-lint.mjs",
+    "test:seo": "node --test scripts/seo-lint.test.mjs",
+    "indexnow": "node scripts/indexnow.mjs"
   },
   "dependencies": {
     "clsx": "^2.1.0",
     "date-fns": "^3.6.0",
+    "framer-motion": "^14.1.0",
     "gray-matter": "^4.0.3",
     "next": "^14.2.0",
     "next-mdx-remote": "^6.0.0",

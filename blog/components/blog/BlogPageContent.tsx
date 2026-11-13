@@ -1,204 +1,292 @@
 'use client'
 
-import { useSearchParams } from 'next/navigation'
-import { useMemo } from 'react'
+import Link from 'next/link'
+import Image from 'next/image'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
+import { Suspense, useCallback, useMemo } from 'react'
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import type { PostMeta } from '@/lib/blog/types'
 import {
-  getFeaturedPosts,
   getAllTags,
   getAllCategories,
   filterByTag,
   filterByCategory,
   searchPosts,
   paginatePosts,
+  formatDate,
   POSTS_PER_PAGE,
 } from '@/lib/blog/utils'
-import BlogCard from '@/components/blog/BlogCard'
 import BlogSearch from '@/components/blog/BlogSearch'
-import BlogFilters from '@/components/blog/BlogFilters'
 import TagBadge from '@/components/blog/TagBadge'
 import Pagination from '@/components/blog/Pagination'
+
+const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1]
+
+const Arrow = ({ className = 'h-5 w-5' }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 256 256" fill="currentColor" aria-hidden="true">
+    <path d="M200,64V168a8,8,0,0,1-16,0V83.31L69.66,197.66a8,8,0,0,1-11.32-11.32L172.69,72H88a8,8,0,0,1,0-16H192A8,8,0,0,1,200,64Z" />
+  </svg>
+)
 
 interface Props {
   allPosts: PostMeta[]
 }
 
+interface ViewProps extends Props {
+  q?: string
+  tag?: string
+  category?: string
+  page?: number
+}
+
+/* Reads the filters from the URL. useSearchParams() opts this component out of
+   static rendering, so app/page.tsx renders <BlogPageView> with no filters as
+   the Suspense fallback: that is what ships in the server HTML, and it is the
+   same markup the unfiltered page shows once this component takes over. */
 export default function BlogPageContent({ allPosts }: Props) {
   const searchParams = useSearchParams()
+  const page = parseInt(searchParams.get('page') ?? '1', 10)
 
-  const q        = searchParams.get('q') ?? ''
-  const tag      = searchParams.get('tag') ?? ''
-  const category = searchParams.get('category') ?? ''
-  const page     = parseInt(searchParams.get('page') ?? '1', 10)
-  const featured = searchParams.get('featured') === '1'
+  return (
+    <BlogPageView
+      allPosts={allPosts}
+      q={searchParams.get('q') ?? ''}
+      tag={searchParams.get('tag') ?? ''}
+      category={searchParams.get('category') ?? ''}
+      page={Number.isFinite(page) && page > 0 ? page : 1}
+    />
+  )
+}
 
-  const featured3    = useMemo(() => getFeaturedPosts(allPosts, 3), [allPosts])
-  const allTags      = useMemo(() => getAllTags(allPosts), [allPosts])
+export function BlogPageView({ allPosts, q = '', tag = '', category = '', page = 1 }: ViewProps) {
+  const router = useRouter()
+  const pathname = usePathname()
+  const reduce = useReducedMotion()
+
+  const allTags = useMemo(() => getAllTags(allPosts), [allPosts])
   const allCategories = useMemo(() => getAllCategories(allPosts), [allPosts])
 
   const filtered = useMemo(() => {
     let posts = allPosts
-    if (q)        posts = searchPosts(posts, q)
-    if (tag)      posts = filterByTag(posts, tag)
+    if (q) posts = searchPosts(posts, q)
+    if (tag) posts = filterByTag(posts, tag)
     if (category) posts = filterByCategory(posts, category)
-    if (featured) posts = posts.filter((p) => p.featured)
     return posts
-  }, [allPosts, q, tag, category, featured])
+  }, [allPosts, q, tag, category])
 
-  const paginated  = useMemo(() => paginatePosts(filtered, page, POSTS_PER_PAGE), [filtered, page])
-  const isFiltered = !!(q || tag || category)
+  const isFiltered = Boolean(q || tag || category)
+  const paginated = useMemo(() => paginatePosts(filtered, page, POSTS_PER_PAGE), [filtered, page])
 
-  const [heroPost, ...restFeatured] = featured3
+  // The newest post leads when nothing is filtered; the rest follow as rows.
+  const lead = !isFiltered && page === 1 ? paginated.posts[0] : null
+  const rows = lead ? paginated.posts.slice(1) : paginated.posts
+
+  const setCategory = useCallback(
+    (value: string) => {
+      const params = new URLSearchParams(window.location.search)
+      if (value) params.set('category', value)
+      else params.delete('category')
+      params.delete('page')
+      const qs = params.toString()
+      router.push(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
+    },
+    [router, pathname],
+  )
+
+  const clearAll = () => router.push(pathname, { scroll: false })
 
   return (
-    <div className="min-h-screen">
-      {/* ── Hero / Header ── */}
-      {!isFiltered && (
-        <div className="relative overflow-hidden border-b border-slate-800/60 light:border-slate-200 bg-gradient-to-b from-slate-900 via-slate-900/95 to-transparent light:from-slate-50 light:via-slate-50/95">
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(99,102,241,0.12),transparent_70%)]" />
-          <div className="mx-auto max-w-6xl px-6 py-16 text-center relative">
-            <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-primary-light light:text-primary mb-5">
-              <span className="h-1.5 w-1.5 rounded-full bg-primary-light animate-pulse" />
-              QA Engineering Blog
-            </span>
-            <h1 className="font-heading text-4xl font-bold text-slate-100 light:text-slate-900 sm:text-5xl lg:text-6xl leading-tight">
-              Software Quality{' '}
-              <span className="gradient-text">Insights</span>
-            </h1>
-            <p className="mx-auto mt-4 max-w-2xl text-base text-slate-400 light:text-slate-600 leading-relaxed">
-              Practical articles on test automation, API testing, bug reporting,<br className="hidden sm:block" />
-              Playwright, Selenium, and building a QA career.
-            </p>
-            <div className="mt-8 flex flex-wrap justify-center gap-3 text-xs text-slate-500 light:text-slate-400">
-              {['Playwright', 'Selenium', 'API Testing', 'Manual QA', 'CI/CD', 'Python'].map((t) => (
-                <span key={t} className="rounded-full border border-slate-700/50 light:border-slate-200 px-3 py-1 hover:border-primary/40 hover:text-primary-light transition-colors cursor-default">
-                  #{t}
-                </span>
-              ))}
+    <div className="container-page pb-16 pt-10 sm:pt-14">
+      {/* Masthead */}
+      {/* No entrance animation here: app/template.tsx already animates the route
+          in, and the server-rendered fallback must look the same as this view. */}
+      <header className="mb-10 max-w-3xl sm:mb-14">
+        <h1
+          className="text-[clamp(2.25rem,1.5rem+3vw,3.75rem)] font-bold leading-[1.02] tracking-[-0.035em] text-ink"
+        >
+          Writing on software quality.
+        </h1>
+        <p className="mt-4 max-w-[52ch] text-lg text-muted">
+          Practical articles on test automation, API testing, bug reporting, Playwright, Selenium, and building a QA career.
+        </p>
+        <p className="mono-label mt-5 flex flex-wrap items-center gap-x-3">
+          <span>{allPosts.length} article{allPosts.length === 1 ? '' : 's'}</span>
+        </p>
+      </header>
+
+      {/* Toolbar: search + category filter */}
+      <div className="mb-8 flex flex-col gap-4 border-y border-line py-4 md:flex-row md:items-center md:justify-between">
+        <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Filter by category">
+          <button type="button" onClick={() => setCategory('')} className={`chip ${!category ? 'is-active' : ''}`} aria-pressed={!category}>
+            All
+          </button>
+          {allCategories.map((c) => (
+            <button
+              key={c}
+              type="button"
+              onClick={() => setCategory(category === c ? '' : c)}
+              className={`chip ${category === c ? 'is-active' : ''}`}
+              aria-pressed={category === c}
+            >
+              {c}
+            </button>
+          ))}
+        </div>
+        <div className="w-full md:w-72">
+          {/* BlogSearch and Pagination read the URL themselves, so each needs its
+              own boundary to stay out of the way of the server-rendered list. */}
+          <Suspense fallback={null}>
+            <BlogSearch />
+          </Suspense>
+        </div>
+      </div>
+
+      {/* Active filter summary */}
+      {isFiltered && (
+        <p className="mb-6 flex flex-wrap items-center gap-x-3 text-sm text-muted">
+          <span>
+            <span className="font-semibold text-ink">{paginated.total}</span> result{paginated.total === 1 ? '' : 's'}
+            {q && <> for &ldquo;<span className="text-primary-light">{q}</span>&rdquo;</>}
+            {tag && <> tagged <span className="text-primary-light">{tag}</span></>}
+          </span>
+          <button type="button" onClick={clearAll} className="text-primary-light underline underline-offset-2">
+            Clear filters
+          </button>
+        </p>
+      )}
+
+      {/* Lead article */}
+      <AnimatePresence initial={false} mode="popLayout">
+        {lead && (
+          <motion.article
+            key={`lead-${lead.slug}`}
+            layout
+            initial={reduce ? false : { opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, transition: { duration: 0.15 } }}
+            transition={{ duration: 0.5, ease: EASE }}
+            className="group mb-10 grid gap-6 rounded-2xl border border-line bg-surface-card p-5 transition-colors hover:border-line-strong sm:p-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:items-center lg:gap-10 light:bg-white"
+          >
+            {lead.coverImage && (
+              <Link href={`/blog/${lead.slug}`} className="block overflow-hidden rounded-xl border border-line" tabIndex={-1} aria-hidden="true">
+                <Image
+                  src={lead.coverImage}
+                  alt=""
+                  width={1200}
+                  height={675}
+                  priority
+                  sizes="(min-width: 1024px) 40vw, 100vw"
+                  className="aspect-video h-auto w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+                />
+              </Link>
+            )}
+            <div className="flex flex-col gap-4">
+              <p className="mono-label flex flex-wrap items-center gap-x-2">
+                <span className="text-primary-light">Latest</span>
+                <span aria-hidden="true">&middot;</span>
+                <span>{lead.category}</span>
+                <span aria-hidden="true">&middot;</span>
+                <time dateTime={lead.date}>{formatDate(lead.date)}</time>
+                <span aria-hidden="true">&middot;</span>
+                <span>{lead.readingTime}</span>
+              </p>
+              <h2 className="text-[clamp(1.5rem,1.2rem+1.4vw,2.25rem)] font-semibold leading-[1.15] tracking-[-0.02em] text-ink">
+                <Link href={`/blog/${lead.slug}`} className="no-underline transition-colors hover:text-primary-light">
+                  {lead.title}
+                </Link>
+              </h2>
+              <p className="max-w-[60ch] text-base leading-relaxed text-muted">{lead.excerpt}</p>
+              <div className="mt-1 flex flex-wrap items-center justify-between gap-3">
+                <ul className="flex flex-wrap gap-1.5" aria-label="Tags">
+                  {lead.tags.slice(0, 4).map((t) => (
+                    <li key={t}><TagBadge tag={t} /></li>
+                  ))}
+                </ul>
+                <Link href={`/blog/${lead.slug}`} className="inline-flex min-h-11 items-center gap-1 font-medium text-primary-light no-underline">
+                  Read article <Arrow className="h-4 w-4" />
+                </Link>
+              </div>
             </div>
+          </motion.article>
+        )}
+      </AnimatePresence>
+
+      {/* Article rows */}
+      {rows.length > 0 ? (
+        <motion.ol layout className="border-t border-line" aria-label="Articles">
+          <AnimatePresence initial={false} mode="popLayout">
+            {rows.map((post, i) => (
+              <motion.li
+                key={post.slug}
+                layout
+                initial={reduce ? false : { opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0, transition: { duration: 0.45, delay: Math.min(i, 6) * 0.05, ease: EASE } }}
+                exit={{ opacity: 0, y: -8, transition: { duration: 0.15 } }}
+                className="border-b border-line"
+              >
+                <PostRow post={post} />
+              </motion.li>
+            ))}
+          </AnimatePresence>
+        </motion.ol>
+      ) : (
+        !lead && (
+          <div className="rounded-xl border border-line px-6 py-16 text-center">
+            <p className="font-mono text-sm text-muted">expect(results).toHaveLength(&gt; 0)</p>
+            <p className="mt-2 text-ink">No articles match that filter.</p>
+            <button type="button" onClick={clearAll} className="btn btn-secondary mt-5">Show all articles</button>
           </div>
+        )
+      )}
+
+      {paginated.totalPages > 1 && (
+        <div className="mt-10">
+          <Suspense fallback={null}>
+            <Pagination currentPage={paginated.currentPage} totalPages={paginated.totalPages} />
+          </Suspense>
         </div>
       )}
 
-      <div className="mx-auto max-w-6xl px-6 py-10">
-
-        {/* ── Featured: Hero card + 2 side cards ── */}
-        {!isFiltered && heroPost && (
-          <section className="mb-12" aria-labelledby="featured-heading">
-            <div className="mb-5 flex items-center gap-3">
-              <h2 id="featured-heading" className="font-heading text-lg font-bold text-slate-100 light:text-slate-900">
-                Featured Articles
-              </h2>
-              <span className="rounded-full bg-yellow-500/15 border border-yellow-500/30 px-2.5 py-0.5 text-xs font-semibold text-yellow-400 light:text-yellow-600">
-                ★ Editor&apos;s Pick
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 gap-5 lg:grid-cols-5">
-              {/* Hero featured card — spans 3 cols */}
-              <div className="lg:col-span-3">
-                <BlogCard post={heroPost} featured />
-              </div>
-
-              {/* Side cards — span 2 cols stacked */}
-              {restFeatured.length > 0 && (
-                <div className="lg:col-span-2 flex flex-col gap-5">
-                  {restFeatured.map((post) => (
-                    <BlogCard key={post.slug} post={post} />
-                  ))}
-                </div>
-              )}
-            </div>
-          </section>
-        )}
-
-        {/* ── Main: sidebar + posts grid ── */}
-        <div className="flex gap-8">
-          <aside className="hidden w-60 shrink-0 lg:block">
-            <div className="sticky top-24 space-y-6">
-              <BlogSearch />
-              <BlogFilters categories={allCategories} tags={allTags} />
-
-              {/* Stats strip */}
-              {allPosts.length > 0 && (
-                <div className="rounded-xl border border-slate-700/40 bg-surface-card/30 p-4 space-y-2">
-                  <p className="text-xs font-bold uppercase tracking-wider text-slate-500">Quick Stats</p>
-                  <div className="grid grid-cols-2 gap-2 text-center">
-                    <div className="rounded-lg bg-slate-800/50 light:bg-slate-100 p-2">
-                      <p className="text-lg font-bold text-slate-100 light:text-slate-900">{allPosts.length}</p>
-                      <p className="text-xs text-slate-500">Articles</p>
-                    </div>
-                    <div className="rounded-lg bg-slate-800/50 light:bg-slate-100 p-2">
-                      <p className="text-lg font-bold text-slate-100 light:text-slate-900">{allTags.length}</p>
-                      <p className="text-xs text-slate-500">Topics</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </aside>
-
-          <div className="flex-1 min-w-0">
-            {/* Mobile search */}
-            <div className="mb-5 lg:hidden">
-              <BlogSearch />
-            </div>
-
-            {isFiltered ? (
-              <div className="mb-5 flex items-center justify-between">
-                <p className="text-sm text-slate-400">
-                  <span className="font-semibold text-slate-200">{paginated.total}</span> result{paginated.total !== 1 ? 's' : ''}
-                  {q && <span> for &ldquo;<span className="text-primary-light">{q}</span>&rdquo;</span>}
-                </p>
-              </div>
-            ) : (
-              <div className="mb-5 flex items-center justify-between">
-                <h2 className="font-heading text-lg font-bold text-slate-100 light:text-slate-900">
-                  All Articles
-                </h2>
-                <span className="text-xs text-slate-500">{allPosts.length} posts</span>
-              </div>
-            )}
-
-            {paginated.posts.length > 0 ? (
-              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                {paginated.posts.map((post) => (
-                  <BlogCard key={post.slug} post={post} />
-                ))}
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center rounded-xl border border-slate-700/50 bg-surface-card/30 py-20 text-center gap-3">
-                <svg className="h-10 w-10 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" strokeLinecap="round" />
-                </svg>
-                <p className="text-slate-400">No posts found.</p>
-                <p className="text-xs text-slate-600">Try adjusting your search or filters.</p>
-              </div>
-            )}
-
-            {paginated.totalPages > 1 && (
-              <div className="mt-10">
-                <Pagination currentPage={paginated.currentPage} totalPages={paginated.totalPages} />
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* ── Browse by Topic ── */}
-        {!isFiltered && allTags.length > 0 && (
-          <section className="mt-16 rounded-2xl border border-slate-700/50 bg-gradient-to-br from-slate-800/40 to-surface-card/20 light:bg-white light:border-slate-200 p-6">
-            <h2 className="mb-4 font-heading text-base font-bold text-slate-100 light:text-slate-900">
-              Browse by Topic
-            </h2>
-            <div className="flex flex-wrap gap-2">
-              {allTags.map((t) => (
-                <TagBadge key={t} tag={t} size="md" />
-              ))}
-            </div>
-          </section>
-        )}
-      </div>
+      {/* Topics */}
+      {!isFiltered && allTags.length > 0 && (
+        <section className="mt-16" aria-labelledby="topics-heading">
+          <h2 id="topics-heading" className="mb-4 text-xl font-semibold text-ink">Topics</h2>
+          <ul className="flex flex-wrap gap-2">
+            {allTags.map((t) => (
+              <li key={t}><TagBadge tag={t} size="md" /></li>
+            ))}
+          </ul>
+        </section>
+      )}
     </div>
   )
 }
 
+function PostRow({ post }: { post: PostMeta }) {
+  return (
+    <Link
+      href={`/blog/${post.slug}`}
+      className="group grid gap-2 py-6 no-underline sm:grid-cols-[11rem_minmax(0,1fr)_auto] sm:gap-8 sm:py-7"
+    >
+      <p className="mono-label flex flex-col gap-1">
+        <time dateTime={post.date}>{formatDate(post.date)}</time>
+        <span>{post.category}</span>
+        <span>{post.readingTime}</span>
+      </p>
+      <div className="min-w-0">
+        <h2 className="text-xl font-semibold leading-snug text-ink transition-colors group-hover:text-primary-light sm:text-[1.375rem]">
+          {post.title}
+        </h2>
+        <p className="mt-2 max-w-[62ch] text-[0.9375rem] leading-relaxed text-muted">{post.excerpt}</p>
+        <ul className="mt-3 flex flex-wrap gap-1.5" aria-label="Tags">
+          {post.tags.slice(0, 3).map((t) => (
+            <li key={t} className="chip min-h-7 px-2.5 text-xs">{t}</li>
+          ))}
+        </ul>
+      </div>
+      <span className="hidden self-start pt-1 text-subtle transition-[color,transform] duration-300 ease-out group-hover:translate-x-1 group-hover:text-primary-light sm:block">
+        <Arrow />
+      </span>
+    </Link>
+  )
+}
