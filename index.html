@@ -114,13 +114,24 @@
             } catch (e) { html.setAttribute('data-theme', 'dark'); }
             if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
                 html.classList.add('anim', 'motion');
+                // The opening film plays on the first visit of a browser session,
+                // unless the visitor asked to save data. js/intro.js plays it.
+                var intro = false;
+                try { intro = !sessionStorage.getItem('intro-seen') && !(navigator.connection && navigator.connection.saveData); } catch (e) { }
+                if (intro) {
+                    html.classList.add('has-intro');
+                    // Never trap the page: whatever happens, the film is gone by 14 s.
+                    setTimeout(function () { html.classList.remove('has-intro'); }, 14000);
+                }
                 // If the motion module never arrives, show everything.
-                window.__revealTimer = setTimeout(function () { html.classList.remove('motion'); }, 3000);
-                // If it fails to load, show everything at once. (A capturing
+                window.__revealTimer = setTimeout(function () { html.classList.remove('motion'); }, intro ? 14000 : 3000);
+                // If a module fails to load, show the page at once. (A capturing
                 // listener, because the page's CSP allows no onerror="" attribute.)
                 addEventListener('error', function (e) {
                     var el = e.target;
-                    if (el && el.tagName === 'SCRIPT' && /\/js\/main\.js/.test(el.src)) html.classList.remove('motion');
+                    if (!el || el.tagName !== 'SCRIPT') return;
+                    if (/\/js\/main\.js/.test(el.src)) html.classList.remove('motion');
+                    if (/\/js\/intro\.js/.test(el.src)) html.classList.remove('has-intro');
                 }, true);
             }
         })();
@@ -128,12 +139,24 @@
 
     <!-- Fonts are self-hosted (assets/fonts). Preload only the display face. -->
     <link rel="preload" href="assets/fonts/bricolage-grotesque-latin.woff2" as="font" type="font/woff2" crossorigin>
-    <link rel="stylesheet" href="css/tokens.css?v=20261116b">
-    <link rel="stylesheet" href="css/base.css?v=20261116b">
-    <link rel="stylesheet" href="css/site.css?v=20261116b">
+    <link rel="stylesheet" href="css/tokens.css?v=20261116c">
+    <link rel="stylesheet" href="css/base.css?v=20261116c">
+    <link rel="stylesheet" href="css/site.css?v=20261116c">
+    <link rel="stylesheet" href="css/intro.css?v=20261116c">
 </head>
 
 <body>
+    <!-- Opening film: first visit of a session only. The head script decides
+         before first paint (html.has-intro); js/intro.js plays it. -->
+    <div class="intro-film" id="intro-film" role="dialog" aria-modal="true" aria-label="Intro film">
+        <template id="intro-film-video">
+            <video class="intro-film__video" muted playsinline preload="auto" aria-hidden="true">
+                <source src="assets/intro/intro.mp4" type='video/mp4; codecs="avc1.640028"'>
+                <source src="assets/intro/intro.webm" type='video/webm; codecs="vp9"'>
+            </video>
+        </template>
+        <button type="button" class="intro-film__skip">Skip intro</button>
+    </div>
     <a href="#main" class="skip-link">Skip to content</a>
     <div class="progress" aria-hidden="true"><div class="progress__bar"></div></div>
     <div id="top-sentinel" aria-hidden="true"></div>
@@ -710,7 +733,8 @@
 
     <!-- Framer Motion's vanilla DOM build (framer-motion@14.1.0, MIT), then the page modules. -->
     <script src="assets/vendor/framer-motion-dom.js" defer></script>
-    <script type="module" src="js/main.js?v=20261116b"></script>
+    <script type="module" src="js/intro.js?v=20261116c"></script>
+    <script type="module" src="js/main.js?v=20261116c"></script>
 </body>
 
 </html>

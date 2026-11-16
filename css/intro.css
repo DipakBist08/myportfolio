@@ -1,0 +1,70 @@
+/* Opening film overlay (js/intro.js). It exists only while html.has-intro,
+   which the head script sets before first paint on the first visit of a
+   session. The film's last frame is a small circle around Dipak on the trail;
+   the overlay ends by closing a circle on that same spot, uncovering the page. */
+
+.intro-film {
+    display: none;
+}
+
+html.has-intro .intro-film {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    background: #0b0b0e;
+    clip-path: circle(150vmax at var(--iris-x, 50%) var(--iris-y, 50%));
+    transition: clip-path 900ms cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+html.has-intro .intro-film.is-closing {
+    clip-path: circle(0px at var(--iris-x, 50%) var(--iris-y, 50%));
+}
+
+html.has-intro body {
+    overflow: hidden;
+}
+
+.intro-film__video {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background: #0b0b0e;
+}
+
+/* On tall screens the 16:9 film is enlarged so its words stay readable: only
+   scenery at the sides is lost, since the text and the iris are centred. Its top
+   and bottom edges melt into the dark surround instead of ending in a line. */
+@media (max-aspect-ratio: 4/3) {
+    .intro-film__video {
+        transform: scale(1.25);
+        /* the fade covers the film's own height (the video box is taller) */
+        -webkit-mask: linear-gradient(to bottom, transparent, #000 14%, #000 86%, transparent) center / 100% calc(100vw * 9 / 16) no-repeat;
+        mask: linear-gradient(to bottom, transparent, #000 14%, #000 86%, transparent) center / 100% calc(100vw * 9 / 16) no-repeat;
+    }
+}
+
+.intro-film__skip {
+    position: absolute;
+    right: clamp(16px, 3vw, 40px);
+    bottom: clamp(16px, 3vw, 40px);
+    padding: 0.75em 1.25em;
+    border: 1px solid rgb(255 255 255 / 0.2);
+    border-radius: 999px;
+    background: rgb(11 11 14 / 0.55);
+    color: #f4f4f5;
+    font: 600 0.9375rem/1 var(--font-family-sans, system-ui, sans-serif);
+    letter-spacing: 0.01em;
+    cursor: pointer;
+}
+
+.intro-film__skip:hover {
+    background: rgb(255 255 255 / 0.12);
+}
+
+.intro-film__skip:focus-visible {
+    outline: 2px solid #a5b4fc;
+    outline-offset: 3px;
+}

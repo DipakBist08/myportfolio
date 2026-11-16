@@ -4,6 +4,12 @@ import { test, expect, type Page } from '@playwright/test';
    on and trust the page? (The Python suite in tests/*.py covers the same
    ground and more; this TypeScript twin is kept for @playwright/test.) */
 
+// The opening film plays once per session; these tests start after it
+// (tests/test_intro.py covers the film itself).
+test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => { try { sessionStorage.setItem('intro-seen', '1'); } catch { /* blocked */ } });
+});
+
 async function scrollThrough(page: Page) {
     const height = await page.evaluate(() => document.documentElement.scrollHeight);
     for (let y = 0; y < height; y += 480) {
