@@ -116,6 +116,12 @@
                 html.classList.add('anim', 'motion');
                 // If the motion module never arrives, show everything.
                 window.__revealTimer = setTimeout(function () { html.classList.remove('motion'); }, 3000);
+                // If it fails to load, show everything at once. (A capturing
+                // listener, because the page's CSP allows no onerror="" attribute.)
+                addEventListener('error', function (e) {
+                    var el = e.target;
+                    if (el && el.tagName === 'SCRIPT' && /\/js\/main\.js/.test(el.src)) html.classList.remove('motion');
+                }, true);
             }
         })();
     </script>
@@ -704,7 +710,7 @@
 
     <!-- Framer Motion's vanilla DOM build (framer-motion@14.1.0, MIT), then the page modules. -->
     <script src="assets/vendor/framer-motion-dom.js" defer></script>
-    <script type="module" src="js/main.js?v=20261113h" onerror="document.documentElement.classList.remove('motion')"></script>
+    <script type="module" src="js/main.js?v=20261113h"></script>
 </body>
 
 </html>

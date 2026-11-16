@@ -1,13 +1,28 @@
-# Never deploy these regardless of which project is building
-cms/backend/
-cms/docker-compose.yml
-cms/SETUP.md
-venv/
-node_modules/
-*.log
-.env
-.env.local
-THEME_IMPLEMENTATION.md
+# The portfolio deploys from the repository root with vercel.json
+# "outputDirectory": ".", so every uploaded file is served on the live site.
+# Upload only the site itself: ignore everything at the top level, then allow
+# the site's own files back. Anything new at the top level stays private
+# until it is added here. tests/test_deploy.py checks this list.
+#
+# The blog and the CMS admin deploy from their own folders (blog/,
+# cms/frontend/), so this file does not affect them.
+/*
+!index.html
+!404.html
+!css
+!js
+!assets
+!admin
+!robots.txt
+!sitemap.xml
+!vercel.json
 
-# Source and renderer for assets/og-image.png; not part of the site
-tools/
+# Never upload these, even inside an allowed folder.
+*.md
+*.log
+*.map
+.env*
+.DS_Store
+
+# Licences of bundled third-party code ship with it.
+!assets/vendor/*LICENSE*
