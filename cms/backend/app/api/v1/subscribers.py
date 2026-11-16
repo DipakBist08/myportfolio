@@ -14,6 +14,7 @@ from app.models.user import User
 from app.models.subscriber import Subscriber
 from app.schemas.subscriber import SubscribeRequest, SubscriberOut, SubscriberStats, NewsletterSendRequest, NewsletterSendResult
 from app.core.email import send_confirmation_email, send_newsletter
+from app.core.visitor import client_ip
 from app.core.notifications import announce_latest_from_rss, fetch_latest_post
 from app.config import settings
 
@@ -53,8 +54,9 @@ async def subscribe(body: SubscribeRequest, request: Request, db: Session = Depe
     The response is deliberately identical whether or not the address is already
     known, so this endpoint cannot be used to test who is subscribed.
     """
-    client_ip = request.client.host if request.client else "unknown"
-    _check_rate_limit(client_ip)
+    # The visitor's address, not the hosting proxy's: keyed on the proxy, every
+    # visitor shared one limit of 3 attempts a minute.
+    _check_rate_limit(client_ip(request))
 
     GENERIC = {"detail": "Almost there — check your inbox for a confirmation link."}
 
@@ -90,12 +92,18 @@ async def subscribe(body: SubscribeRequest, request: Request, db: Session = Depe
 
     db.commit()
 
+    sent = False
     try:
-        await send_confirmation_email(sub.email, sub.name or "", token)
+        sent = await send_confirmation_email(sub.email, sub.name or "", token)
     except Exception:
-        # The row is saved; a mail failure should not 500 the visitor. They can
-        # simply submit again to trigger a fresh token.
         logging.getLogger(__name__).exception("confirmation email failed for %s", sub.email)
+    if not sent:
+        # Say so, instead of sending the visitor to an inbox that will stay
+        # empty. The pending row is kept; submitting again sends a fresh link.
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="We couldn't send the confirmation email just now. Please try again later.",
+        )
 
     return GENERIC
 

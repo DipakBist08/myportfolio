@@ -36,6 +36,8 @@ def _purge_expired_tokens() -> None:
 async def lifespan(app: FastAPI):
     Base.metadata.create_all(bind=engine)
     _purge_expired_tokens()
+    if not settings.emails_enabled:
+        logging.warning("RESEND_API_KEY is not set: confirmation emails and newsletters will not be sent.")
     logging.info(f"🚀  {settings.APP_NAME} started in {settings.APP_ENV} mode")
     yield
     # shutdown — nothing to tear down for SQLite
@@ -110,4 +112,6 @@ app.include_router(public_router)
 
 @app.get("/health", tags=["Health"])
 def health():
-    return {"status": "ok", "app": settings.APP_NAME}
+    # "email" says whether outgoing mail is configured, so a missing
+    # RESEND_API_KEY can be spotted from outside without reading the logs.
+    return {"status": "ok", "app": settings.APP_NAME, "email": "on" if settings.emails_enabled else "off"}

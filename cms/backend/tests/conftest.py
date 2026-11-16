@@ -35,8 +35,11 @@ def client():
     from app.core import throttle
     from app.core.security import forget_accepted_codes
 
+    from app.api.v1 import subscribers
+
     comments._comment_attempts.clear()
     comments._reaction_attempts.clear()
+    subscribers._subscribe_attempts.clear()
     throttle.PASSWORD_FAILURES.clear()
     throttle.MFA_FAILURES.clear()
     throttle.USED_MFA_TOKENS.clear()
