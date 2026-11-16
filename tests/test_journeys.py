@@ -319,7 +319,7 @@ def test_contact_form_validates_then_sends(pg: Page):
     form.get_by_label("Your email").fill("recruiter@example.com")
     form.get_by_label("Message").fill("Hello, we have a QA role you may like.")
     form.get_by_role("button", name="Send message").click()
-    expect(pg.locator("#contact-feedback")).to_contain_text("your message has been sent")
+    expect(pg.locator("#contact-feedback")).to_have_text("Thank you, Recruiter. I'll get back to you.")
     assert len(sent) == 1
     assert sent[0]["email"] == sent[0]["_replyto"] == "recruiter@example.com"
     assert sent[0]["_honey"] == ""
@@ -357,7 +357,7 @@ def test_contact_form_waits_for_a_slow_mail_service(pg: Page):
     assert len(pending) == 1
     pending[0].fulfill(status=200, content_type="application/json",
                        body='{"success": "true", "message": "The form was submitted successfully."}')
-    expect(feedback).to_contain_text("your message has been sent")
+    expect(feedback).to_have_text("Thank you, Recruiter. I'll get back to you.")
 
 
 # ----- themes and keyboard -------------------------------------------------
