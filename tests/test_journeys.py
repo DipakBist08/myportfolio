@@ -338,6 +338,28 @@ def test_contact_form_reports_service_failure(pg: Page):
     expect(form.get_by_label("Message")).to_have_value("Hello, we have a QA role you may like.")
 
 
+def test_contact_form_waits_for_a_slow_mail_service(pg: Page):
+    """FormSubmit took about 27 s to answer every request on 16/11/2026. An
+    answer after the old 15 s limit must still count as sent, and the visitor
+    is told it is still sending meanwhile."""
+    pending = []
+    pg.route("https://formsubmit.co/ajax/**", lambda route: pending.append(route))
+    pg.goto("/#contact")
+    form = pg.locator("#contact-form")
+    form.get_by_label("Your name").fill("Recruiter")
+    form.get_by_label("Your email").fill("recruiter@example.com")
+    form.get_by_label("Message").fill("Hello, we have a QA role you may like.")
+    form.get_by_role("button", name="Send message").click()
+    feedback = pg.locator("#contact-feedback")
+    expect(feedback).to_contain_text("Still sending", timeout=8_000)
+    pg.wait_for_timeout(11_000)  # now past the old 15 s limit
+    expect(feedback).to_contain_text("Still sending")
+    assert len(pending) == 1
+    pending[0].fulfill(status=200, content_type="application/json",
+                       body='{"success": "true", "message": "The form was submitted successfully."}')
+    expect(feedback).to_contain_text("your message has been sent")
+
+
 # ----- themes and keyboard -------------------------------------------------
 
 def test_theme_follows_system_until_chosen(pg: Page):

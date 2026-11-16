@@ -1,13 +1,13 @@
 /* Entry point. Each init is isolated: a failure in one never takes the
    others down, and a failure in the motion layer reveals the page. */
 
-import { initTheme } from './theme.js?v=20261113h';
-import { initNav } from './nav.js?v=20261113h';
-import { initFlow } from './flow.js?v=20261113h';
-import { initMotion, revealAllImmediately } from './motion.js?v=20261113h';
-import { initSubscribe } from './subscribe.js?v=20261113h';
-import { initContact } from './contact.js?v=20261113h';
-import { initVisit } from './visit.js?v=20261113h';
+import { initTheme } from './theme.js?v=20261116a';
+import { initNav } from './nav.js?v=20261116a';
+import { initFlow } from './flow.js?v=20261116a';
+import { initMotion, revealAllImmediately } from './motion.js?v=20261116a';
+import { initSubscribe } from './subscribe.js?v=20261116a';
+import { initContact } from './contact.js?v=20261116a';
+import { initVisit } from './visit.js?v=20261116a';
 
 function safe(name, fn) {
     try {
