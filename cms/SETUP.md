@@ -42,7 +42,7 @@ python seed.py
 uvicorn app.main:app --reload --port 8000
 ```
 
-Open API docs: http://localhost:8000/docs
+Open API docs: http://localhost:8000/docs (only when `DEBUG=true` is set in `backend/.env`)
 
 ### 3 — Frontend
 
@@ -54,9 +54,9 @@ npm run dev
 
 Open CMS: http://localhost:5173
 
-**Default credentials (from seed):**
-- Email: `admin@example.com`
-- Password: `Admin@1234!`
+**Sign in** with the `ADMIN_EMAIL` and `ADMIN_PASSWORD` you set in `backend/.env`
+before running `python seed.py`. If they are not set, the seed script asks for them.
+There are no default credentials.
 
 ---
 
@@ -281,8 +281,9 @@ The TipTap-powered editor supports:
 | `DATABASE_URL` | sqlite:///./cms.db | SQLite path |
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | 15 | Access token lifetime |
 | `REFRESH_TOKEN_EXPIRE_DAYS` | 7 | Refresh token lifetime |
-| `ADMIN_EMAIL` | admin@example.com | Seed admin email |
-| `ADMIN_PASSWORD` | Admin@1234! | Seed admin password |
+| `DEBUG` | false | `true` locally for /docs and SQL logging; never in production |
+| `ADMIN_EMAIL` | none | Seed admin email (required by `seed.py`) |
+| `ADMIN_PASSWORD` | none | Seed admin password, 12+ characters (required by `seed.py`) |
 | `ALLOWED_ORIGINS` | localhost:5173 | Comma-separated CORS origins |
 | `UPLOAD_DIR` | uploads | Directory for media files |
 | `EMAILS_ENABLED` | false | Set to `true` + fill SMTP_ vars |

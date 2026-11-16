@@ -9,15 +9,21 @@ from app.database import get_db
 from app.dependencies import get_current_user
 from app.models.user import User, RefreshToken
 from app.schemas.auth import (
-    LoginRequest, MFAVerifyRequest, MFASetupResponse,
-    MFAConfirmRequest, TokenResponse, RefreshRequest,
+    LoginRequest, MFAVerifyRequest, MFASetupRequest, MFASetupResponse,
+    MFAEnableRequest, MFAConfirmRequest, TokenResponse, RefreshRequest,
     PasswordChangeRequest, UserProfile, UserUpdate,
 )
 from app.core.security import (
-    verify_password, create_access_token, create_temp_token,
-    create_refresh_token, hash_token, decode_token_safe,
-    generate_mfa_secret, generate_qr_code, verify_totp,
+    verify_password, verify_password_or_dummy, create_access_token,
+    create_temp_token, create_mfa_setup_token, create_refresh_token,
+    hash_token, decode_token_safe, generate_mfa_secret, generate_qr_code,
+    verify_totp, verify_totp_once,
 )
+from app.core.throttle import (
+    PASSWORD_FAILURES, MFA_FAILURES, USED_MFA_TOKENS,
+    account_key, ip_key, user_key,
+)
+from app.core.visitor import client_ip
 from app.config import settings
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
@@ -34,13 +40,39 @@ def _store_refresh(db: Session, user: User, raw_token: str):
     db.commit()
 
 
+def _check_password(user: User, password: str, request: Request) -> None:
+    """Re-check a signed-in user's password before a sensitive change.
+    Wrong guesses count against the same limits as sign-in, so a stolen
+    access token cannot be used to guess the password here instead."""
+    keys = (account_key(user.email), ip_key(client_ip(request)))
+    PASSWORD_FAILURES.check(*keys)
+    if not verify_password(password, user.hashed_password):
+        PASSWORD_FAILURES.fail(*keys)
+        raise HTTPException(status_code=400, detail="Current password is incorrect")
+
+
+def _check_code(user: User, secret: str, code: str, *, one_time: bool, error_status: int) -> None:
+    """Check an authenticator code, limited to MFA_FAILURES wrong codes per user."""
+    key = user_key(user.id)
+    MFA_FAILURES.check(key)
+    ok = verify_totp_once(user.id, secret, code) if one_time else verify_totp(secret, code)
+    if not ok:
+        MFA_FAILURES.fail(key)
+        raise HTTPException(status_code=error_status, detail="Invalid OTP code")
+    MFA_FAILURES.reset(key)
+
+
 # ── Login ─────────────────────────────────────────────────────────────────────
 
 @router.post("/login", response_model=TokenResponse)
-def login(body: LoginRequest, db: Session = Depends(get_db)):
+def login(body: LoginRequest, request: Request, db: Session = Depends(get_db)):
+    keys = (account_key(body.email), ip_key(client_ip(request)))
+    PASSWORD_FAILURES.check(*keys)
     user = db.query(User).filter(User.email == body.email).first()
-    if not user or not verify_password(body.password, user.hashed_password):
+    if not verify_password_or_dummy(body.password, user.hashed_password if user else None):
+        PASSWORD_FAILURES.fail(*keys)
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
+    PASSWORD_FAILURES.reset(keys[0])
     if not user.is_active:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Account disabled")
 
@@ -62,15 +94,18 @@ def login(body: LoginRequest, db: Session = Depends(get_db)):
 @router.post("/mfa/verify", response_model=TokenResponse)
 def mfa_verify(body: MFAVerifyRequest, db: Session = Depends(get_db)):
     payload = decode_token_safe(body.temp_token)
-    if not payload or payload.get("type") != "mfa_pending":
+    if not payload or payload.get("type") != "mfa_pending" or not payload.get("jti"):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired MFA session")
 
     user = db.query(User).filter(User.id == int(payload["sub"])).first()
     if not user or not user.mfa_secret:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="MFA not configured")
 
-    if not verify_totp(user.mfa_secret, body.otp_code):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid OTP code")
+    _check_code(user, user.mfa_secret, body.otp_code, one_time=True,
+                error_status=status.HTTP_401_UNAUTHORIZED)
+    # One successful sign-in per MFA token.
+    if not USED_MFA_TOKENS.claim(payload["jti"], float(payload["exp"])):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired MFA session")
 
     access = _make_access(user)
     raw_rt, _ = create_refresh_token()
@@ -121,24 +156,39 @@ def logout(body: RefreshRequest, db: Session = Depends(get_db)):
 # ── MFA setup ────────────────────────────────────────────────────────────────
 
 @router.post("/mfa/setup", response_model=MFASetupResponse)
-def mfa_setup(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+def mfa_setup(
+    body: MFASetupRequest,
+    request: Request,
+    current_user: User = Depends(get_current_user),
+):
+    """Start MFA setup. Needs the password, plus the current code when MFA is
+    already on, so an access token alone cannot replace the authenticator.
+    Nothing is stored until /mfa/confirm proves the new secret."""
+    _check_password(current_user, body.password, request)
+    if current_user.mfa_enabled:
+        if not body.otp_code:
+            raise HTTPException(status_code=400, detail="Enter the code from your current authenticator app")
+        _check_code(current_user, current_user.mfa_secret, body.otp_code, one_time=True, error_status=400)
     secret = generate_mfa_secret()
-    current_user.mfa_secret = secret
-    db.commit()
     qr_data_uri, otpauth_url = generate_qr_code(current_user.email, secret)
-    return MFASetupResponse(secret=secret, qr_code_url=qr_data_uri, otpauth_url=otpauth_url)
+    return MFASetupResponse(
+        secret=secret, qr_code_url=qr_data_uri, otpauth_url=otpauth_url,
+        setup_token=create_mfa_setup_token(current_user.id, secret),
+    )
 
 
 @router.post("/mfa/confirm")
 def mfa_confirm(
-    body: MFAConfirmRequest,
+    body: MFAEnableRequest,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    if not current_user.mfa_secret:
-        raise HTTPException(status_code=400, detail="Run /mfa/setup first")
-    if not verify_totp(current_user.mfa_secret, body.otp_code):
-        raise HTTPException(status_code=400, detail="Invalid OTP code")
+    payload = decode_token_safe(body.setup_token)
+    if (not payload or payload.get("type") != "mfa_setup"
+            or payload.get("sub") != str(current_user.id) or not payload.get("secret")):
+        raise HTTPException(status_code=400, detail="MFA setup has expired. Start again.")
+    _check_code(current_user, payload["secret"], body.otp_code, one_time=False, error_status=400)
+    current_user.mfa_secret = payload["secret"]
     current_user.mfa_enabled = True
     db.commit()
     return {"detail": "MFA enabled"}
@@ -152,8 +202,7 @@ def mfa_disable(
 ):
     if not current_user.mfa_enabled or not current_user.mfa_secret:
         raise HTTPException(status_code=400, detail="MFA not enabled")
-    if not verify_totp(current_user.mfa_secret, body.otp_code):
-        raise HTTPException(status_code=400, detail="Invalid OTP code")
+    _check_code(current_user, current_user.mfa_secret, body.otp_code, one_time=True, error_status=400)
     current_user.mfa_enabled = False
     current_user.mfa_secret = None
     db.commit()
@@ -183,12 +232,12 @@ def update_me(
 @router.post("/change-password")
 def change_password(
     body: PasswordChangeRequest,
+    request: Request,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     from app.core.security import hash_password
-    if not verify_password(body.current_password, current_user.hashed_password):
-        raise HTTPException(status_code=400, detail="Current password is incorrect")
+    _check_password(current_user, body.current_password, request)
     current_user.hashed_password = hash_password(body.new_password)
     db.commit()
     return {"detail": "Password updated"}

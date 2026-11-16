@@ -82,6 +82,9 @@ def main() -> int:
             return 0
 
         email = args.email or settings.ADMIN_EMAIL
+        if not email:
+            print("Pass --email, or set ADMIN_EMAIL. Run with --list to see which accounts exist.")
+            return 2
         user = db.query(User).filter(User.email == email).first()
         if not user:
             print(f"No account with email {email!r} in this database.")
