@@ -92,7 +92,7 @@ export default function MediaPage() {
             <List size={16} />
           </button>
           <input ref={fileRef} type="file" multiple className="hidden" onChange={handleUpload}
-            accept="image/*,application/pdf,text/plain,application/zip" />
+            accept="image/jpeg,image/png,image/gif,image/webp,application/pdf,text/plain,application/zip" />
           <Button variant="gradient" size="sm" onClick={() => fileRef.current?.click()} disabled={uploading}>
             <Upload size={14} className="mr-1.5" />
             {uploading ? 'Uploading…' : 'Upload'}
