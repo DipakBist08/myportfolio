@@ -94,7 +94,8 @@ export function initContact() {
                 throw new Error(body.message || 'The message could not be sent.');
             }
             feedback.classList.add('is-success');
-            feedback.textContent = 'Thanks, your message has been sent. I will reply by email.';
+            // The name exactly as the visitor typed it (validated, trimmed).
+            feedback.textContent = `Thank you, ${data.name}. I'll get back to you.`;
             form.reset();
         } catch (err) {
             feedback.classList.add('is-error');
