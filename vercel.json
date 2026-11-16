@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "buildCommand": null,
+  "buildCommand": "sh scripts/build-site.sh",
   "installCommand": null,
-  "outputDirectory": ".",
+  "outputDirectory": "site",
   "cleanUrls": true,
   "trailingSlash": false,
   "headers": [

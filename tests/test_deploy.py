@@ -1,10 +1,12 @@
 """tests/test_deploy.py: what goes live, and the policy it runs under.
 
-The portfolio deploys from the repository root and Vercel serves every file
-it uploads, so .vercelignore decides what is public. The Content-Security-
-Policy in vercel.json allows each inline script by its hash and nothing
-else inline. tools/serve.py sends the same header, so every other test in
-this suite also runs under it.
+The repository also holds the blog, the CMS, tests and tooling, so the
+portfolio is never served from its root: scripts/build-site.sh copies the
+public files into site/, and Vercel (vercel.json "outputDirectory") and the
+GitHub Pages workflow publish only that. The Content-Security-Policy in
+vercel.json allows each inline script by its hash and nothing else inline.
+tools/serve.py sends the same header, so every other test in this suite
+also runs under it.
 """
 
 from __future__ import annotations
@@ -14,7 +16,9 @@ import hashlib
 import json
 import posixpath
 import re
+import shutil
 import subprocess
+import tempfile
 from pathlib import Path
 from urllib.request import urlopen
 
@@ -25,7 +29,7 @@ from helpers import scroll_through
 
 ROOT = Path(__file__).resolve().parent.parent
 PAGES = ("index.html", "404.html", "admin/signin/index.html")
-SITE = ("index.html", "404.html", "css/", "js/", "assets/", "admin/", "robots.txt", "sitemap.xml", "vercel.json")
+SITE = ("index.html", "404.html", "css/", "js/", "assets/", "admin/", "robots.txt", "sitemap.xml")
 INLINE_SCRIPT = re.compile(r"<script\b(?![^>]*\bsrc=)(?![^>]*application/ld\+json)[^>]*>(.*?)</script>", re.S | re.I)
 EXTERNAL = re.compile(r"^(?:[a-z][a-z0-9+.-]*:|//|#)", re.I)
 
@@ -39,8 +43,17 @@ def _git(*args: str) -> set[str]:
 
 
 def published() -> set[str]:
-    """Tracked files that the deploy uploads: those .vercelignore keeps."""
-    return _git("ls-files") - _git("ls-files", "--cached", "--ignored", "--exclude-from=.vercelignore")
+    """What the deploy serves: the files scripts/build-site.sh puts in site/,
+    built from a clean copy of the repository (tracked files, plus new ones
+    git does not ignore), as on Vercel."""
+    with tempfile.TemporaryDirectory() as tmp:
+        for name in _git("ls-files", "--cached", "--others", "--exclude-standard"):
+            if (ROOT / name).is_file():
+                (Path(tmp) / name).parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(ROOT / name, Path(tmp) / name)
+        subprocess.run(["sh", "scripts/build-site.sh"], cwd=tmp, check=True)
+        site = Path(tmp) / "site"
+        return {p.relative_to(site).as_posix() for p in site.rglob("*") if p.is_file()}
 
 
 def _resolve(base_dir: str, ref: str) -> str | None:
@@ -87,6 +100,14 @@ def directive(name: str) -> list[str]:
 
 
 # ----- what goes live ------------------------------------------------------
+
+def test_deploys_publish_the_built_site_folder():
+    config = json.loads((ROOT / "vercel.json").read_text(encoding="utf-8"))
+    assert config["buildCommand"] == "sh scripts/build-site.sh"
+    assert config["outputDirectory"] == "site"
+    pages = (ROOT / ".github" / "workflows" / "static.yml").read_text(encoding="utf-8")
+    assert "run: sh scripts/build-site.sh" in pages and "path: 'site'" in pages
+
 
 def test_deploy_publishes_only_the_site():
     files = published()

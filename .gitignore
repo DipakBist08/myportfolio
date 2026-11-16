@@ -118,3 +118,6 @@ __pycache__/
 *.tsbuildinfo
 cms/frontend/vite.config.js
 cms/frontend/vite.config.d.ts
+
+# ── Portfolio build output (scripts/build-site.sh) ────────
+site/
