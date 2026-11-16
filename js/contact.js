@@ -11,6 +11,12 @@
 const ENDPOINT = 'https://formsubmit.co/ajax/dipakbeest@gmail.com';
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
+// FormSubmit is slow to answer: about 27 seconds for every request when
+// measured on 16/11/2026. Wait up to a minute, and say so after a few
+// seconds, so a slow answer is not reported as a failure.
+const TIMEOUT_MS = 60000;
+const SLOW_NOTE_MS = 5000;
+
 function withTimeout(ms) {
     if ('AbortSignal' in window && typeof AbortSignal.timeout === 'function') return AbortSignal.timeout(ms);
     const ctrl = 'AbortController' in window ? new AbortController() : null;
@@ -72,12 +78,15 @@ export function initContact() {
         btn.disabled = true;
         btn.setAttribute('aria-busy', 'true');
         btn.textContent = 'Sending…';
+        const slowNote = setTimeout(() => {
+            feedback.textContent = 'Still sending. The mail service can take up to 30 seconds.';
+        }, SLOW_NOTE_MS);
         try {
             const res = await fetch(ENDPOINT, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
                 body: JSON.stringify(data),
-                signal: withTimeout(15000),
+                signal: withTimeout(TIMEOUT_MS),
             });
             const body = await res.json().catch(() => ({}));
             // FormSubmit returns success as the string "true" or "false".
@@ -89,11 +98,14 @@ export function initContact() {
             form.reset();
         } catch (err) {
             feedback.classList.add('is-error');
-            const network = err instanceof TypeError || (err && (err.name === 'TimeoutError' || err.name === 'AbortError'));
-            feedback.textContent = network
-                ? "Couldn't reach the mail service. Check your connection, or use the email address above."
-                : `${(err && err.message) || 'Something went wrong.'} You can also email me directly.`;
+            const timedOut = err && (err.name === 'TimeoutError' || err.name === 'AbortError');
+            feedback.textContent = timedOut
+                ? "The mail service didn't answer in time. Your message may still arrive; if you don't hear back, use the email address above."
+                : err instanceof TypeError
+                    ? "Couldn't reach the mail service. Check your connection, or use the email address above."
+                    : `${(err && err.message) || 'Something went wrong.'} You can also email me directly.`;
         } finally {
+            clearTimeout(slowNote);
             btn.disabled = false;
             btn.removeAttribute('aria-busy');
             btn.textContent = label;

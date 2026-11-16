@@ -1,13 +1,19 @@
 from pydantic_settings import BaseSettings
 from pydantic import model_validator
-from typing import List
+from typing import List, Optional
+import re
+
+# Values from example files and docs that must never be a real SECRET_KEY.
+_PLACEHOLDER = re.compile(r"change|replace|example|placeholder|your[-_ ]|xxxx", re.IGNORECASE)
 
 
 class Settings(BaseSettings):
     # Application
     APP_NAME: str = "QA Portfolio CMS"
     APP_ENV: str = "development"
-    DEBUG: bool = True
+    # Off unless set: DEBUG publishes /docs and the OpenAPI schema and logs SQL.
+    # Set DEBUG=true in a local .env for development.
+    DEBUG: bool = False
     SECRET_KEY: str  # required — no default so startup fails loud if missing
 
     # Database
@@ -18,9 +24,10 @@ class Settings(BaseSettings):
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
     ALGORITHM: str = "HS256"
 
-    # Admin seed
-    ADMIN_EMAIL: str = "admin@example.com"
-    ADMIN_PASSWORD: str = "Admin@1234!"
+    # Admin seed (seed.py). No defaults: a missing value must never fall back
+    # to a published password.
+    ADMIN_EMAIL: Optional[str] = None
+    ADMIN_PASSWORD: Optional[str] = None
     ADMIN_USERNAME: str = "admin"
     ADMIN_FULL_NAME: str = "CMS Admin"
 
@@ -60,8 +67,7 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def validate_secret_key(self) -> "Settings":
-        placeholder = "change-this-to-a-64-char-random-hex-string-in-production"
-        if self.SECRET_KEY == placeholder or len(self.SECRET_KEY) < 32:
+        if len(self.SECRET_KEY) < 32 or _PLACEHOLDER.search(self.SECRET_KEY):
             raise ValueError(
                 "SECRET_KEY must be a random hex string of at least 32 bytes. "
                 "Generate one with: python3 -c \"import secrets; print(secrets.token_hex(32))\""

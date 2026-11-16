@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from starlette.datastructures import MutableHeaders
 from pathlib import Path
 import logging
 
@@ -35,6 +36,8 @@ def _purge_expired_tokens() -> None:
 async def lifespan(app: FastAPI):
     Base.metadata.create_all(bind=engine)
     _purge_expired_tokens()
+    if not settings.emails_enabled:
+        logging.warning("RESEND_API_KEY is not set: confirmation emails and newsletters will not be sent.")
     logging.info(f"🚀  {settings.APP_NAME} started in {settings.APP_ENV} mode")
     yield
     # shutdown — nothing to tear down for SQLite
@@ -50,6 +53,47 @@ app = FastAPI(
     openapi_url="/openapi.json" if settings.DEBUG else None,
 )
 
+class SecurityHeaders:
+    """Security headers on every response.
+
+    Uploaded files get a policy that lets no script run, so even a file that
+    holds markup (an old SVG upload, a text file containing HTML) is inert.
+    PDFs are left without it: browser PDF viewers can refuse to open under it.
+    API responses must not be framed, sniffed or cached.
+    """
+
+    UPLOADS_CSP = "default-src 'none'; img-src 'self'; style-src 'unsafe-inline'; sandbox"
+    API_CSP = "default-src 'none'; frame-ancestors 'none'"
+
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+        path = scope.get("path", "")
+
+        async def send_with_headers(message):
+            if message["type"] == "http.response.start":
+                headers = MutableHeaders(scope=message)
+                headers.setdefault("X-Content-Type-Options", "nosniff")
+                headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+                headers.setdefault("Strict-Transport-Security", "max-age=63072000")
+                if path.startswith("/uploads/"):
+                    if not headers.get("content-type", "").startswith("application/pdf"):
+                        headers["Content-Security-Policy"] = self.UPLOADS_CSP
+                else:
+                    headers.setdefault("X-Frame-Options", "DENY")
+                    headers.setdefault("Content-Security-Policy", self.API_CSP)
+                    if path.startswith("/api/v1/"):
+                        headers.setdefault("Cache-Control", "no-store")
+            await send(message)
+
+        await self.app(scope, receive, send_with_headers)
+
+
+app.add_middleware(SecurityHeaders)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,
@@ -68,4 +112,6 @@ app.include_router(public_router)
 
 @app.get("/health", tags=["Health"])
 def health():
-    return {"status": "ok", "app": settings.APP_NAME}
+    # "email" says whether outgoing mail is configured, so a missing
+    # RESEND_API_KEY can be spotted from outside without reading the logs.
+    return {"status": "ok", "app": settings.APP_NAME, "email": "on" if settings.emails_enabled else "off"}

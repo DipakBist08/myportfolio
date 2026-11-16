@@ -16,7 +16,7 @@ export default defineConfig({
         screenshot: 'only-on-failure',
     },
     webServer: process.env.BASE_URL ? undefined : {
-        command: 'python3 -m http.server 4173 --bind 127.0.0.1',
+        command: 'python3 tools/serve.py 4173',  // sends vercel.json's headers, CSP included
         url: 'http://127.0.0.1:4173/',
         reuseExistingServer: true,
         timeout: 15_000,

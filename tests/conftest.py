@@ -1,6 +1,7 @@
 """pytest + Playwright fixtures for the portfolio.
 
-`pytest` starts a static server for the repository root on a free port,
+`pytest` starts tools/serve.py for the repository root on a free port, so
+pages get the live site's headers (its Content-Security-Policy included),
 then runs every test in a desktop and a mobile browser context. Set
 BASE_URL to test a deployed copy instead.
 """
@@ -35,7 +36,7 @@ def base_url() -> str:
         return
     port = _free_port()
     proc = subprocess.Popen(
-        [sys.executable, "-m", "http.server", str(port), "--bind", "127.0.0.1"],
+        [sys.executable, str(ROOT / "tools" / "serve.py"), str(port)],
         cwd=ROOT,
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,

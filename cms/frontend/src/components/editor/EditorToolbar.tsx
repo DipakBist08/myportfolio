@@ -296,7 +296,7 @@ export default function EditorToolbar({ editor, onInsertImage, onInsertYoutube }
         <input
           ref={fileInputRef}
           type="file"
-          accept="image/*"
+          accept="image/jpeg,image/png,image/gif,image/webp"
           className="hidden"
           onChange={handleFileUpload}
         />

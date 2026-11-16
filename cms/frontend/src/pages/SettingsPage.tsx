@@ -30,6 +30,9 @@ export default function SettingsPage() {
   const [mfaCode, setMfaCode] = useState('')
   const [mfaSecret, setMfaSecret] = useState('')
   const [showQr, setShowQr] = useState(false)
+  const [askMfaPassword, setAskMfaPassword] = useState(false)
+  const [mfaPassword, setMfaPassword] = useState('')
+  const [mfaSetupToken, setMfaSetupToken] = useState('')
 
   const { data: settings } = useQuery<SettingsMap>({
     queryKey: ['settings'],
@@ -60,21 +63,28 @@ export default function SettingsPage() {
     onSuccess: (res) => { setUser(res.data); toast.success('Profile updated') },
   })
 
-  const setupMfa = async () => {
+  // The API asks for the password again before it hands out a new
+  // authenticator secret, so a stolen session alone cannot set one up.
+  const setupMfa = async (e: React.FormEvent) => {
+    e.preventDefault()
     try {
-      const res = await api.post('/api/v1/auth/mfa/setup')
+      const res = await api.post('/api/v1/auth/mfa/setup', { password: mfaPassword })
       setMfaQr(res.data.qr_code_url)
       setMfaSecret(res.data.secret)
+      setMfaSetupToken(res.data.setup_token)
       setShowQr(true)
+      setAskMfaPassword(false)
     } catch (e: any) { toast.error(e.response?.data?.detail || 'Failed') }
+    finally { setMfaPassword('') }
   }
 
   const confirmMfa = async () => {
     try {
-      await api.post('/api/v1/auth/mfa/confirm', { otp_code: mfaCode })
+      await api.post('/api/v1/auth/mfa/confirm', { otp_code: mfaCode, setup_token: mfaSetupToken })
       toast.success('MFA enabled!')
       setShowQr(false)
       setMfaCode('')
+      setMfaSetupToken('')
       qc.invalidateQueries({ queryKey: ['me'] })
     } catch (e: any) { toast.error(e.response?.data?.detail || 'Invalid code') }
   }
@@ -185,11 +195,31 @@ export default function SettingsPage() {
                   Disable MFA
                 </Button>
               ) : (
-                <Button variant="gradient" size="sm" onClick={setupMfa}>
+                <Button variant="gradient" size="sm" onClick={() => setAskMfaPassword(true)} disabled={askMfaPassword || showQr}>
                   <QrCode size={14} className="mr-1.5" /> Enable MFA
                 </Button>
               )}
             </div>
+
+            {askMfaPassword && !showQr && (
+              <form onSubmit={setupMfa} className="space-y-3 pt-3 border-t border-border">
+                <div className="space-y-1.5">
+                  <Label htmlFor="mfa-password">Confirm your password to continue</Label>
+                  <Input
+                    id="mfa-password"
+                    type="password"
+                    autoComplete="current-password"
+                    value={mfaPassword}
+                    onChange={e => setMfaPassword(e.target.value)}
+                    autoFocus
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Button type="submit" variant="gradient" size="sm" disabled={!mfaPassword}>Continue</Button>
+                  <Button type="button" variant="outline" size="sm" onClick={() => { setAskMfaPassword(false); setMfaPassword('') }}>Cancel</Button>
+                </div>
+              </form>
+            )}
 
             {showQr && mfaQr && (
               <div className="space-y-3 pt-3 border-t border-border">

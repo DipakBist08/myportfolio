@@ -21,13 +21,34 @@ Base.metadata.create_all(bind=engine)
 db = SessionLocal()
 
 
+def _admin_credentials() -> tuple[str, str]:
+    """ADMIN_EMAIL and ADMIN_PASSWORD from the environment or .env, or asked
+    for at the terminal. There are deliberately no defaults."""
+    email, password = settings.ADMIN_EMAIL, settings.ADMIN_PASSWORD
+    if email and password:
+        return email, password
+    if not sys.stdin.isatty():
+        sys.exit("Set ADMIN_EMAIL and ADMIN_PASSWORD (environment or .env) to create the first admin.")
+    import getpass
+    email = email or input("Admin email: ").strip()
+    password = password or getpass.getpass("Admin password (not echoed): ")
+    if not email or len(password) < 12:
+        sys.exit("An email and a password of at least 12 characters are required.")
+    return email, password
+
+
 def seed():
     # ── Admin user ────────────────────────────────────────────────────────────
-    if not db.query(User).filter(User.email == settings.ADMIN_EMAIL).first():
+    if settings.ADMIN_EMAIL:
+        admin = db.query(User).filter(User.email == settings.ADMIN_EMAIL).first()
+    else:
+        admin = db.query(User).filter(User.is_superuser == True).order_by(User.id).first()
+    if not admin:
+        email, password = _admin_credentials()
         admin = User(
-            email=settings.ADMIN_EMAIL,
+            email=email,
             username=settings.ADMIN_USERNAME,
-            hashed_password=hash_password(settings.ADMIN_PASSWORD),
+            hashed_password=hash_password(password),
             full_name=settings.ADMIN_FULL_NAME,
             bio="QA Engineer & Blog Author",
             is_active=True,
@@ -35,10 +56,9 @@ def seed():
         )
         db.add(admin)
         db.flush()
-        print(f"✅  Admin created: {settings.ADMIN_EMAIL} / {settings.ADMIN_PASSWORD}")
+        print(f"✅  Admin created: {email} (password not shown)")
     else:
-        admin = db.query(User).filter(User.email == settings.ADMIN_EMAIL).first()
-        print(f"ℹ️   Admin already exists: {settings.ADMIN_EMAIL}")
+        print(f"ℹ️   Admin already exists: {admin.email}")
 
     # ── Categories ────────────────────────────────────────────────────────────
     categories_data = [

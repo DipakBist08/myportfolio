@@ -13,10 +13,21 @@ class MFAVerifyRequest(BaseModel):
     otp_code: str
 
 
+class MFASetupRequest(BaseModel):
+    password: str
+    otp_code: Optional[str] = None  # the current code, when MFA is already on
+
+
 class MFASetupResponse(BaseModel):
     secret: str
     qr_code_url: str          # data:image/png;base64,...
     otpauth_url: str
+    setup_token: str          # send back to /mfa/confirm with the first code
+
+
+class MFAEnableRequest(BaseModel):
+    otp_code: str
+    setup_token: str
 
 
 class MFAConfirmRequest(BaseModel):

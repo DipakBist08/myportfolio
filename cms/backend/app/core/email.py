@@ -22,8 +22,12 @@ async def send_confirmation_email(email: str, name: str, token: str) -> bool:
     blog_url = settings.BLOG_URL
 
     if not settings.emails_enabled:
-        logger.info("[EMAIL DISABLED] confirm → %s", confirm_url)
-        return True
+        if settings.DEBUG:
+            # Local development: confirm with the link from the log.
+            logger.info("[EMAIL DISABLED] confirm → %s", confirm_url)
+            return True
+        logger.error("Confirmation email not sent: RESEND_API_KEY is not set.")
+        return False
 
     _resend_client()
     html = f"""
@@ -63,8 +67,10 @@ async def send_newsletter(
 ) -> dict:
     """Send a newsletter to a list of recipients. Returns {sent, failed, errors}."""
     if not settings.emails_enabled:
-        logger.info("[EMAIL DISABLED] newsletter send to %d recipients", len(recipients))
-        return {"sent": len(recipients), "failed": 0, "errors": []}
+        # Report it as the failure it is, so nothing claims the list was emailed.
+        logger.error("Newsletter not sent to %d recipients: RESEND_API_KEY is not set.", len(recipients))
+        return {"sent": 0, "failed": len(recipients),
+                "errors": ["Email sending is off: RESEND_API_KEY is not set."] if recipients else []}
 
     _resend_client()
     sent, failed, errors = 0, 0, []

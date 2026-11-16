@@ -32,9 +32,18 @@ BROWSER = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, 
 def client():
     """A fresh, empty database and fresh rate limits for every test."""
     from app.api.public import comments
+    from app.core import throttle
+    from app.core.security import forget_accepted_codes
+
+    from app.api.v1 import subscribers
 
     comments._comment_attempts.clear()
     comments._reaction_attempts.clear()
+    subscribers._subscribe_attempts.clear()
+    throttle.PASSWORD_FAILURES.clear()
+    throttle.MFA_FAILURES.clear()
+    throttle.USED_MFA_TOKENS.clear()
+    forget_accepted_codes()
     Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
     with TestClient(app) as c:
