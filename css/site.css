@@ -836,7 +836,7 @@
 }
 
 .workflow__loop {
-    --step-ms: 330ms; /* one step of the travelling point: a move, then a short stop */
+    --step-ms: 230ms; /* one step of the travelling point: a move, then a short stop */
     margin-top: var(--space-6);
 }
 
@@ -1093,7 +1093,7 @@ html.anim.motion .step.is-again .step__mark::before {
 
         /* Steps the point has not reached yet wait out of focus. */
         .step__body {
-            transition: opacity 450ms var(--ease-out), filter 450ms var(--ease-out);
+            transition: opacity 300ms var(--ease-out), filter 300ms var(--ease-out);
         }
 
         .workflow__loop.is-armed .step:not(.is-done) .step__body {
