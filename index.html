@@ -33,69 +33,88 @@
         content="4+ years testing multi-tenant SaaS platforms. Playwright and Python automation, REST API testing with Postman, manual QA in Agile Scrum teams.">
     <meta name="twitter:image" content="https://dipakbist.com.np/assets/og-image.png">
 
+    <!-- Structured data: one connected graph. The Person's @id is the one the
+         blog's posts name as their author (blog.dipakbist.com.np), so search
+         engines can join the portfolio, the blog and the profiles into one person.
+         sameAs lists only profiles that are Dipak's own. -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "Person",
-      "name": "Dipak Bist",
-      "jobTitle": "Software QA Engineer",
-      "url": "https://dipakbist.com.np/",
-      "image": "https://dipakbist.com.np/assets/profile.png",
-      "email": "mailto:dipakbeest@gmail.com",
-      "sameAs": [
-        "https://www.linkedin.com/in/dipakbist",
-        "https://github.com/DipakBist08",
-        "https://blog.dipakbist.com.np"
-      ],
-      "knowsAbout": [
-        "Software Quality Assurance",
-        "Test Automation",
-        "Playwright",
-        "Python",
-        "Selenium",
-        "Behave BDD",
-        "REST API Testing",
-        "Postman",
-        "SQL",
-        "JMeter",
-        "Jira",
-        "Azure DevOps Boards",
-        "Agile Scrum"
-      ],
-      "address": {
-        "@type": "PostalAddress",
-        "addressLocality": "Kathmandu",
-        "addressCountry": "NP"
-      },
-      "memberOf": {
-        "@type": "Organization",
-        "name": "Dreamer's Youth Club",
-        "url": "https://www.dreamersyouthclub.org.np/"
-      }
-    }
-    </script>
-
-    <!-- Separate Organization node so the founder relationship is machine-readable
-         in the correct direction (schema.org puts `founder` on the Organization,
-         not the Person). -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "Organization",
-      "name": "Dreamer's Youth Club",
-      "alternateName": "DYC",
-      "url": "https://www.dreamersyouthclub.org.np/",
-      "description": "Community organisation empowering youth in Kanchanpur, Nepal through civic engagement, education and community action.",
-      "founder": {
-        "@type": "Person",
-        "name": "Dipak Bist",
-        "url": "https://dipakbist.com.np/"
-      },
-      "address": {
-        "@type": "PostalAddress",
-        "addressLocality": "Kanchanpur",
-        "addressCountry": "NP"
-      }
+      "@graph": [
+        {
+          "@type": "Person",
+          "@id": "https://dipakbist.com.np/#person",
+          "name": "Dipak Bist",
+          "jobTitle": "Software QA Engineer",
+          "description": "Software QA Engineer based in Kathmandu, Nepal, specialising in Playwright and Python test automation, API testing and manual QA for SaaS platforms.",
+          "url": "https://dipakbist.com.np/",
+          "image": "https://dipakbist.com.np/assets/profile.png",
+          "email": "mailto:dipakbeest@gmail.com",
+          "sameAs": [
+            "https://www.linkedin.com/in/dipakbist",
+            "https://github.com/DipakBist08",
+            "https://www.instagram.com/dipak.beest/"
+          ],
+          "knowsAbout": [
+            "Software Quality Assurance",
+            "Test Automation",
+            "Playwright",
+            "Python",
+            "Selenium",
+            "Behave BDD",
+            "REST API Testing",
+            "Postman",
+            "SQL",
+            "JMeter",
+            "Jira",
+            "Azure DevOps Boards",
+            "Agile Scrum"
+          ],
+          "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "Kathmandu",
+            "addressCountry": "NP"
+          },
+          "memberOf": { "@id": "https://www.dreamersyouthclub.org.np/#organization" }
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://dipakbist.com.np/#website",
+          "url": "https://dipakbist.com.np/",
+          "name": "Dipak Bist",
+          "inLanguage": "en",
+          "publisher": { "@id": "https://dipakbist.com.np/#person" }
+        },
+        {
+          "@type": "ProfilePage",
+          "@id": "https://dipakbist.com.np/#profilepage",
+          "url": "https://dipakbist.com.np/",
+          "name": "Dipak Bist — Software QA Engineer",
+          "isPartOf": { "@id": "https://dipakbist.com.np/#website" },
+          "mainEntity": { "@id": "https://dipakbist.com.np/#person" }
+        },
+        {
+          "@type": "Blog",
+          "@id": "https://blog.dipakbist.com.np/#blog",
+          "url": "https://blog.dipakbist.com.np",
+          "name": "Dipak Bist QA Blog",
+          "author": { "@id": "https://dipakbist.com.np/#person" }
+        },
+        {
+          "@type": "Organization",
+          "@id": "https://www.dreamersyouthclub.org.np/#organization",
+          "name": "Dreamer's Youth Club",
+          "alternateName": "DYC",
+          "url": "https://www.dreamersyouthclub.org.np/",
+          "description": "Community organisation empowering youth in Kanchanpur, Nepal through civic engagement, education and community action.",
+          "founder": { "@id": "https://dipakbist.com.np/#person" },
+          "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "Kanchanpur",
+            "addressCountry": "NP"
+          }
+        }
+      ]
     }
     </script>
 
