@@ -10,4 +10,16 @@ set -eu
 cd "$(dirname "$0")/.."
 rm -rf site
 mkdir site
-cp -R index.html 404.html robots.txt sitemap.xml css js assets admin site/
+cp -R index.html 404.html favicon.ico robots.txt sitemap.xml css js assets admin site/
+
+# The homepage's <lastmod> in the published sitemap: the date of the last
+# commit that changed index.html, or today's date where the build has no git
+# history. The sitemap.xml in the repository stays undated.
+LASTMOD=$(git log -1 --format=%cs -- index.html 2>/dev/null || true)
+[ -n "$LASTMOD" ] || LASTMOD=$(date -u +%Y-%m-%d)
+awk -v d="$LASTMOD" '
+    { print }
+    /<loc>https:\/\/dipakbist\.com\.np\/<\/loc>/ {
+        match($0, /^ */)
+        printf "%s<lastmod>%s</lastmod>\n", substr($0, 1, RLENGTH), d
+    }' sitemap.xml > site/sitemap.xml
