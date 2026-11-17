@@ -2,7 +2,7 @@
 
    The head script decides before first paint whether it plays: never with
    reduced motion or Save-Data, and only once per session (html.has-intro).
-   This module plays the whole 30 s film over the page: hello, the trail
+   This module plays the whole 48 s film over the page: hello, the trail
    photo, the test run, skills, the workflow ring, the career line and the
    <DipakBist/> end card. It then closes a circle on the end card's Contact
    button, uncovering the page underneath. "Skip intro" or Esc ends it at

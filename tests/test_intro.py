@@ -1,6 +1,6 @@
 """tests/test_intro.py: the opening film on a first visit.
 
-It plays the whole 30 s film once per browser session, over the page, as large
+It plays the whole 48 s film once per browser session, over the page, as large
 as the screen allows without cutting off any words, then uncovers it. Skip
 intro or Esc ends it, it never plays with reduced motion, and a film that
 cannot load never leaves the visitor stuck. Every other test in the suite
@@ -45,8 +45,8 @@ def test_film_plays_then_uncovers_the_page_and_the_hero_starts(first_visit: Brow
 
     # The whole film, not a teaser: hello, photo, test run, skills, ring, career, end card.
     duration = pg.evaluate("() => document.querySelector('.intro-film__video').duration")
-    assert 29.5 < duration < 30.5
-    # Jump to its last moment rather than wait 30 s; it must end and uncover the page itself.
+    assert 48 < duration < 49.5
+    # Jump to its last moment rather than wait 48 s; it must end and uncover the page itself.
     pg.evaluate("() => { const v = document.querySelector('.intro-film__video'); v.currentTime = v.duration - 0.5; }")
 
     expect(film).to_have_count(0, timeout=5000)

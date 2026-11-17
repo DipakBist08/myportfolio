@@ -14,7 +14,7 @@
         { "key": "X-XSS-Protection", "value": "1; mode=block" },
         { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
         { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=(), payment=()" },
-        { "key": "Content-Security-Policy", "value": "default-src 'self'; script-src 'self' 'sha256-u5Nlz6iZ+SgAbjh3am4rCRwLnGxpH9oBcqaMMMUTUoU=' 'sha256-JYKAVa/1O9puBB+8LB+H/FeZfOOukuNNnHD0nSiX1xQ=' 'sha256-V0uKLlClm7NgdupR/Mq1xxvvo4DTdjN0N1j4tDLtkOs='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://api.dipakbist.com.np https://formsubmit.co; form-action 'self' https://formsubmit.co; object-src 'none'; base-uri 'self'; frame-ancestors 'none'" }
+        { "key": "Content-Security-Policy", "value": "default-src 'self'; script-src 'self' 'sha256-TO9NbYSmUxKGX+q/ZPf1I+infSGPCKTFHNmHHjNAiHY=' 'sha256-JYKAVa/1O9puBB+8LB+H/FeZfOOukuNNnHD0nSiX1xQ=' 'sha256-V0uKLlClm7NgdupR/Mq1xxvvo4DTdjN0N1j4tDLtkOs='; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://api.dipakbist.com.np https://formsubmit.co; form-action 'self' https://formsubmit.co; object-src 'none'; base-uri 'self'; frame-ancestors 'none'" }
       ]
     },
     {
