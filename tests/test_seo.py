@@ -137,3 +137,18 @@ def test_profile_links_say_they_are_his():
     for old in OUTDATED:
         assert old not in html
 
+
+def test_icons_for_search_results_and_home_screens():
+    p = page()
+    rels = {(l.get("rel"), l.get("href")) for l in p.links}
+    assert ("icon", "/favicon.ico") in rels
+    assert ("icon", "assets/favicon.svg") in rels
+    assert ("apple-touch-icon", "assets/apple-touch-icon.png") in rels
+    assert ("manifest", "assets/site.webmanifest") in rels
+    ico = (ROOT / "favicon.ico").read_bytes()
+    assert ico[:4] == b"\x00\x00\x01\x00", "favicon.ico is an ICO file"
+    manifest = json.loads((ROOT / "assets" / "site.webmanifest").read_text(encoding="utf-8"))
+    assert manifest["name"].startswith("Dipak Bist")
+    for icon in manifest["icons"]:
+        assert (ROOT / "assets" / icon["src"]).is_file(), icon["src"]
+

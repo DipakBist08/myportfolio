@@ -10,4 +10,5 @@ set -eu
 cd "$(dirname "$0")/.."
 rm -rf site
 mkdir site
-cp -R index.html 404.html robots.txt sitemap.xml css js assets admin site/
+cp -R index.html 404.html favicon.ico robots.txt sitemap.xml css js assets admin site/
+

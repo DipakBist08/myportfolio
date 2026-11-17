@@ -29,7 +29,7 @@ from helpers import scroll_through
 
 ROOT = Path(__file__).resolve().parent.parent
 PAGES = ("index.html", "404.html", "admin/signin/index.html")
-SITE = ("index.html", "404.html", "css/", "js/", "assets/", "admin/", "robots.txt", "sitemap.xml")
+SITE = ("index.html", "404.html", "favicon.ico", "css/", "js/", "assets/", "admin/", "robots.txt", "sitemap.xml")
 INLINE_SCRIPT = re.compile(r"<script\b(?![^>]*\bsrc=)(?![^>]*application/ld\+json)[^>]*>(.*?)</script>", re.S | re.I)
 EXTERNAL = re.compile(r"^(?:[a-z][a-z0-9+.-]*:|//|#)", re.I)
 
