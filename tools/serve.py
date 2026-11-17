@@ -12,12 +12,14 @@ next to the new HTML: the page then renders half old, half new.
 
 It also sends the headers vercel.json gives each path (all but the caching
 ones), so a local preview, and the test suite, run under the live site's
-Content-Security-Policy.
+Content-Security-Policy. And like the live site it answers a request for part
+of a file (a Range header), which a browser needs to seek in a video.
 """
 
 from __future__ import annotations
 
 import json
+import os
 import re
 import sys
 from functools import partial
@@ -41,8 +43,55 @@ def vercel_headers(path: str) -> list[tuple[str, str]]:
     ]
 
 
+RANGE = re.compile(r"bytes=(\d*)-(\d*)")
+
+
 class Handler(SimpleHTTPRequestHandler):
+    # The part of the file being sent, as inclusive byte offsets, or None for all of it.
+    part: tuple[int, int] | None = None
+
+    def send_head(self):
+        """Answers "Range: bytes=a-b" (one range) with 206 Partial Content."""
+        self.part = None
+        path = self.translate_path(self.path)
+        match = RANGE.fullmatch(self.headers.get("Range", "").strip())
+        if not match or not (match[1] or match[2]) or not os.path.isfile(path):
+            return super().send_head()
+        size = os.path.getsize(path)
+        if match[1]:
+            start, end = int(match[1]), min(int(match[2]) if match[2] else size - 1, size - 1)
+        else:  # "bytes=-n": the last n bytes
+            start, end = max(0, size - int(match[2])), size - 1
+        if start > end:
+            self.send_response(416)
+            self.send_header("Content-Range", f"bytes */{size}")
+            self.end_headers()
+            return None
+        f = open(path, "rb")
+        f.seek(start)
+        self.part = (start, end)
+        self.send_response(206)
+        self.send_header("Content-Type", self.guess_type(path))
+        self.send_header("Content-Range", f"bytes {start}-{end}/{size}")
+        self.send_header("Content-Length", str(end - start + 1))
+        self.send_header("Last-Modified", self.date_time_string(os.fstat(f.fileno()).st_mtime))
+        self.end_headers()
+        return f
+
+    def copyfile(self, source, outputfile) -> None:
+        if self.part is None:
+            super().copyfile(source, outputfile)
+            return
+        left = self.part[1] - self.part[0] + 1
+        while left > 0:
+            chunk = source.read(min(64 * 1024, left))
+            if not chunk:
+                break
+            outputfile.write(chunk)
+            left -= len(chunk)
+
     def end_headers(self) -> None:
+        self.send_header("Accept-Ranges", "bytes")
         for key, value in vercel_headers(urlsplit(self.path).path):
             if key.lower() not in ("cache-control", "pragma"):
                 self.send_header(key, value)

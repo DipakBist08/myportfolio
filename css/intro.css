@@ -1,0 +1,86 @@
+/* Opening film overlay (js/intro.js). It exists only while html.has-intro,
+   which the head script sets before first paint on the first visit of a
+   session. The film's last frame is the <DipakBist/> end card; the overlay ends
+   by closing a circle on its Contact button, uncovering the page. */
+
+.intro-film {
+    display: none;
+}
+
+html.has-intro .intro-film {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: block;
+    overflow: hidden;
+    background: #0b0b0e;
+    clip-path: circle(150vmax at var(--iris-x, 50%) var(--iris-y, 67%));
+    transition: clip-path 900ms cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+html.has-intro .intro-film.is-closing {
+    clip-path: circle(0px at var(--iris-x, 50%) var(--iris-y, 67%));
+}
+
+html.has-intro body {
+    overflow: hidden;
+}
+
+/* js/intro.js sizes the video to the film's own 16:9 shape, as large as the
+   screen allows; where the dark surround shows beside it, its edges melt in. */
+.intro-film__video {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    max-height: none;
+    object-fit: contain;
+    background: #0b0b0e;
+    -webkit-mask:
+        linear-gradient(to right, transparent, #000 var(--fade-x, 0%), #000 calc(100% - var(--fade-x, 0%)), transparent),
+        linear-gradient(to bottom, transparent, #000 var(--fade-y, 0%), #000 calc(100% - var(--fade-y, 0%)), transparent);
+    -webkit-mask-composite: source-in;
+    mask:
+        linear-gradient(to right, transparent, #000 var(--fade-x, 0%), #000 calc(100% - var(--fade-x, 0%)), transparent),
+        linear-gradient(to bottom, transparent, #000 var(--fade-y, 0%), #000 calc(100% - var(--fade-y, 0%)), transparent);
+    mask-composite: intersect;
+}
+
+.intro-film__skip {
+    position: absolute;
+    right: clamp(16px, 3vw, 40px);
+    bottom: clamp(16px, 3vw, 40px);
+    padding: 0.75em 1.25em;
+    border: 1px solid rgb(255 255 255 / 0.2);
+    border-radius: 999px;
+    background: rgb(11 11 14 / 0.55);
+    color: #f4f4f5;
+    font: 600 0.9375rem/1 var(--font-family-sans, system-ui, sans-serif);
+    letter-spacing: 0.01em;
+    cursor: pointer;
+}
+
+.intro-film__skip:hover {
+    background: rgb(255 255 255 / 0.12);
+}
+
+.intro-film__skip:focus-visible {
+    outline: 2px solid #a5b4fc;
+    outline-offset: 3px;
+}
+
+/* How much of the film is left: a thin line along the bottom edge. */
+.intro-film__progress {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 3px;
+    background: #818cf8;
+    transform: scaleX(0);
+    transform-origin: left center;
+    opacity: 0.85;
+    pointer-events: none;
+}

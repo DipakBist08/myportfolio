@@ -67,6 +67,9 @@ def ctx(browser: Browser, playwright: Playwright, device: str, base_url: str) ->
     else:
         options = {"viewport": {"width": 1440, "height": 900}}
     context = browser.new_context(base_url=base_url, **options)
+    # The opening film plays once per session; these tests start after it.
+    # tests/test_intro.py covers the film itself.
+    context.add_init_script("try { sessionStorage.setItem('intro-seen', '1'); } catch (e) {}")
     yield context
     context.close()
 

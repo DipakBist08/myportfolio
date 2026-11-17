@@ -1,13 +1,13 @@
 /* Entry point. Each init is isolated: a failure in one never takes the
    others down, and a failure in the motion layer reveals the page. */
 
-import { initTheme } from './theme.js?v=20261116b';
-import { initNav } from './nav.js?v=20261116b';
-import { initFlow } from './flow.js?v=20261116b';
-import { initMotion, revealAllImmediately } from './motion.js?v=20261116b';
-import { initSubscribe } from './subscribe.js?v=20261116b';
-import { initContact } from './contact.js?v=20261116b';
-import { initVisit } from './visit.js?v=20261116b';
+import { initTheme } from './theme.js?v=20261117b';
+import { initNav } from './nav.js?v=20261117b';
+import { initFlow } from './flow.js?v=20261117b';
+import { initMotion, revealAllImmediately } from './motion.js?v=20261117b';
+import { initSubscribe } from './subscribe.js?v=20261117b';
+import { initContact } from './contact.js?v=20261117b';
+import { initVisit } from './visit.js?v=20261117b';
 
 function safe(name, fn) {
     try {
@@ -43,8 +43,12 @@ function initYear() {
 
 safe('theme', initTheme);
 safe('nav', initNav);
-safe('motion', initMotion);
-safe('flow', initFlow);
+// On a first visit the opening film (js/intro.js) covers the page; the hero's
+// entrance waits until the film opens onto it, so it plays in view.
+(window.__introDone || Promise.resolve()).then(() => {
+    safe('motion', initMotion);
+    safe('flow', initFlow);
+});
 safe('subscribe', initSubscribe);
 safe('contact', initContact);
 safe('copy', initCopyEmail);

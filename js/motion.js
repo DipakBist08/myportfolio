@@ -92,7 +92,7 @@ function revealOnScroll(M) {
    well in view a point leaves 01 and moves clockwise, stopping at each step:
    the line fills behind it, the step ticks and its text comes into focus.
    After 10 it rides the dashed return arc back into 01, which pulses: the
-   loop starts again. A run takes about 3.6s on one clock, so the line, the
+   loop starts again. A run takes about 1.9s on one clock, so the line, the
    point and the ticks cannot drift apart.
    As a timeline (narrow screens) each step ticks as it scrolls into view and
    the line to it fills.
@@ -214,11 +214,20 @@ function workflowSteps(M) {
 
     if (ring && getComputedStyle(ring).display !== 'none') {
         const stepMs = parseFloat(getComputedStyle(loop).getPropertyValue('--step-ms')) || 330;
-        const PLAY_AT = 0.45;
+        // Play once most of the loop is on screen, so the whole run is seen (a
+        // loop taller than the screen: once it fills most of the screen). If the
+        // visitor stops with only part of it showing, play after a short pause.
+        const PART = 0.45;
+        const PAUSE_MS = 600;
+        const playAt = () => Math.min(0.75, (0.85 * innerHeight) / Math.max(1, loop.offsetHeight));
         let ratio = 0;
+        let pause = 0;
+        const start = () => { run = runLoop(loop, ring, steps, tick, stepMs); };
         const play = () => {
-            if (run || document.hidden || ratio < PLAY_AT) return;
-            run = runLoop(loop, ring, steps, tick, stepMs);
+            clearTimeout(pause);
+            if (run || document.hidden || ratio < PART) return;
+            if (ratio >= playAt()) start();
+            else pause = setTimeout(() => { if (!run && !document.hidden && ratio >= PART) start(); }, PAUSE_MS);
         };
         // Steps not yet reached wait out of focus; revealAllImmediately ticks them all, which clears it.
         loop.classList.add('is-armed');
@@ -226,7 +235,7 @@ function workflowSteps(M) {
             const e = entries[entries.length - 1];
             ratio = e.isIntersecting ? e.intersectionRatio : 0;
             play();
-        }, { threshold: [0, PLAY_AT] }).observe(loop);
+        }, { threshold: [0, 0.2, 0.3, 0.4, 0.5, 0.6, 0.65, 0.7, 0.75, 0.8] }).observe(loop);
         document.addEventListener('visibilitychange', () => (document.hidden ? reset() : play()));
         return;
     }

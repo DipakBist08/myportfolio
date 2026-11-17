@@ -836,7 +836,7 @@
 }
 
 .workflow__loop {
-    --step-ms: 330ms; /* one step of the travelling point: a move, then a short stop */
+    --step-ms: 170ms; /* one step of the travelling point: a move, then a short stop */
     margin-top: var(--space-6);
 }
 
@@ -1029,12 +1029,31 @@ html.anim.motion .step.is-again .step__mark::before {
    a 240px text block on either side. Each step's mark (--mx, --my) and text
    anchor (--tx, --ty) are offsets from the ring's centre, set in the markup:
    marks every 36deg on a 270px ring; side text as close to the ring as it can
-   sit without touching it anywhere along its height. */
+   sit without touching it anywhere along its height.
+   On shorter screens the ring and those offsets shrink by --k (the text keeps
+   its size), so the whole loop fits on screen at once. */
 @container workflow (min-width: 1080px) {
         .workflow__loop {
+            --k: 1;
             position: relative;
             height: 860px;
             margin-top: 0;
+        }
+
+        @media (max-height: 1000px) {
+            .workflow__loop { --k: 0.86; height: 760px; }
+            /* wider side text, so each step is two lines and they clear each other */
+            .step[data-side="right"] .step__body,
+            .step[data-side="left"] .step__body { width: 280px; }
+        }
+
+        @media (max-height: 860px) {
+            .workflow__loop { --k: 0.72; height: 640px; }
+            /* 03, 04, 08 and 09 lean towards the middle, clear of 02, 05, 07 and 10 */
+            .step:nth-child(3) .step__body,
+            .step:nth-child(9) .step__body { margin-top: 9px; }
+            .step:nth-child(4) .step__body,
+            .step:nth-child(8) .step__body { margin-top: -9px; }
         }
 
         .workflow__ring {
@@ -1042,12 +1061,12 @@ html.anim.motion .step.is-again .step__mark::before {
             position: absolute;
             left: 50%;
             top: 50%;
-            width: 600px;
-            height: 600px;
+            width: calc(600px * var(--k));
+            height: calc(600px * var(--k));
             translate: -50% -50%;
             overflow: visible;
             fill: none;
-            stroke-width: 2;
+            stroke-width: calc(2px / var(--k));
             stroke-linecap: round;
         }
 
@@ -1091,14 +1110,13 @@ html.anim.motion .step.is-again .step__mark::before {
         html:not(.anim) .workflow__progress { stroke-dashoffset: 0; }
         html:not(.anim) .workflow__feedback { opacity: 1; }
 
-        /* Steps the point has not reached yet wait out of focus. */
+        /* Steps the point has not reached yet wait dimmed, still readable. */
         .step__body {
-            transition: opacity 450ms var(--ease-out), filter 450ms var(--ease-out);
+            transition: opacity 220ms var(--ease-out);
         }
 
         .workflow__loop.is-armed .step:not(.is-done) .step__body {
-            opacity: 0.4;
-            filter: blur(1.5px);
+            opacity: 0.5;
         }
 
         .workflow__aside {
@@ -1123,8 +1141,8 @@ html.anim.motion .step.is-again .step__mark::before {
         .step::after { content: none; }
 
         .step__mark {
-            left: calc(50% + var(--mx));
-            top: calc(50% + var(--my));
+            left: calc(50% + var(--mx) * var(--k));
+            top: calc(50% + var(--my) * var(--k));
             translate: -50% -50%;
         }
 
@@ -1140,8 +1158,8 @@ html.anim.motion .step.is-again .step__mark::before {
         .step__body {
             position: absolute;
             width: 240px;
-            left: calc(50% + var(--tx));
-            top: calc(50% + var(--ty));
+            left: calc(50% + var(--tx) * var(--k));
+            top: calc(50% + var(--ty) * var(--k));
         }
 
         .step[data-side="right"] .step__body { translate: 0 -50%; }
