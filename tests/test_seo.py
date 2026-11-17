@@ -114,3 +114,26 @@ def test_every_reference_in_the_graph_points_at_a_node_in_it():
     assert by_type["Blog"]["@id"] == "https://blog.dipakbist.com.np/#blog"
     assert by_type["Organization"]["founder"] == {"@id": PERSON_ID}
 
+
+def test_head_tells_search_engines_what_this_page_is():
+    p = page()
+    assert p.h1 == ["Dipak Bist Software QA Engineer"]
+    canonical = [l["href"] for l in p.links if l.get("rel") == "canonical"]
+    assert canonical == ["https://dipakbist.com.np/"]
+    robots = [m["content"] for m in p.meta if m.get("name") == "robots"]
+    assert robots == ["index, follow, max-image-preview:large"]
+    assert not [m for m in p.meta if m.get("name") == "keywords"], "no meta keywords"
+
+
+def test_profile_links_say_they_are_his():
+    p = page()
+    for a in p.anchors:
+        href = a.get("href", "")
+        if href.rstrip("/") in {u.rstrip("/") for u in PROFILES}:
+            rel = a.get("rel", "").split()
+            assert "me" in rel, f"{href} lacks rel=me"
+            assert "noopener" in rel
+    html = (ROOT / "index.html").read_text(encoding="utf-8")
+    for old in OUTDATED:
+        assert old not in html
+
