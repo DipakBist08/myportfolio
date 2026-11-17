@@ -152,3 +152,19 @@ def test_icons_for_search_results_and_home_screens():
     for icon in manifest["icons"]:
         assert (ROOT / "assets" / icon["src"]).is_file(), icon["src"]
 
+
+def test_sitemap_gets_a_lastmod_at_build_time(tmp_path):
+    import shutil
+    import subprocess
+
+    for name in ("index.html", "404.html", "robots.txt", "sitemap.xml", "favicon.ico", "scripts/build-site.sh"):
+        (tmp_path / name).parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(ROOT / name, tmp_path / name)
+    for folder in ("css", "js", "assets", "admin"):
+        shutil.copytree(ROOT / folder, tmp_path / folder)
+    subprocess.run(["sh", "scripts/build-site.sh"], cwd=tmp_path, check=True)
+    xml = (tmp_path / "site" / "sitemap.xml").read_text(encoding="utf-8")
+    entry = re.search(r"<loc>https://dipakbist\.com\.np/</loc>\s*<lastmod>(\d{4}-\d{2}-\d{2})</lastmod>", xml)
+    assert entry, "the homepage entry carries a <lastmod> date"
+    # The source file is left alone; only the built copy is stamped.
+    assert "<lastmod>" not in (ROOT / "sitemap.xml").read_text(encoding="utf-8")
