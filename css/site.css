@@ -380,6 +380,28 @@
     max-width: 52ch;
 }
 
+/* Focus areas, then the stack: one line each where they fit */
+.hero__focus {
+    font-size: var(--font-size-xl);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--color-text);
+}
+
+.hero__focus + .hero__stack {
+    margin-top: calc(var(--space-3) - var(--space-6));
+}
+
+.hero__stack strong {
+    font-weight: 600;
+    color: var(--color-text);
+}
+
+.hero__sep {
+    font-weight: 400;
+    color: var(--color-text-muted);
+}
+
 .hero__actions {
     display: flex;
     flex-wrap: wrap;
