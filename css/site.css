@@ -1664,6 +1664,11 @@ html.anim.motion .step.is-again .step__mark::before {
     max-width: none;
 }
 
+/* The profile links under the e-mail line: one sentence, so normal text flow. */
+.contact__profiles {
+    display: block;
+}
+
 .contact__email {
     font-family: var(--font-family-mono);
     color: var(--color-text);
@@ -1862,6 +1867,7 @@ html.anim.motion .step.is-again .step__mark::before {
 
 .footer__social {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: var(--space-1);
     list-style: none;
