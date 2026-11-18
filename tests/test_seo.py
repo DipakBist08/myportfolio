@@ -202,7 +202,8 @@ def test_sitemap_gets_a_lastmod_at_build_time(tmp_path):
     import shutil
     import subprocess
 
-    for name in ("index.html", "404.html", "robots.txt", "sitemap.xml", "favicon.ico", "scripts/build-site.sh"):
+    keyfile = re.search(r'^KEY = "(\w+)"$', (ROOT / "tools" / "indexnow.py").read_text(encoding="utf-8"), re.M).group(1) + ".txt"
+    for name in ("index.html", "404.html", "robots.txt", "sitemap.xml", "favicon.ico", keyfile, "scripts/build-site.sh"):
         (tmp_path / name).parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(ROOT / name, tmp_path / name)
     for folder in ("css", "js", "assets", "admin"):
@@ -245,3 +246,10 @@ def test_blog_cards_use_each_posts_current_title():
         mdx = (ROOT / "blog" / "content" / "blog" / f"{slug}.mdx").read_text(encoding="utf-8")
         title = re.search(r'^title: "(.*)"$', mdx, re.M).group(1)
         assert text == title, slug
+
+
+def test_indexnow_key_file_matches_the_script():
+    """Bing and others check https://dipakbist.com.np/<key>.txt before they accept a notice."""
+    script = (ROOT / "tools" / "indexnow.py").read_text(encoding="utf-8")
+    key = re.search(r'^KEY = "([0-9a-f]{32})"$', script, re.M).group(1)
+    assert (ROOT / f"{key}.txt").read_text(encoding="utf-8") == key

@@ -11,6 +11,8 @@ cd "$(dirname "$0")/.."
 rm -rf site
 mkdir site
 cp -R index.html 404.html favicon.ico robots.txt sitemap.xml css js assets admin site/
+# The IndexNow key file; its name is the key in tools/indexnow.py.
+cp 9eaf3135fd580d4d3a86cbd84bcf91df.txt site/
 
 # The homepage's <lastmod> in the published sitemap: the date of the last
 # commit that changed index.html, or today's date where the build has no git
