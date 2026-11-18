@@ -16,10 +16,14 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 PERSON_ID = "https://dipakbist.com.np/#person"
+# His profiles, exactly as he gave them (18/11/2026). LinkedIn and GitHub first:
+# they carry the most professional weight.
 PROFILES = (
-    "https://www.linkedin.com/in/dipakbist",
+    "https://www.linkedin.com/in/dipakbist/",
     "https://github.com/DipakBist08",
+    "https://www.facebook.com/dipak.beesta",
     "https://www.instagram.com/dipak.beest/",
+    "https://x.com/Deepak_B_08",
 )
 OUTDATED = ("linkedin.com/in/dipakbist08", "61585825412139")
 
@@ -123,6 +127,25 @@ def test_head_tells_search_engines_what_this_page_is():
     robots = [m["content"] for m in p.meta if m.get("name") == "robots"]
     assert robots == ["index, follow, max-image-preview:large"]
     assert not [m for m in p.meta if m.get("name") == "keywords"], "no meta keywords"
+
+
+def test_every_profile_is_linked_in_the_footer_and_contact_section():
+    html = (ROOT / "index.html").read_text(encoding="utf-8")
+    footer = html[html.index('<ul class="footer__social"'):]
+    footer = footer[: footer.index("</ul>")]
+    contact = html[html.index('id="contact"'):html.index('<form id="contact-form"')]
+    for url in PROFILES:
+        assert f'href="{url}"' in footer, f"footer lacks {url}"
+        assert f'href="{url}"' in contact, f"contact section lacks {url}"
+    assert graph()[0]["sameAs"] == list(PROFILES)
+    # An old form of a profile URL must not linger next to the exact one.
+    assert 'href="https://www.linkedin.com/in/dipakbist"' not in html
+
+
+def test_x_cards_name_his_account():
+    p = page()
+    tags = {m.get("name"): m.get("content") for m in p.meta if m.get("name", "").startswith("twitter:")}
+    assert tags["twitter:site"] == tags["twitter:creator"] == "@Deepak_B_08"
 
 
 def test_profile_links_say_they_are_his():
