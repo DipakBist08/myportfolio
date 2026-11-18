@@ -5,20 +5,27 @@
    This module plays the whole 30 s film over the page: the hero's
    test_login.py run to PASSED, the ten-step workflow ring, and the ring
    folding into the <DipakBist/> end card. It then closes a circle on the end
-   card's Contact underline, uncovering the page underneath. "Skip intro" or Esc ends it at
-   once. If the film cannot start within 2.5 s, or stalls for 4 s, the page
-   is shown instead of a dark or frozen screen.
+   card's Contact underline, uncovering the page underneath. "Skip intro" or
+   Esc ends it at once. If the film cannot start within 2.5 s, or stalls for
+   4 s, the page is shown instead of a dark or frozen screen.
+
+   The film has two cuts on the same beats. A screen taller than it is wide (a
+   phone held upright) gets the 1080x1920 phone cut, laid out the way the page
+   lays itself out on a phone; every other screen gets the 1920x1080 one.
 
    main.js waits for window.__introDone before the hero's entrance, which
    resolves as the circle starts to close, so the entrance plays in view. */
 
 const html = document.documentElement;
-const FILM = { w: 1920, h: 1080 };
-// Where Contact's underline sits in the film's last frame.
-const IRIS = { x: 959.7, y: 754.2 };
-// Every word in the film stays inside this centred area, so the film may be
-// enlarged until this fits the screen: only bare scenery at the edges is lost.
-const SAFE = { w: 1840, h: 990 };
+// For each cut: the <template> that holds its video, its size, where Contact's
+// underline sits in its last frame (the closing circle lands there), and the
+// centred area that holds every word. The film may be enlarged until that area
+// fits the screen: only bare scenery at the edges is lost. The phone cut uses
+// its full width, so it is never cropped at the sides.
+const FILMS = {
+    landscape: { template: 'intro-film-video', w: 1920, h: 1080, iris: { x: 959.7, y: 754.2 }, safe: { w: 1840, h: 990 } },
+    portrait: { template: 'intro-film-video-portrait', w: 1080, h: 1920, iris: { x: 539.9, y: 1123.7 }, safe: { w: 1080, h: 1780 } },
+};
 const START_WITHIN_MS = 2500;
 const STALL_MS = 4000;
 const CLOSE_MS = 900;
@@ -27,7 +34,11 @@ let resolveDone;
 window.__introDone = new Promise((resolve) => { resolveDone = resolve; });
 
 function run(el) {
-    const video = document.getElementById('intro-film-video').content.firstElementChild.cloneNode(true);
+    // The cut is chosen once, as the film starts; a turned phone keeps its cut, fitted to the new shape.
+    const upright = (el.clientHeight || innerHeight) > (el.clientWidth || innerWidth);
+    const FILM = upright && document.getElementById(FILMS.portrait.template) ? FILMS.portrait : FILMS.landscape;
+    const { iris: IRIS, safe: SAFE } = FILM;
+    const video = document.getElementById(FILM.template).content.firstElementChild.cloneNode(true);
     el.prepend(video);
     const skip = el.querySelector('.intro-film__skip');
     const progress = document.createElement('div');
