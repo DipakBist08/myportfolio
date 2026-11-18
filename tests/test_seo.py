@@ -212,6 +212,10 @@ def test_sitemap_gets_a_lastmod_at_build_time(tmp_path):
     xml = (tmp_path / "site" / "sitemap.xml").read_text(encoding="utf-8")
     entry = re.search(r"<loc>https://dipakbist\.com\.np/</loc>\s*<lastmod>(\d{4}-\d{2}-\d{2})</lastmod>", xml)
     assert entry, "the homepage entry carries a <lastmod> date"
+    # The footer's "Last updated" shows that same date, in DD/MM/YYYY.
+    y, m, d = entry.group(1).split("-")
+    built = (tmp_path / "site" / "index.html").read_text(encoding="utf-8")
+    assert f'<time class="site-updated" datetime="{entry.group(1)}">{d}/{m}/{y}</time>' in built
     # The source file is left alone; only the built copy is stamped.
     assert "<lastmod>" not in (ROOT / "sitemap.xml").read_text(encoding="utf-8")
 

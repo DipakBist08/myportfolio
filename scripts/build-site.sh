@@ -25,3 +25,11 @@ awk -v d="$LASTMOD" '
         match($0, /^ */)
         printf "%s<lastmod>%s</lastmod>\n", substr($0, 1, RLENGTH), d
     }' sitemap.xml > site/sitemap.xml
+
+# The footer's "Last updated" date: the same date, written DD/MM/YYYY, so the
+# page and the sitemap never disagree.
+LASTMOD_UK=$(echo "$LASTMOD" | awk -F- '{ print $3 "/" $2 "/" $1 }')
+sed "s|<time class=\"site-updated\" datetime=\"[0-9-]*\">[0-9/]*</time>|<time class=\"site-updated\" datetime=\"$LASTMOD\">$LASTMOD_UK</time>|" \
+    site/index.html > site/index.html.tmp
+mv site/index.html.tmp site/index.html
+grep -q "datetime=\"$LASTMOD\">$LASTMOD_UK</time>" site/index.html
