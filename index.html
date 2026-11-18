@@ -143,11 +143,11 @@
                 try { intro = !sessionStorage.getItem('intro-seen') && !(navigator.connection && navigator.connection.saveData); } catch (e) { }
                 if (intro) {
                     html.classList.add('has-intro');
-                    // Never trap the page: whatever happens, the 48 s film is gone by 65 s.
-                    setTimeout(function () { html.classList.remove('has-intro'); }, 65000);
+                    // Never trap the page: whatever happens, the 30 s film is gone by 45 s.
+                    setTimeout(function () { html.classList.remove('has-intro'); }, 45000);
                 }
                 // If the motion module never arrives, show everything.
-                window.__revealTimer = setTimeout(function () { html.classList.remove('motion'); }, intro ? 65000 : 3000);
+                window.__revealTimer = setTimeout(function () { html.classList.remove('motion'); }, intro ? 45000 : 3000);
                 // If a module fails to load, show the page at once. (A capturing
                 // listener, because the page's CSP allows no onerror="" attribute.)
                 addEventListener('error', function (e) {
@@ -174,8 +174,8 @@
     <div class="intro-film" id="intro-film" role="dialog" aria-modal="true" aria-label="Intro film">
         <template id="intro-film-video">
             <video class="intro-film__video" muted playsinline preload="auto" aria-hidden="true">
-                <source src="assets/intro/intro.mp4?v=20261117b" type='video/mp4; codecs="avc1.64002A"'>
-                <source src="assets/intro/intro.webm?v=20261117b" type='video/webm; codecs="vp9"'>
+                <source src="assets/intro/intro.mp4?v=20261118" type='video/mp4; codecs="avc1.64002A"'>
+                <source src="assets/intro/intro.webm?v=20261118" type='video/webm; codecs="vp9"'>
             </video>
         </template>
         <button type="button" class="intro-film__skip">Skip intro</button>
