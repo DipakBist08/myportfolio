@@ -93,6 +93,15 @@ def test_structured_data_names_one_person_with_the_blogs_author_id():
     assert set(PROFILES) <= set(person["sameAs"])
     assert not any(o in url for url in person["sameAs"] for o in OUTDATED)
     assert not any("blog.dipakbist.com.np" in url for url in person["sameAs"])
+    # The brief's skills (Part 13), and the employer the page already names.
+    for skill in ("Software Testing", "Quality Assurance", "Manual Testing", "Test Automation", "Playwright",
+                  "Python", "Pytest", "Selenium", "API Testing", "Postman", "AI-Assisted QA", "Performance Testing"):
+        assert skill in person["knowsAbout"], skill
+    assert person["worksFor"] == {"@type": "Organization", "name": "Sterling Wells"}
+    # His real portrait, published under a name that says who it is.
+    image = person["image"]
+    assert image == "https://dipakbist.com.np/assets/dipak-bist-software-qa-engineer.webp"
+    assert (ROOT / image.removeprefix("https://dipakbist.com.np/")).is_file()
 
 
 def test_every_reference_in_the_graph_points_at_a_node_in_it():
