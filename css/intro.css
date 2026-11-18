@@ -1,7 +1,7 @@
 /* Opening film overlay (js/intro.js). It exists only while html.has-intro,
    which the head script sets before first paint on the first visit of a
-   session. The film's last frame is the <DipakBist/> end card; the overlay ends
-   by closing a circle on its Contact button, uncovering the page. */
+   session. The film's last frame is the name over its cyan line; the overlay
+   ends by closing a circle on the centre of that line, uncovering the page. */
 
 .intro-film {
     display: none;
@@ -14,12 +14,12 @@ html.has-intro .intro-film {
     display: block;
     overflow: hidden;
     background: #0b0b0e;
-    clip-path: circle(150vmax at var(--iris-x, 50%) var(--iris-y, 67%));
+    clip-path: circle(150vmax at var(--iris-x, 50%) var(--iris-y, 45.6%));
     transition: clip-path 900ms cubic-bezier(0.65, 0, 0.35, 1);
 }
 
 html.has-intro .intro-film.is-closing {
-    clip-path: circle(0px at var(--iris-x, 50%) var(--iris-y, 67%));
+    clip-path: circle(0px at var(--iris-x, 50%) var(--iris-y, 45.6%));
 }
 
 html.has-intro body {
