@@ -59,14 +59,46 @@ function heroIntro(M) {
     return finished(controls).then(() => all.forEach(settle));
 }
 
+/* Calls onSeen(batch) with the targets that have just come into view, in page
+   order, and stops watching them. "In view" is 15% of the element on screen,
+   or a quarter of the screen filled by it, whichever comes first: a fixed share
+   of a very tall element (a long list on a narrow phone) may never fit on
+   screen at once, and such an element must still appear. */
+const SEEN_SHARE = 0.15;
+const SEEN_SCREEN = 0.25;
+function whenSeen(targets, onSeen) {
+    const io = new IntersectionObserver((entries) => {
+        const seen = entries.filter((e) => {
+            if (!e.isIntersecting) return false;
+            const screen = e.rootBounds ? e.rootBounds.height : innerHeight;
+            const need = Math.min(SEEN_SHARE * e.boundingClientRect.height, SEEN_SCREEN * screen);
+            return e.intersectionRect.height >= need - 1;
+        }).map((e) => e.target);
+        if (!seen.length) return;
+        seen.sort((a, b) => (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1));
+        seen.forEach((t) => io.unobserve(t));
+        onSeen(seen);
+    }, { rootMargin: '0px 0px -8% 0px', threshold: [0, 0.01, 0.02, 0.05, 0.1, SEEN_SHARE, SEEN_SCREEN] });
+    targets.forEach((t) => io.observe(t));
+}
+
 function revealOnScroll(M) {
     const targets = [...document.querySelectorAll('[data-reveal]')].filter((el) => !el.closest('.hero'));
+    if (!('IntersectionObserver' in window)) { targets.forEach(settle); return; }
     targets.forEach((el) => {
         const children = el.hasAttribute('data-reveal-group') ? [...el.children] : null;
-        if (children) children.forEach((c) => { c.style.opacity = '0'; });
+        if (children) {
+            // Each item rises as it reaches the screen; items seen together stagger.
+            children.forEach((c) => { c.style.opacity = '0'; });
+            whenSeen(children, (batch) => {
+                settle(el);
+                finished(M.animate(batch, RISE(12), { duration: 0.45, ease: EASE_OUT, delay: M.stagger(0.05) }))
+                    .then(() => batch.forEach((c) => { c.style.opacity = ''; c.style.transform = ''; }));
+            });
+            return;
+        }
         const heading = el.classList.contains('section__head') ? el.querySelector('h2') : null;
-        const stop = M.inView(el, () => {
-            stop?.();
+        whenSeen([el], () => {
             if (heading) {
                 // Section titles wipe up from their baseline; the assertion line follows.
                 settle(el);
@@ -77,14 +109,8 @@ function revealOnScroll(M) {
                     .then(() => rest.forEach((c) => { c.style.opacity = ''; c.style.transform = ''; }));
                 return;
             }
-            if (children) {
-                settle(el);
-                finished(M.animate(children, RISE(12), { duration: 0.45, ease: EASE_OUT, delay: M.stagger(0.05) }))
-                    .then(() => children.forEach((c) => { c.style.opacity = ''; c.style.transform = ''; }));
-            } else {
-                finished(M.animate(el, RISE(12), { duration: 0.45, ease: EASE_OUT })).then(() => settle(el));
-            }
-        }, { amount: 0.15, margin: '0px 0px -8% 0px' });
+            finished(M.animate(el, RISE(12), { duration: 0.45, ease: EASE_OUT })).then(() => settle(el));
+        });
     });
 }
 
