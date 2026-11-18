@@ -2,20 +2,21 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import SitePage, { ReviewNotice } from '@/components/layout/SitePage'
 import ExternalLink from '@/components/layout/ExternalLink'
-import { BASE_URL } from '@/lib/blog/site'
+import { pageMetadata } from '@/lib/blog/metadata'
+import { SITE_PAGES } from '@/lib/blog/pages'
 
 /* DRAFT. This text was drafted from what the code does; it is not legal advice.
    The site owner must check every statement (the items marked CHECK below in
    particular), then set REVIEWED to true to remove the notice from the page. */
 const REVIEWED = false
-const LAST_UPDATED = '2026-11-12'
+const LAST_UPDATED = SITE_PAGES.privacyPolicy.updated
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: 'Privacy Policy',
   description:
     'Privacy policy for the Dipak Bist QA Blog: what data the blog collects through comments and the newsletter, how cookies are used, and advertising by Google.',
-  alternates: { canonical: `${BASE_URL}/privacy-policy` },
-}
+  path: SITE_PAGES.privacyPolicy.path,
+})
 
 export default function PrivacyPolicyPage() {
   return (

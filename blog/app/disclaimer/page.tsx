@@ -1,18 +1,19 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import SitePage, { ReviewNotice } from '@/components/layout/SitePage'
-import { BASE_URL } from '@/lib/blog/site'
+import { pageMetadata } from '@/lib/blog/metadata'
+import { SITE_PAGES } from '@/lib/blog/pages'
 
 /* DRAFT for the site owner's review. Set REVIEWED to true once checked. */
 const REVIEWED = false
-const LAST_UPDATED = '2026-11-12'
+const LAST_UPDATED = SITE_PAGES.disclaimer.updated
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: 'Disclaimer',
   description:
     'Disclaimer for the Dipak Bist QA Blog: articles are personal views for general information, code examples come without warranty, and how ads are handled.',
-  alternates: { canonical: `${BASE_URL}/disclaimer` },
-}
+  path: SITE_PAGES.disclaimer.path,
+})
 
 export default function DisclaimerPage() {
   return (

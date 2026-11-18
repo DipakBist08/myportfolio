@@ -3,7 +3,8 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getAllPostsMeta } from '@/lib/blog/mdx'
 import { getHubs, hubIsIndexable, hubPosts, sortPostsByDate, slugify } from '@/lib/blog/utils'
-import { AUTHOR_LD, BASE_URL, SITE_NAME } from '@/lib/blog/site'
+import { AUTHOR_LD, BASE_URL } from '@/lib/blog/site'
+import { pageMetadata } from '@/lib/blog/metadata'
 import { CLUSTERS } from '@/lib/blog/clusters'
 import BlogCard from '@/components/blog/BlogCard'
 import CategoryBadge from '@/components/blog/CategoryBadge'
@@ -30,31 +31,23 @@ function resolveCategory(slug: string) {
   const posts = hub ? sortPostsByDate(hubPosts(hub, allPosts)) : []
   // A single category's intro comes from its cluster; a section's from site.ts.
   const cluster = hub && hub.categories.length === 1 ? CLUSTERS.find((c) => c.category === hub.categories[0]) : undefined
-  return { hubs, hub, label: hub?.label, posts, cluster, intro: cluster?.intro ?? hub?.intro }
+  return { hubs, hub, label: hub?.label, posts, cluster, intro: cluster?.intro ?? hub?.intro, summary: cluster?.description }
 }
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
-  const { hub, label, posts, intro } = resolveCategory(params.category)
+  const { hub, label, posts, intro, summary } = resolveCategory(params.category)
   if (!hub || !label) return {}
-  const url = `${BASE_URL}/blog/category/${params.category}`
+  // The meta description: the cluster's short description, else its intro (both 160 characters or fewer).
   const description =
-    intro ?? `Every ${label} article on the blog: practical, tested guides for QA engineers by Dipak Bist, Software QA Engineer.`
-  return {
+    summary ?? intro ?? `Every ${label} article on the blog: practical, tested guides for QA engineers by Dipak Bist, Software QA Engineer.`
+  return pageMetadata({
     title: `${label} Articles`,
     description,
-    alternates: { canonical: url },
+    path: `/blog/category/${params.category}`,
     // Empty sections, and a grouping section that still duplicates one
     // category hub, are not worth indexing (see hubIsIndexable).
     ...(!hubIsIndexable(hub, posts) && { robots: { index: false, follow: true } }),
-    openGraph: {
-      type: 'website',
-      url,
-      title: `${label} Articles`,
-      description,
-      siteName: SITE_NAME,
-      images: [{ url: `${BASE_URL}/og-default.png`, width: 1200, height: 630, alt: SITE_NAME }],
-    },
-  }
+  })
 }
 
 export default async function CategoryPage({ params }: Params) {
