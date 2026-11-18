@@ -129,6 +129,19 @@ def test_head_tells_search_engines_what_this_page_is():
     assert not [m for m in p.meta if m.get("name") == "keywords"], "no meta keywords"
 
 
+def test_title_and_description_fit_a_search_result():
+    """The brief's title, and a description short enough that Google shows all of it."""
+    html = (ROOT / "index.html").read_text(encoding="utf-8")
+    title = re.search(r"<title>(.*?)</title>", html, re.S).group(1)
+    assert title == "Dipak Bist | Software QA Engineer in Nepal"
+    p = page()
+    meta = {m.get("name") or m.get("property"): m.get("content") for m in p.meta}
+    assert 120 <= len(meta["description"]) <= 160, len(meta["description"])
+    assert meta["description"].startswith("Software QA Engineer with 4+ years")
+    assert meta["og:title"] == meta["twitter:title"] == title
+    assert meta["og:description"] == meta["twitter:description"]
+
+
 def test_every_profile_is_linked_in_the_footer_and_contact_section():
     html = (ROOT / "index.html").read_text(encoding="utf-8")
     footer = html[html.index('<ul class="footer__social"'):]
