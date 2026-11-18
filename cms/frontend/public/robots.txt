@@ -1,0 +1,6 @@
+# cms.dipakbist.com.np is the private admin for the portfolio and blog, and
+# must not appear in search results. Every response carries
+# "X-Robots-Tag: noindex, nofollow" (vercel.json). Crawlers are allowed in
+# so they can see that header: a robots.txt Disallow would hide it.
+User-agent: *
+Allow: /

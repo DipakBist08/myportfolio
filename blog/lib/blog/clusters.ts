@@ -18,6 +18,8 @@ export interface Cluster {
   pillarSlug: string
   /** Shown at the top of the cluster's category hub page. */
   intro: string
+  /** The hub's meta description when the intro is longer than 160 characters. */
+  description?: string
 }
 
 export const CLUSTERS = data as Cluster[]

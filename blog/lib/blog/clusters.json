@@ -4,28 +4,32 @@
     "name": "Playwright with Python",
     "category": "Playwright",
     "pillarSlug": "playwright-python-guide",
-    "intro": "Hands-on guides to browser test automation with Playwright and Python: pytest fixtures, page objects, saved login state, flaky tests, reports and CI. Every code example is run before it is published."
+    "intro": "Hands-on guides to browser test automation with Playwright and Python: pytest fixtures, page objects, saved login state, flaky tests, reports and CI. Every code example is run before it is published.",
+    "description": "Hands-on Playwright with Python guides: pytest fixtures, page objects, saved login state, flaky tests, reports and CI, with every code example run first."
   },
   {
     "slug": "api-testing",
     "name": "API testing",
     "category": "API Testing",
     "pillarSlug": "api-testing-guide",
-    "intro": "API testing for QA engineers: Playwright and Python Requests, Postman collections, JSON Schema validation, authentication and refresh tokens, and negative tests. Every code example is run before it is published."
+    "intro": "API testing for QA engineers: Playwright and Python Requests, Postman collections, JSON Schema validation, authentication and refresh tokens, and negative tests. Every code example is run before it is published.",
+    "description": "API testing guides for QA engineers: Playwright and Python Requests, Postman, JSON Schema validation, auth and refresh tokens, and negative tests."
   },
   {
     "slug": "qa-fundamentals",
     "name": "QA fundamentals",
     "category": "QA Fundamentals",
     "pillarSlug": "qa-fundamentals-guide",
-    "intro": "The core skills of software QA: writing bug reports that get fixed, deciding what to automate, exploratory testing, test design, traceability and release checks."
+    "intro": "The core skills of software QA: writing bug reports that get fixed, deciding what to automate, exploratory testing, test design, traceability and release checks.",
+    "description": "Core software QA skills: bug reports that get fixed, deciding what to automate, exploratory testing, test design, traceability and release checks."
   },
   {
     "slug": "multi-tenant-saas",
     "name": "Testing multi-tenant SaaS",
     "category": "SaaS Testing",
     "pillarSlug": "multi-tenant-saas-testing-guide",
-    "intro": "How to test multi-tenant SaaS products: data isolation between tenants, roles and permissions, and tenant-specific configuration, with test matrices and runnable examples."
+    "intro": "How to test multi-tenant SaaS products: data isolation between tenants, roles and permissions, and tenant-specific configuration, with test matrices and runnable examples.",
+    "description": "How to test multi-tenant SaaS products: tenant data isolation, roles and permissions, and tenant-specific configuration, with runnable examples."
   },
   {
     "slug": "bdd-behave",
@@ -46,7 +50,8 @@
     "name": "AI Lab",
     "category": "AI Lab",
     "pillarSlug": "ai-in-qa-guide",
-    "intro": "Hands-on experiments with AI tools in QA work, always with human review: drafting test cases, reviewing AI-written tests, and where AI should not be trusted in testing."
+    "intro": "Hands-on experiments with AI tools in QA work, always with human review: drafting test cases, reviewing AI-written tests, and where AI should not be trusted in testing.",
+    "description": "Hands-on experiments with AI tools in QA, always with human review: drafting test cases, reviewing AI-written tests, and where AI shouldn't be trusted."
   },
   {
     "slug": "qa-careers",

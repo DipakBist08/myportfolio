@@ -1,11 +1,10 @@
 import Image from 'next/image'
+import Link from 'next/link'
 import ExternalLink from '@/components/layout/ExternalLink'
-import { AUTHOR } from '@/lib/blog/site'
+import { AUTHOR, PROFILES } from '@/lib/blog/site'
 
 /** Same author, same wording, same links at the end of every post. */
 export default function AuthorBox() {
-  const [linkedin, github] = AUTHOR.sameAs
-
   return (
     <section className="mt-10 flex gap-4 rounded-xl border border-line p-5 sm:gap-5 sm:p-6" aria-label="About the author">
       <Image
@@ -30,9 +29,13 @@ export default function AuthorBox() {
           this blog is run before it is published.
         </p>
         <p className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm">
+          <Link href="/about" className="text-primary-light">About the author</Link>
           <ExternalLink href={AUTHOR.url} className="text-primary-light">Portfolio</ExternalLink>
-          <ExternalLink href={linkedin} rel="me" className="text-primary-light">LinkedIn</ExternalLink>
-          <ExternalLink href={github} rel="me" className="text-primary-light">GitHub</ExternalLink>
+          {PROFILES.map((profile) => (
+            <ExternalLink key={profile.id} href={profile.url} rel="me" className="text-primary-light">
+              {profile.label}
+            </ExternalLink>
+          ))}
         </p>
       </div>
     </section>

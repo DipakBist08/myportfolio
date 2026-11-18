@@ -5,7 +5,7 @@ import Image from 'next/image'
 import { getAllSlugs, getPostBySlug, getAllPostsMeta } from '@/lib/blog/mdx'
 import type { PostMeta } from '@/lib/blog/types'
 import { getRelatedPosts, getAdjacentPosts, formatDate, slugify, extractHeadings } from '@/lib/blog/utils'
-import { AUTHOR, AUTHOR_LD, BASE_URL, SITE_LANGUAGE, SITE_NAME, postOgImage, postUrl } from '@/lib/blog/site'
+import { AUTHOR, AUTHOR_LD, BASE_URL, HOME_URL, SITE_LANGUAGE, SITE_NAME, X_HANDLE, postOgImage, postUrl } from '@/lib/blog/site'
 import MDXContent from '@/components/mdx/MDXContent'
 import TableOfContents from '@/components/blog/TableOfContents'
 import RelatedPosts from '@/components/blog/RelatedPosts'
@@ -70,6 +70,8 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
     },
     twitter: {
       card: 'summary_large_image',
+      site: X_HANDLE,
+      creator: X_HANDLE,
       title,
       description,
       images: [image.url],
@@ -111,14 +113,14 @@ export default async function BlogPostPage({ params }: Params) {
     image: { '@type': 'ImageObject', url: postOgImage(meta.slug), width: 1200, height: 630 },
     author: AUTHOR_LD,
     publisher: AUTHOR_LD,
-    isPartOf: { '@type': 'Blog', '@id': `${BASE_URL}/#blog`, name: SITE_NAME, url: BASE_URL },
+    isPartOf: { '@type': 'Blog', '@id': `${BASE_URL}/#blog`, name: SITE_NAME, url: HOME_URL },
   }
 
   const breadcrumbLd = {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Blog', item: BASE_URL },
+      { '@type': 'ListItem', position: 1, name: 'Blog', item: HOME_URL },
       { '@type': 'ListItem', position: 2, name: meta.category, item: categoryUrl },
       { '@type': 'ListItem', position: 3, name: meta.title, item: url },
     ],

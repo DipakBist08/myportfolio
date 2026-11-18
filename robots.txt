@@ -1,8 +1,8 @@
+# Every crawler may read the whole public site, including CSS, JS and images.
+# robots.txt is not access control: /admin/ answers with
+# "X-Robots-Tag: noindex, nofollow, noarchive" (vercel.json), and crawlers
+# must be allowed to fetch it to see that header.
 User-agent: *
 Allow: /
-
-# The CMS sign-in surface should never be indexed.
-Disallow: /admin/
-Disallow: /cms/
 
 Sitemap: https://dipakbist.com.np/sitemap.xml
