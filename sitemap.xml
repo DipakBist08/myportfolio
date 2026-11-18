@@ -1,19 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  Single-page portfolio, so the site itself is one URL. The blog is a separate
-  Next.js app on blog.dipakbist.com.np and generates its own sitemap via
-  blog/app/sitemap.ts — it is referenced here so crawlers discover it, but its
-  individual posts are not duplicated into this file.
+  The portfolio is one page, so its sitemap holds one URL. The blog
+  (blog.dipakbist.com.np) is a separate site with its own sitemap at
+  https://blog.dipakbist.com.np/sitemap.xml, so none of its URLs belong here.
+  scripts/build-site.sh stamps the homepage's last-modified date into the
+  published copy.
 -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://dipakbist.com.np/</loc>
-    <changefreq>monthly</changefreq>
-    <priority>1.0</priority>
-  </url>
-  <url>
-    <loc>https://blog.dipakbist.com.np/</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
   </url>
 </urlset>

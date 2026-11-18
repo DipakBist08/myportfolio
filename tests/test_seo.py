@@ -213,3 +213,23 @@ def test_sitemap_gets_a_lastmod_at_build_time(tmp_path):
     assert entry, "the homepage entry carries a <lastmod> date"
     # The source file is left alone; only the built copy is stamped.
     assert "<lastmod>" not in (ROOT / "sitemap.xml").read_text(encoding="utf-8")
+
+
+def test_sitemap_lists_only_this_sites_pages():
+    """Separate sites, separate sitemaps: the blog lists its own URLs."""
+    import xml.etree.ElementTree as ET
+
+    ns = {"s": "http://www.sitemaps.org/schemas/sitemap/0.9"}
+    root = ET.parse(ROOT / "sitemap.xml").getroot()
+    locs = [e.text.strip() for e in root.findall("s:url/s:loc", ns)]
+    assert locs == ["https://dipakbist.com.np/"]
+
+
+def test_robots_txt_lets_crawlers_in_and_names_the_sitemap():
+    lines = [l.strip() for l in (ROOT / "robots.txt").read_text(encoding="utf-8").splitlines()
+             if l.strip() and not l.startswith("#")]
+    assert lines == ["User-agent: *", "Allow: /", "Sitemap: https://dipakbist.com.np/sitemap.xml"]
+    # /admin stays out of the index through its response header, not robots.txt.
+    config = json.loads((ROOT / "vercel.json").read_text(encoding="utf-8"))
+    admin = next(h for h in config["headers"] if h["source"] == "/admin/(.*)")
+    assert {"key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive"} in admin["headers"]
