@@ -2,10 +2,10 @@
 
    The head script decides before first paint whether it plays: never with
    reduced motion or Save-Data, and only once per session (html.has-intro).
-   This module plays the whole 48 s film over the page: hello, the trail
-   photo, the test run, skills, the workflow ring, the career line and the
-   <DipakBist/> end card. It then closes a circle on the end card's Contact
-   button, uncovering the page underneath. "Skip intro" or Esc ends it at
+   This module plays the whole 30 s film over the page: the hero's
+   test_login.py run to PASSED, the ten-step workflow ring, and the ring
+   folding into the <DipakBist/> end card. It then closes a circle on the end
+   card's Contact underline, uncovering the page underneath. "Skip intro" or Esc ends it at
    once. If the film cannot start within 2.5 s, or stalls for 4 s, the page
    is shown instead of a dark or frozen screen.
 
@@ -14,8 +14,8 @@
 
 const html = document.documentElement;
 const FILM = { w: 1920, h: 1080 };
-// Where the Contact button sits in the film's last frame.
-const IRIS = { x: 959.5, y: 726 };
+// Where Contact's underline sits in the film's last frame.
+const IRIS = { x: 959.7, y: 754.2 };
 // Every word in the film stays inside this centred area, so the film may be
 // enlarged until this fits the screen: only bare scenery at the edges is lost.
 const SAFE = { w: 1840, h: 990 };
