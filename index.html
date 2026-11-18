@@ -654,38 +654,39 @@
                 <div class="section__head" data-reveal>
                     <h2 id="blog-heading">From the Blog</h2>
                 </div>
-                <!-- NOTE: these three posts are hard-coded on purpose (no feed request). When a new post goes live on
-                     blog.dipakbist.com.np, update this block by hand. -->
+                <!-- NOTE: these three posts are hard-coded on purpose (no feed request). When a post goes live or is
+                     renamed on blog.dipakbist.com.np, update this block by hand: titles match the posts' own
+                     (tests/test_seo.py checks them against blog/content/blog). -->
                 <ol class="posts" data-reveal data-reveal-group>
                     <li class="post">
-                        <div class="post__meta"><time datetime="2025-01-08">08/01/2025</time><span>Bug Reporting</span></div>
+                        <div class="post__meta"><time datetime="2025-01-08">08/01/2025</time><span>QA Fundamentals</span></div>
                         <div>
-                            <h3 class="post__title"><a href="https://blog.dipakbist.com.np/blog/how-to-write-good-bug-report" target="_blank" rel="noopener">How to Write a Good Bug Report: The Complete QA Guide</a></h3>
-                            <p class="post__excerpt">A vague bug report gets ignored. A precise one gets fixed the same day.</p>
-                            <span class="tag tag--neutral">QA Fundamentals</span>
+                            <h3 class="post__title"><a href="https://blog.dipakbist.com.np/blog/how-to-write-good-bug-report" target="_blank" rel="noopener">Bug Report Example: How to Write One That Gets Fixed</a></h3>
+                            <p class="post__excerpt">A vague bug report sits in the backlog. A precise one gets reproduced on the first try.</p>
+                            <span class="tag tag--neutral">Bug Reporting</span>
                         </div>
                         <svg class="icon post__arrow" viewBox="0 0 256 256" aria-hidden="true"><path d="M200,64V168a8,8,0,0,1-16,0V83.31L69.66,197.66a8,8,0,0,1-11.32-11.32L172.69,72H88a8,8,0,0,1,0-16H192A8,8,0,0,1,200,64Z"/></svg>
                     </li>
                     <li class="post">
                         <div class="post__meta"><time datetime="2024-12-10">10/12/2024</time><span>API Testing</span></div>
                         <div>
-                            <h3 class="post__title"><a href="https://blog.dipakbist.com.np/blog/playwright-api-testing-guide" target="_blank" rel="noopener">Playwright API Testing Guide: Test REST APIs Without a Browser</a></h3>
-                            <p class="post__excerpt">Playwright is not only for driving browsers &mdash; its request layer makes fast, reliable REST tests.</p>
+                            <h3 class="post__title"><a href="https://blog.dipakbist.com.np/blog/playwright-api-testing-guide" target="_blank" rel="noopener">Playwright API Testing in Python, No Browser Needed</a></h3>
+                            <p class="post__excerpt">Playwright&rsquo;s request API tests REST endpoints from Python without launching a browser.</p>
                             <span class="tag tag--neutral">Python</span>
                         </div>
                         <svg class="icon post__arrow" viewBox="0 0 256 256" aria-hidden="true"><path d="M200,64V168a8,8,0,0,1-16,0V83.31L69.66,197.66a8,8,0,0,1-11.32-11.32L172.69,72H88a8,8,0,0,1,0-16H192A8,8,0,0,1,200,64Z"/></svg>
                     </li>
                     <li class="post">
-                        <div class="post__meta"><time datetime="2024-11-15">15/11/2024</time><span>Manual Testing</span></div>
+                        <div class="post__meta"><time datetime="2024-11-15">15/11/2024</time><span>QA Fundamentals</span></div>
                         <div>
-                            <h3 class="post__title"><a href="https://blog.dipakbist.com.np/blog/manual-vs-automation-testing" target="_blank" rel="noopener">Manual Testing vs Automation Testing: When to Use Which</a></h3>
-                            <p class="post__excerpt">The real strengths and trade-offs of each, and a practical way to decide.</p>
+                            <h3 class="post__title"><a href="https://blog.dipakbist.com.np/blog/manual-vs-automation-testing" target="_blank" rel="noopener">When to Automate a Test: A Practical Checklist</a></h3>
+                            <p class="post__excerpt">Automate a test when it runs often, stays stable and has a result code can check. Keep it manual when it needs judgement.</p>
                             <span class="tag tag--neutral">Test Strategy</span>
                         </div>
                         <svg class="icon post__arrow" viewBox="0 0 256 256" aria-hidden="true"><path d="M200,64V168a8,8,0,0,1-16,0V83.31L69.66,197.66a8,8,0,0,1-11.32-11.32L172.69,72H88a8,8,0,0,1,0-16H192A8,8,0,0,1,200,64Z"/></svg>
                     </li>
                 </ol>
-                <p class="posts__more" data-reveal><a class="btn btn--secondary" href="https://blog.dipakbist.com.np" target="_blank" rel="noopener">View all posts</a></p>
+                <p class="posts__more" data-reveal><a class="btn btn--secondary" href="https://blog.dipakbist.com.np/" target="_blank" rel="noopener">View all posts</a></p>
             </div>
         </section>
 

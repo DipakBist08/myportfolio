@@ -233,3 +233,15 @@ def test_robots_txt_lets_crawlers_in_and_names_the_sitemap():
     config = json.loads((ROOT / "vercel.json").read_text(encoding="utf-8"))
     admin = next(h for h in config["headers"] if h["source"] == "/admin/(.*)")
     assert {"key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive"} in admin["headers"]
+
+
+def test_blog_cards_use_each_posts_current_title():
+    """The cards' link text is the post's own title, so both sites say the same thing."""
+    html = (ROOT / "index.html").read_text(encoding="utf-8")
+    cards = re.findall(
+        r'<h3 class="post__title"><a href="https://blog\.dipakbist\.com\.np/blog/([^"]+)"[^>]*>(.*?)</a></h3>', html)
+    assert len(cards) == 3
+    for slug, text in cards:
+        mdx = (ROOT / "blog" / "content" / "blog" / f"{slug}.mdx").read_text(encoding="utf-8")
+        title = re.search(r'^title: "(.*)"$', mdx, re.M).group(1)
+        assert text == title, slug
