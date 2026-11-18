@@ -17,6 +17,8 @@ const nextConfig = {
       { source: '/blog/category/manual-testing', destination: '/blog/category/qa-fundamentals', statusCode: 301 },
       { source: '/blog/category/bug-reporting', destination: '/blog/category/qa-fundamentals', statusCode: 301 },
       { source: '/blog/tag/qa-fundamentals', destination: '/blog/category/qa-fundamentals', statusCode: 301 },
+      // Posts live under /blog/<slug>, so /blog is a natural guess; the article list is the home page.
+      { source: '/blog', destination: '/', permanent: true },
     ]
   },
 }

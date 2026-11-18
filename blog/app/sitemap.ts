@@ -1,14 +1,15 @@
 import { MetadataRoute } from 'next'
 import { getAllPostsMeta } from '@/lib/blog/mdx'
 import { getAllTags, getHubs, hubIsIndexable, hubPosts, slugify } from '@/lib/blog/utils'
-import { BASE_URL } from '@/lib/blog/site'
+import { BASE_URL, HOME_URL } from '@/lib/blog/site'
+import { SITE_PAGES } from '@/lib/blog/pages'
 
 /* Tags with fewer posts than this are noindex (see app/blog/tag/[tag]/page.tsx). */
 const MIN_POSTS_TO_INDEX_TAG = 3
 
 /* Only pages worth indexing: the home page, published posts, category hubs,
    tag pages with enough posts, and the site pages. lastModified is always a
-   real content date from front matter, never the build time. */
+   real content date (front matter, or lib/blog/pages.ts), never the build time. */
 export default function sitemap(): MetadataRoute.Sitemap {
   const posts = getAllPostsMeta().filter((p) => !p.draft)
   const lastChanged = (p: { date: string; updatedAt?: string }) => new Date(p.updatedAt ?? p.date)
@@ -31,9 +32,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
     .filter(({ tagged }) => tagged.length >= MIN_POSTS_TO_INDEX_TAG)
     .map(({ tag, tagged }) => ({ url: `${BASE_URL}/blog/tag/${slugify(tag)}`, lastModified: newest(tagged) }))
 
-  const pageEntries: MetadataRoute.Sitemap = ['about', 'contact', 'privacy-policy', 'disclaimer'].map((page) => ({
-    url: `${BASE_URL}/${page}`,
+  // The plain pages, with the date their text last changed (lib/blog/pages.ts).
+  const pageEntries: MetadataRoute.Sitemap = Object.values(SITE_PAGES).map((page) => ({
+    url: `${BASE_URL}${page.path}`,
+    lastModified: new Date(page.updated),
   }))
 
-  return [{ url: BASE_URL, lastModified: newest(posts) }, ...postEntries, ...categoryEntries, ...tagEntries, ...pageEntries]
+  return [{ url: HOME_URL, lastModified: newest(posts) }, ...postEntries, ...categoryEntries, ...tagEntries, ...pageEntries]
 }

@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 import { getAllPostsMeta } from '@/lib/blog/mdx'
 import { getAllTags, sortPostsByDate, slugify } from '@/lib/blog/utils'
 import { AUTHOR_LD, BASE_URL, SITE_NAME } from '@/lib/blog/site'
+import { pageMetadata } from '@/lib/blog/metadata'
 import BlogCard from '@/components/blog/BlogCard'
 import TagBadge from '@/components/blog/TagBadge'
 import { Reveal, StaggerItem, StaggerList } from '@/components/motion/Reveal'
@@ -33,16 +34,15 @@ function resolveTag(slug: string) {
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { label, posts } = resolveTag(params.tag)
   if (!label) return {}
-  const url = `${BASE_URL}/blog/tag/${params.tag}`
-  return {
+  return pageMetadata({
     title: `Articles tagged ${label}`,
     description: `Articles tagged ${label} on the ${SITE_NAME}.`,
-    alternates: { canonical: url },
+    path: `/blog/tag/${params.tag}`,
     // A tag with fewer than 3 posts is a thin page that repeats the category
     // hubs: it stays usable and its links are followed, but it is kept out of
     // the index and the sitemap (app/sitemap.ts uses the same threshold).
     ...(posts.length < MIN_POSTS_TO_INDEX ? { robots: { index: false, follow: true } } : {}),
-  }
+  })
 }
 
 export default async function TagPage({ params }: Params) {
