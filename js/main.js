@@ -8,6 +8,7 @@ import { initMotion, revealAllImmediately } from './motion.js?v=20261119a';
 import { initSubscribe } from './subscribe.js?v=20261119a';
 import { initContact } from './contact.js?v=20261119a';
 import { initVisit } from './visit.js?v=20261119a';
+import { initAnalytics } from './analytics.js?v=20261119a';
 
 function safe(name, fn) {
     try {
@@ -48,6 +49,8 @@ safe('nav', initNav);
 (window.__introDone || Promise.resolve()).then(() => {
     safe('motion', initMotion);
     safe('flow', initFlow);
+    // The analytics question waits for the film too, so it never covers it.
+    safe('analytics', initAnalytics);
 });
 safe('subscribe', initSubscribe);
 safe('contact', initContact);

@@ -2019,6 +2019,91 @@ html.anim.motion .step.is-again .step__mark::before {
     gap: var(--space-1);
 }
 
+/* "Cookie settings" (js/analytics.js): a button that reads as a footer link. */
+.footer__cookies {
+    min-height: 2.75rem;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    cursor: pointer;
+}
+
+.footer__cookies:hover {
+    color: var(--color-text);
+}
+
+/* ----- Analytics consent (js/analytics.js) -----
+   Above the page and the back-to-top button, under the opening film and the
+   open menu's overlay level. Decline and Allow look the same on purpose. */
+.consent {
+    position: fixed;
+    left: var(--space-4);
+    right: var(--space-4);
+    bottom: var(--space-4);
+    z-index: var(--z-overlay);
+    max-width: 34rem;
+    max-height: calc(100dvh - var(--header-height) - var(--space-8));
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-4) var(--space-5);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+}
+
+.consent[hidden] {
+    display: none;
+}
+
+.consent__text {
+    margin: 0;
+    max-width: none;
+}
+
+.consent__text strong {
+    color: var(--color-text);
+}
+
+.consent__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+}
+
+.consent__actions .btn {
+    flex: 1 1 8rem;
+}
+
+/* Small phones: less margin and padding, and the two buttons side by side,
+   so both stay on screen with large text. */
+@media (max-width: 479px) {
+    .consent {
+        left: var(--space-2);
+        right: var(--space-2);
+        bottom: var(--space-2);
+        padding: var(--space-3) var(--space-3);
+    }
+
+    .consent__actions {
+        flex-wrap: nowrap;
+    }
+
+    .consent__actions .btn {
+        flex: 1 1 0;
+        min-width: 0;
+        padding-inline: var(--space-2);
+    }
+}
+
 /* ----- Back to top ----- */
 .totop {
     position: fixed;
