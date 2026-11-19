@@ -108,6 +108,7 @@ export default async function BlogPostPage({ params }: Params) {
     dateModified: meta.updatedAt ?? meta.date,
     inLanguage: SITE_LANGUAGE,
     articleSection: meta.category,
+    ...(meta.articleType ? { genre: meta.articleType } : {}),
     keywords: postKeywords(meta).join(', '),
     url,
     image: { '@type': 'ImageObject', url: postOgImage(meta.slug), width: 1200, height: 630 },
@@ -167,6 +168,12 @@ export default async function BlogPostPage({ params }: Params) {
                   </ExternalLink>
                   , {AUTHOR.jobTitle}
                 </span>
+                {meta.articleType && (
+                  <>
+                    <span aria-hidden="true">&middot;</span>
+                    <span className="text-ink">{meta.articleType}</span>
+                  </>
+                )}
                 <span aria-hidden="true">&middot;</span>
                 <time dateTime={meta.date}>{formatDate(meta.date)}</time>
                 {meta.updatedAt && meta.updatedAt !== meta.date && (
