@@ -12,7 +12,7 @@ pydantic[email]==2.14.3
 pydantic-settings==2.16.3
 
 # Auth / Security
-PyJWT==2.15.1
+PyJWT[crypto]==2.15.1  # [crypto]: RS256, to verify Google ID tokens
 bcrypt==5.0.0
 python-multipart==0.0.33
 pyotp==2.9.0

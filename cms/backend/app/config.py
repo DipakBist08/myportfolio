@@ -48,6 +48,17 @@ class Settings(BaseSettings):
     # so this delay never blocks an API response.
     RESEND_SEND_DELAY: float = 0.6
 
+    # Blog readers sign in with Google to clap and comment. The OAuth client ID
+    # from Google Cloud Console (APIs & Services > Credentials > OAuth client ID,
+    # type "Web application"); the blog uses the same value as
+    # NEXT_PUBLIC_GOOGLE_CLIENT_ID. Empty = reader sign-in is off.
+    GOOGLE_CLIENT_ID: str = ""
+    READER_SESSION_DAYS: int = 30
+
+    @property
+    def reader_sign_in_enabled(self) -> bool:
+        return bool(self.GOOGLE_CLIENT_ID)
+
     # Master switch for the automatic "new post published" announcement.
     # Set to False to publish without ever emailing the list.
     NOTIFY_SUBSCRIBERS_ON_PUBLISH: bool = True

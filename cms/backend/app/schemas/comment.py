@@ -1,24 +1,28 @@
-from pydantic import BaseModel, EmailStr, field_validator
+from pydantic import BaseModel, field_validator
 from typing import Literal, Optional
 from datetime import datetime
 import bleach
 import html
+import re
+
+
+SLUG = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 
 
 class CommentCreate(BaseModel):
+    """A new comment or reply from a signed-in reader. The name and email come
+    from their Google account (app.core.readers), never from the request."""
+
     post_slug: str
     parent_id: Optional[int] = None
-    author_name: str
-    author_email: EmailStr
     content: str
 
-    @field_validator("author_name")
+    @field_validator("post_slug")
     @classmethod
-    def name_not_empty(cls, v: str) -> str:
-        v = v.strip()
-        if not v:
-            raise ValueError("Name is required")
-        return v[:100]
+    def slug_format(cls, v: str) -> str:
+        if len(v) > 200 or not SLUG.match(v):
+            raise ValueError("invalid slug")
+        return v
 
     @field_validator("content")
     @classmethod
@@ -38,6 +42,8 @@ class CommentCreate(BaseModel):
 class CommentReply(BaseModel):
     id: int
     author_name: str
+    # The Google profile picture of a signed-in author ("" for older comments).
+    author_picture: str = ""
     content: str
     created_at: datetime
     # Reactions (app.core.reactions.attach_reactions). my_reaction is the
@@ -53,6 +59,7 @@ class CommentOut(BaseModel):
     post_slug: str
     parent_id: Optional[int]
     author_name: str
+    author_picture: str = ""
     content: str
     created_at: datetime
     replies: list[CommentReply] = []
