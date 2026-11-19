@@ -44,7 +44,8 @@ export default function PrivacyPolicyPage() {
           you sign in with Google (see <a href="#google-sign-in">Signing in with Google</a>). Your response is stored with
           the name, email address and profile picture from your Google account. Your name, picture and response are
           shown publicly; your email address is not. Claps are stored as a number per article for your account; only
-          the total is shown. Comments posted before sign-in was required keep the name and email address given then.
+          the total is shown. Until Google sign-in is switched on, a response is posted with a name and email address
+          instead (the name is shown, the email is not), and those responses keep the name and email given then.
         </li>
         <li>
           <strong>Email.</strong> If you write to me, I keep the message for as long as needed to answer it.

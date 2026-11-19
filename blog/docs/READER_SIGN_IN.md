@@ -18,8 +18,9 @@ responding and replying need a Google sign-in.
 
 ## Turning it on (one-time)
 
-Until both values below are set, the blog shows "Sign-in isn't available right
-now" and responses are closed. Reading and existing responses are unaffected.
+Until both values below are set, the blog keeps the earlier name-and-email
+response form and hides the clap button; nothing else changes. Once they are
+set (and the blog redeployed), Google sign-in and claps switch on by themselves.
 
 1. **Google Cloud Console** → APIs & Services → OAuth consent screen: user type
    External, app name "Dipak Bist QA Blog", a support email, scopes `openid`,

@@ -248,13 +248,76 @@ function CommentForm({ postSlug, reader, parentId, onSuccess, onCancel, placehol
   )
 }
 
+// ── Name-and-email form, used until Google sign-in is switched on ──────────────
+interface AnonymousFormProps {
+  postSlug: string
+  parentId?: number
+  onSuccess: (comment: Comment | Reply) => void
+  onCancel?: () => void
+  placeholder?: string
+  compact?: boolean
+}
+
+function AnonymousForm({ postSlug, parentId, onSuccess, onCancel, placeholder = 'What are your thoughts?', compact = false }: AnonymousFormProps) {
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [content, setContent] = useState('')
+  const [state, setState] = useState<'idle' | 'loading' | 'error'>('idle')
+  const [error, setError] = useState('')
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault()
+    setState('loading')
+    setError('')
+    try {
+      const data = await api<Comment | Reply>('/api/public/comments', {
+        method: 'POST',
+        body: JSON.stringify({ post_slug: postSlug, parent_id: parentId ?? null, author_name: name, author_email: email, content }),
+      })
+      onSuccess(data)
+      setContent('')
+      setState('idle')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not post. Please try again.')
+      setState('error')
+    }
+  }
+
+  const field = `rounded-lg border border-line bg-surface-card px-3 py-2 text-ink outline-none placeholder:text-subtle focus:border-primary light:bg-white ${compact ? 'text-xs' : 'text-sm'}`
+  const id = `anon-${parentId ?? 'new'}`
+  return (
+    <form onSubmit={submit} className={compact ? 'space-y-2' : 'space-y-3'}>
+      <div className={`grid grid-cols-1 sm:grid-cols-2 ${compact ? 'gap-2' : 'gap-3'}`}>
+        <label htmlFor={`${id}-name`} className="sr-only">Your name</label>
+        <input id={`${id}-name`} required maxLength={100} value={name} onChange={e => setName(e.target.value)} placeholder="Your name *" autoComplete="name" className={field} />
+        <label htmlFor={`${id}-email`} className="sr-only">Your email (not shown)</label>
+        <input id={`${id}-email`} required type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Email (private) *" autoComplete="email" className={field} />
+      </div>
+      <label htmlFor={`${id}-text`} className="sr-only">{parentId ? 'Your reply' : 'Your response'}</label>
+      <textarea id={`${id}-text`} required maxLength={2000} rows={compact ? 2 : 4} value={content} onChange={e => setContent(e.target.value)}
+        placeholder={placeholder} className={`w-full resize-y ${field}`} />
+      {error && <p role="alert" className="text-xs text-fail">{error}</p>}
+      <div className="flex flex-wrap items-center gap-2">
+        <button type="submit" disabled={state === 'loading'}
+          className={`rounded-full bg-primary px-4 font-semibold text-white transition-colors hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60 ${compact ? 'min-h-8 text-xs' : 'min-h-10 text-sm'}`}>
+          {state === 'loading' ? 'Posting…' : compact ? 'Reply' : 'Respond'}
+        </button>
+        {onCancel && (
+          <button type="button" onClick={onCancel}
+            className={`rounded-full border border-line px-4 text-muted transition-colors hover:text-ink ${compact ? 'min-h-8 text-xs' : 'min-h-10 text-sm'}`}>
+            Cancel
+          </button>
+        )}
+      </div>
+      {!compact && <p className="text-xs text-muted">Your email address is never shown.</p>}
+    </form>
+  )
+}
+
 // ── What a signed-out reader sees instead of the form ──────────────────────────
 function SignInPrompt() {
-  const { ready, available, requireSignIn } = useReader()
+  const { ready, requireSignIn } = useReader()
   if (!ready) return <div className="h-[7.5rem] animate-pulse rounded-lg bg-surface-card light:bg-black/5" aria-hidden="true" />
-  if (!available) {
-    return <p className="text-sm text-muted">Responses are closed while sign-in is being set up. Please check back soon.</p>
-  }
   return (
     <div>
       <button
@@ -288,8 +351,9 @@ interface CommentItemProps {
 }
 
 function CommentItem({ comment, postSlug, onReplyAdded, onReaction }: CommentItemProps) {
-  const { reader, requireSignIn } = useReader()
+  const { reader, available, requireSignIn } = useReader()
   const [showReplyForm, setShowReplyForm] = useState(false)
+  const openReply = () => (available ? requireSignIn('reply', () => setShowReplyForm(true)) : setShowReplyForm(true))
 
   return (
     <div className="flex gap-3">
@@ -309,7 +373,7 @@ function CommentItem({ comment, postSlug, onReplyAdded, onReaction }: CommentIte
           <Reactions id={comment.id} author={comment.author_name} item={comment} onChange={onReaction} />
           <button
             type="button"
-            onClick={() => (showReplyForm ? setShowReplyForm(false) : requireSignIn('reply', () => setShowReplyForm(true)))}
+            onClick={() => (showReplyForm ? setShowReplyForm(false) : openReply())}
             className="min-h-8 text-xs text-muted transition-colors hover:text-ink"
             aria-expanded={showReplyForm}
           >
@@ -318,21 +382,35 @@ function CommentItem({ comment, postSlug, onReplyAdded, onReaction }: CommentIte
         </div>
 
         {/* Inline reply form */}
-        {showReplyForm && reader && (
+        {showReplyForm && (reader || !available) && (
           <div className="mt-2">
-            <CommentForm
-              postSlug={postSlug}
-              reader={reader}
-              parentId={comment.id}
-              compact
-              autoFocus
-              placeholder={`Replying to ${comment.author_name}…`}
-              onCancel={() => setShowReplyForm(false)}
-              onSuccess={(reply) => {
-                onReplyAdded(comment.id, reply as Reply)
-                setShowReplyForm(false)
-              }}
-            />
+            {reader ? (
+              <CommentForm
+                postSlug={postSlug}
+                reader={reader}
+                parentId={comment.id}
+                compact
+                autoFocus
+                placeholder={`Replying to ${comment.author_name}…`}
+                onCancel={() => setShowReplyForm(false)}
+                onSuccess={(reply) => {
+                  onReplyAdded(comment.id, reply as Reply)
+                  setShowReplyForm(false)
+                }}
+              />
+            ) : (
+              <AnonymousForm
+                postSlug={postSlug}
+                parentId={comment.id}
+                compact
+                placeholder={`Replying to ${comment.author_name}…`}
+                onCancel={() => setShowReplyForm(false)}
+                onSuccess={(reply) => {
+                  onReplyAdded(comment.id, reply as Reply)
+                  setShowReplyForm(false)
+                }}
+              />
+            )}
           </div>
         )}
 
@@ -367,9 +445,10 @@ const countAll = (list: Comment[]) => list.reduce((n, c) => n + 1 + c.replies.le
 
 // ── Main export ───────────────────────────────────────────────────────────────
 /** Responses to a post, Medium-style: anyone can read them; posting one, or a
- *  reply, needs a Google sign-in (ReaderProvider). */
+ *  reply, needs a Google sign-in (ReaderProvider). Until sign-in is switched on
+ *  (no Google client ID here or on the API), the name-and-email form is used. */
 export default function CommentSection({ postSlug, postTitle = '' }: { postSlug: string; postTitle?: string }) {
-  const { reader, signOut } = useReader()
+  const { reader, available, signOut } = useReader()
   const { setResponses } = usePostEngagement()
   const [comments, setComments] = useState<Comment[]>([])
   const [loading, setLoading] = useState(true)
@@ -437,8 +516,13 @@ export default function CommentSection({ postSlug, postTitle = '' }: { postSlug:
               <button type="button" onClick={signOut} className="text-primary-light underline-offset-2 hover:underline">Sign out</button>
             </p>
           </>
-        ) : (
+        ) : available ? (
           <SignInPrompt />
+        ) : (
+          <>
+            {submitted && <p role="status" className="mb-3 text-sm text-pass">✓ Response posted. Thanks for adding to the discussion.</p>}
+            <AnonymousForm postSlug={postSlug} onSuccess={handleNewComment} />
+          </>
         )}
       </div>
 

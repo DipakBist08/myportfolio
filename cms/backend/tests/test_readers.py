@@ -301,3 +301,41 @@ def test_a_reader_leaving_takes_their_claps_with_them(client, google):
     db.commit()
     assert db.query(PostClap).count() == 0
     db.close()
+
+
+# ----- before Google sign-in is switched on --------------------------------------
+
+def test_until_sign_in_is_on_comments_take_a_name_and_email_as_before(client, monkeypatch):
+    from app.config import settings
+
+    monkeypatch.setattr(settings, "GOOGLE_CLIENT_ID", "")
+    headers = visitor("192.0.2.30") | {"Origin": BLOG}
+    r = client.post("/api/public/comments", json={
+        "post_slug": "a-post", "author_name": "<b>Early</b> Reader", "author_email": "early@example.com", "content": "Hi",
+    }, headers=headers)
+    assert r.status_code == 201, r.text
+    assert (r.json()["author_name"], r.json()["author_picture"]) == ("Early Reader", "")
+    reply = client.post("/api/public/comments", json={
+        "post_slug": "a-post", "parent_id": r.json()["id"], "author_name": "Second",
+        "author_email": "s@example.com", "content": "Yes",
+    }, headers=headers)
+    assert reply.status_code == 201
+
+    missing = client.post("/api/public/comments", json={"post_slug": "a-post", "content": "No name"}, headers=headers)
+    assert missing.status_code == 422
+    bad_email = client.post("/api/public/comments", json={
+        "post_slug": "a-post", "author_name": "X", "author_email": "not-an-email", "content": "Hi",
+    }, headers=headers)
+    assert bad_email.status_code == 422
+    other_site = client.post("/api/public/comments", json={
+        "post_slug": "a-post", "author_name": "X", "author_email": "x@example.com", "content": "Hi",
+    }, headers=visitor("192.0.2.31") | {"Origin": "https://other-site.example.com"})
+    assert other_site.status_code == 403
+    assert client.get("/api/public/auth/me").json()["sign_in"] is False
+
+
+def test_once_sign_in_is_on_a_name_and_email_are_not_enough(client):
+    r = client.post("/api/public/comments", json={
+        "post_slug": "a-post", "author_name": "Anon", "author_email": "a@example.com", "content": "Hi",
+    }, headers=visitor("192.0.2.32") | {"Origin": BLOG})
+    assert r.status_code == 401

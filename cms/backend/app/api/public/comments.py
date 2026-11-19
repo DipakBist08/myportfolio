@@ -4,9 +4,11 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy.orm import Session, joinedload
 
 from sqlalchemy.exc import IntegrityError
+from typing import Optional
 
 from app.core.reactions import attach_reactions, reaction_counts
-from app.core.readers import require_reader
+from app.config import settings
+from app.core.readers import check_origin, current_reader
 from app.core.visitor import client_ip, visitor_hash
 from app.database import get_db
 from app.models.comment import Comment
@@ -129,14 +131,30 @@ def react(comment_id: int, body: ReactionIn, request: Request, db: Session = Dep
 def post_comment(
     body: CommentCreate,
     request: Request,
-    reader: Reader = Depends(require_reader),
+    reader: Optional[Reader] = Depends(current_reader),
     db: Session = Depends(get_db),
 ):
-    """Submit a new comment or reply as the signed-in reader. The name shown is
-    the one on their Google account; the email is kept private."""
+    """Submit a new comment or reply.
+
+    With Google sign-in on, only a signed-in reader may post, under the name on
+    their Google account (the email is kept private). Until GOOGLE_CLIENT_ID is
+    set, comments are posted with a name and email as before, so turning the
+    feature on later needs no code change."""
+    check_origin(request)
+    if settings.reader_sign_in_enabled:
+        if reader is None:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Sign in with Google to do that.")
+        author_name, author_email = reader.name, reader.email
+    else:
+        reader = None
+        if not body.author_name or not body.author_email:
+            raise HTTPException(status_code=422, detail="Name and email are required")
+        author_name, author_email = body.author_name, str(body.author_email)
+
     # Per reader, and per real visitor address (behind the hosting proxy the
     # socket peer is the proxy, so a per-peer limit would throttle everyone).
-    _check_rate_limit(f"reader:{reader.id}", f"ip:{client_ip(request)}")
+    keys = [f"ip:{client_ip(request)}"] + ([f"reader:{reader.id}"] if reader else [])
+    _check_rate_limit(*keys)
 
     # Validate parent exists and belongs to same post
     if body.parent_id is not None:
@@ -151,16 +169,17 @@ def post_comment(
     comment = Comment(
         post_slug=body.post_slug,
         parent_id=body.parent_id,
-        author_name=reader.name,
-        author_email=reader.email,
+        author_name=author_name,
+        author_email=author_email,
         content=body.content,
         is_approved=True,
     )
     db.add(comment)
     db.flush()
-    db.add(CommentAuthor(comment_id=comment.id, reader_id=reader.id))
+    if reader is not None:
+        db.add(CommentAuthor(comment_id=comment.id, reader_id=reader.id))
     db.commit()
     db.refresh(comment)
     comment.replies = []
-    comment.author_picture = reader.picture or ""
+    comment.author_picture = (reader.picture or "") if reader else ""
     return comment

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { compactCount } from './api'
 import { usePostEngagement } from './PostEngagement'
+import { useReader } from './ReaderContext'
 
 /* A clapping hand with motion lines. The hand is Lucide's "hand" icon (ISC
    licence), tilted and scaled; the motion lines are drawn for this blog. */
@@ -149,10 +150,12 @@ function ResponsesLink({ size }: { size: 'md' | 'lg' }) {
 
 /** Medium-style action bar: clap and responses on the left, sharing on the right. */
 export default function EngagementBar({ size = 'md', children }: { size?: 'md' | 'lg'; children?: React.ReactNode }) {
+  // Clapping needs Google sign-in; until it is switched on, the clap button stays hidden.
+  const { available } = useReader()
   return (
     <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
       <div className="flex items-center gap-3">
-        <ClapButton size={size} />
+        {available && <ClapButton size={size} />}
         <ResponsesLink size={size} />
       </div>
       {children && <div className="min-w-0">{children}</div>}
