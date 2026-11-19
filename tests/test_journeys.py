@@ -73,7 +73,7 @@ def test_sections_show_content_not_test_scaffolding(pg: Page):
     for section in ["about", "workflow", "experience", "skills", "projects", "blog", "contact"]:
         expect(pg.locator(f"#{section}")).not_to_contain_text(scaffolding)
     # Projects without a public link say so in plain words, not code.
-    expect(pg.locator("#projects .project__skip")).to_have_text(["Repository not public yet", "Internal work, no public link"])
+    expect(pg.locator("#projects .project__skip")).to_have_text(["Repository not public yet"])
 
 
 # ----- the hero code panel ---------------------------------------------------
@@ -260,8 +260,8 @@ def test_view_my_work_lands_on_real_safe_links(pg: Page):
     pg.get_by_role("link", name=re.compile("view my work", re.I)).click()
     expect(pg.locator("#projects")).to_be_in_viewport(ratio=0.05)
     links = pg.locator("#projects a.project__link")
-    expect(links).to_have_count(3)
-    for i in range(3):
+    expect(links).to_have_count(5)
+    for i in range(5):
         link = links.nth(i)
         expect(link).to_have_attribute("href", re.compile(r"^https://"))
         expect(link).to_have_attribute("rel", re.compile("noopener"))
