@@ -2,6 +2,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import ExternalLink from '@/components/layout/ExternalLink'
 import { AUTHOR, PROFILES } from '@/lib/blog/site'
+import { FollowOnLinkedIn } from '@/components/blog/engagement/FollowOnLinkedIn'
 
 /** Same author, same wording, same links at the end of every post. */
 export default function AuthorBox() {
@@ -28,6 +29,7 @@ export default function AuthorBox() {
           Writes about test automation with Playwright and Python, API testing, and manual QA. Every code example on
           this blog is run before it is published.
         </p>
+        <FollowOnLinkedIn className="mt-4" />
         <p className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm">
           <Link href="/about" className="text-primary-light">About the author</Link>
           <ExternalLink href={AUTHOR.url} className="text-primary-light">Portfolio</ExternalLink>

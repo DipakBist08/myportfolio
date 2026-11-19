@@ -14,7 +14,7 @@ const LAST_UPDATED = SITE_PAGES.privacyPolicy.updated
 export const metadata: Metadata = pageMetadata({
   title: 'Privacy Policy',
   description:
-    'Privacy policy for the Dipak Bist QA Blog: what data the blog collects through comments and the newsletter, how cookies are used, and advertising by Google.',
+    'Privacy policy for the Dipak Bist QA Blog: data from Google sign-in, responses, claps and the newsletter, how cookies are used, and advertising by Google.',
   path: SITE_PAGES.privacyPolicy.path,
 })
 
@@ -40,15 +40,19 @@ export default function PrivacyPolicyPage() {
           you. Every email has an unsubscribe link. {/* CHECK: confirm the unsubscribe link and name the email delivery provider. */}
         </li>
         <li>
-          <strong>Comments.</strong> If you post a comment, your name, email address and comment are stored. Your name
-          and comment are shown publicly. Your email address is not shown.
+          <strong>Responses and claps.</strong> To post a response (a comment) or a reply, or to clap for an article,
+          you sign in with Google (see <a href="#google-sign-in">Signing in with Google</a>). Your response is stored with
+          the name, email address and profile picture from your Google account. Your name, picture and response are
+          shown publicly; your email address is not. Claps are stored as a number per article for your account; only
+          the total is shown. Comments posted before sign-in was required keep the name and email address given then.
         </li>
         <li>
           <strong>Email.</strong> If you write to me, I keep the message for as long as needed to answer it.
         </li>
       </ul>
       <p>
-        Newsletter and comment data is sent to and stored by this site&apos;s own service at api.dipakbist.com.np.
+        Newsletter, sign-in, response and clap data is sent to and stored by this site&apos;s own service at
+        api.dipakbist.com.np.
         {/* CHECK: state where that service is hosted and how long data is kept. */}
       </p>
 
@@ -66,7 +70,7 @@ export default function PrivacyPolicyPage() {
 
       <h2>Cookies and analytics</h2>
       <p>
-        This blog does not set cookies of its own and uses no third-party analytics service. To show how many people
+        This blog sets no cookies of its own unless you sign in (see below), and uses no third-party analytics service. To show how many people
         read each post and to count visits, the blog&apos;s own server records each page you open: the page address,
         its title, the website that linked you here (the site name only), the time, and an anonymous visitor code.
         That code is made from your internet address and browser type with a secret key, so the same visitor is
@@ -74,6 +78,23 @@ export default function PrivacyPolicyPage() {
         not recorded if your browser sends a Do Not Track or Global Privacy Control signal. The same anonymous code
         lets you like or dislike a comment once. {/* CHECK: state how long page-view records are kept. */} If this
         changes, this page will be updated first.
+      </p>
+
+      <h2 id="google-sign-in">Signing in with Google</h2>
+      <p>
+        Signing in is needed only to clap for an article or to post a response or reply; reading never needs it. When you
+        choose &ldquo;Sign in with Google&rdquo;, the blog loads Google&apos;s sign-in service from accounts.google.com
+        (it is not loaded before you open the sign-in window), and Google shares your Google account ID, name, email
+        address and profile picture with this blog. The blog never sees your Google password. Google&apos;s handling of
+        your data is described in the{' '}
+        <ExternalLink href="https://policies.google.com/privacy">Google Privacy Policy</ExternalLink>.
+      </p>
+      <p>
+        After you sign in, this site&apos;s service at api.dipakbist.com.np sets one cookie, <code>reader_session</code>, so
+        you stay signed in. It holds only a signed reference to your account, cannot be read by scripts on the page, is
+        sent only to that service, and expires after 30 days or when you sign out. It is needed for clapping and
+        responding to work and is not used for tracking or advertising. Profile pictures in the responses are loaded
+        from Google&apos;s servers (lh3.googleusercontent.com). {/* CHECK: confirm the 30-day session and how long reader accounts are kept. */}
       </p>
 
       <h2>Advertising</h2>
@@ -111,7 +132,7 @@ export default function PrivacyPolicyPage() {
       <h2>How your information is used</h2>
       <ul>
         <li>To send the newsletter you asked for.</li>
-        <li>To show and moderate comments.</li>
+        <li>To show and moderate responses, and to count claps.</li>
         <li>To answer messages.</li>
         <li>To keep the site working and secure.</li>
       </ul>
@@ -120,9 +141,11 @@ export default function PrivacyPolicyPage() {
       <h2>Your choices</h2>
       <ul>
         <li>Unsubscribe from the newsletter at any time using the link in any email.</li>
+        <li>Sign out at any time with &ldquo;Sign out&rdquo; under the responses on any article.</li>
         <li>
-          Ask for your comment, or the data stored with it, to be corrected or deleted through the{' '}
-          <Link href="/contact">contact page</Link>.
+          Ask for your response, your claps, your sign-in record, or the data stored with them, to be corrected or deleted
+          through the <Link href="/contact">contact page</Link>. You can also remove the blog&apos;s access in your{' '}
+          <ExternalLink href="https://myaccount.google.com/connections">Google account settings</ExternalLink>.
         </li>
         <li>Block or delete cookies in your browser settings.</li>
       </ul>
