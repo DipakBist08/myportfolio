@@ -102,7 +102,7 @@ export function BlogPageView({ allPosts, q = '', tag = '', category = '', page =
           in, and the server-rendered fallback must look the same as this view. */}
       <header className="mb-10 max-w-3xl sm:mb-14">
         <h1
-          className="text-[clamp(2.25rem,1.5rem+3vw,3.75rem)] font-bold leading-[1.02] tracking-[-0.035em] text-ink"
+          className="text-[length:min(clamp(2.25rem,1.5rem+3vw,3.75rem),11.25vw)] font-bold leading-[1.02] tracking-[-0.035em] text-ink"
         >
           QA Engineering, Test Automation, AI, Database &amp; Performance Testing
         </h1>
