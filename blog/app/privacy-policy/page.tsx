@@ -4,12 +4,15 @@ import SitePage, { ReviewNotice } from '@/components/layout/SitePage'
 import ExternalLink from '@/components/layout/ExternalLink'
 import { pageMetadata } from '@/lib/blog/metadata'
 import { SITE_PAGES } from '@/lib/blog/pages'
+import { GA_MEASUREMENT_ID } from '@/lib/analytics'
 
 /* DRAFT. This text was drafted from what the code does; it is not legal advice.
    The site owner must check every statement (the items marked CHECK below in
    particular), then set REVIEWED to true to remove the notice from the page. */
 const REVIEWED = false
 const LAST_UPDATED = SITE_PAGES.privacyPolicy.updated
+/* Google Analytics is described only once a measurement ID is set (lib/analytics.ts). */
+const ANALYTICS = Boolean(GA_MEASUREMENT_ID)
 
 export const metadata: Metadata = pageMetadata({
   title: 'Privacy Policy',
@@ -66,7 +69,15 @@ export default function PrivacyPolicyPage() {
 
       <h2>Cookies and analytics</h2>
       <p>
-        This blog does not set cookies of its own and uses no third-party analytics service. To show how many people
+        {ANALYTICS ? (
+          <>
+            This blog sets no cookies of its own except one that remembers your analytics choice, and it uses Google
+            Analytics only if you allow it (see <a href="#analytics">Google Analytics</a> below).
+          </>
+        ) : (
+          <>This blog does not set cookies of its own and uses no third-party analytics service.</>
+        )}{' '}
+        To show how many people
         read each post and to count visits, the blog&apos;s own server records each page you open: the page address,
         its title, the website that linked you here (the site name only), the time, and an anonymous visitor code.
         That code is made from your internet address and browser type with a secret key, so the same visitor is
@@ -75,6 +86,42 @@ export default function PrivacyPolicyPage() {
         lets you like or dislike a comment once. {/* CHECK: state how long page-view records are kept. */} If this
         changes, this page will be updated first.
       </p>
+
+      {ANALYTICS && (
+        <>
+          <h2 id="analytics">Google Analytics (only if you allow it)</h2>
+          <p>
+            This blog and the portfolio at dipakbist.com.np can use Google Analytics 4 to see which pages are read and
+            how visitors find them. It runs only if you choose <strong>Allow</strong> in the banner. Until then, nothing
+            is loaded from Google.
+          </p>
+          <ul>
+            <li>
+              <strong>What it collects.</strong> The pages you view, the page that linked you here, your device and
+              browser type, and an approximate location (country or city) that Google works out from your internet
+              address. Google Analytics 4 does not log or store the address itself. It sets the cookies _ga and
+              _ga_&lt;ID&gt; to tell visits apart.
+            </li>
+            <li>
+              <strong>Who processes it.</strong> Google, as explained at{' '}
+              <ExternalLink href="https://policies.google.com/technologies/partner-sites">
+                policies.google.com/technologies/partner-sites
+              </ExternalLink>
+              . Google signals and ad personalization are switched off, so this data is not used to show you ads.
+            </li>
+            <li>
+              <strong>Your choice.</strong> It is remembered for 180 days in a cookie named dipak_analytics_consent,
+              shared by the blog and the portfolio. Use <strong>Cookie settings</strong> at the bottom of any page to
+              change it. Declining after allowing removes the Google Analytics cookies.
+            </li>
+            <li>
+              If your browser sends a Global Privacy Control or Do Not Track signal, you are not asked and Google
+              Analytics never runs.
+            </li>
+          </ul>
+          {/* CHECK: state how long Google keeps the data (Google Analytics: Admin, Data retention; 2 months unless changed). */}
+        </>
+      )}
 
       <h2>Advertising</h2>
       <p>
@@ -124,6 +171,7 @@ export default function PrivacyPolicyPage() {
           Ask for your comment, or the data stored with it, to be corrected or deleted through the{' '}
           <Link href="/contact">contact page</Link>.
         </li>
+        {ANALYTICS && <li>Allow or decline Google Analytics in the banner, and change it at any time with Cookie settings.</li>}
         <li>Block or delete cookies in your browser settings.</li>
       </ul>
 
