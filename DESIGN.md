@@ -47,7 +47,7 @@ A page drawn from new HTML with an older stylesheet or script looks broken (an u
 | `js/motion.js` | Choreography on the vanilla framer-motion DOM API (`assets/vendor/framer-motion-dom.js`, `window.Motion`). |
 | `js/theme.js`, `js/nav.js`, `js/subscribe.js`, `js/contact.js` | Theme, navigation/menu/active section, newsletter form, contact form. |
 | `js/visit.js` | One visit beacon per page load for the CMS dashboard (see "Visits" below). |
-| `tests/portfolio.spec.ts` | Playwright suite from the visitor's perspective (`npm test`). |
+| `tests/portfolio.spec.ts` | Playwright suite from the visitor's perspective (`npm run test:ts`). It starts its own server for this checkout on a free port and never reuses a running one; set `BASE_URL` to test a built `site/` folder or a deploy. |
 
 ## Visits and comment reactions (CMS)
 
