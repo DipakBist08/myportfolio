@@ -225,6 +225,36 @@
     }
 }
 
+/* Small phones with large text (150% on a 320px screen): the logo, the theme
+   switch and the menu button must still share the header row, or the menu
+   button is pushed off the screen. The logo is capped at about the size
+   100% text gives at this width, and the two buttons stay at the 44px touch
+   size instead of growing with the text. At 100% text nothing changes. */
+@media (max-width: 479px) {
+    .nav {
+        gap: var(--space-2);
+    }
+
+    .nav__logo {
+        font-size: min(1.05rem, 5.6vw);
+    }
+
+    .nav__right .icon-btn {
+        width: min(2.75rem, 44px);
+        height: min(2.75rem, 44px);
+    }
+
+    /* A button label wider than the screen ("Connect on LinkedIn" at 150%)
+       wraps onto a second line instead of running off the side. */
+    .btn {
+        max-width: 100%;
+        white-space: normal;
+        text-align: center;
+        line-height: 1.25;
+        padding-block: var(--space-2);
+    }
+}
+
 /* ----- Buttons ----- */
 .btn {
     display: inline-flex;
@@ -388,6 +418,12 @@
     color: var(--color-text);
 }
 
+/* A phrase stays on one line while it fits; on a narrow screen with large
+   text it wraps between its words rather than splitting one. */
+.hero__phrase {
+    display: inline-block;
+}
+
 .hero__focus + .hero__stack {
     margin-top: calc(var(--space-3) - var(--space-6));
 }
@@ -431,7 +467,7 @@
 
 .spec__file {
     font-family: var(--font-family-mono);
-    font-size: 0.8125rem;
+    font-size: min(0.8125rem, 4.0625vw);
     font-weight: 500;
     letter-spacing: 0;
     color: var(--color-text-muted);
@@ -441,8 +477,8 @@
     display: inline-flex;
     align-items: center;
     gap: var(--space-2);
-    min-width: 4.5rem; /* ready / running / passed: the dot stays put */
-    font-size: 0.75rem;
+    min-width: min(4.5rem, 22.5vw); /* ready / running / passed: the dot stays put */
+    font-size: min(0.75rem, 3.75vw);
     color: var(--color-text-muted);
 }
 
@@ -495,14 +531,18 @@
     --code-decorator: var(--color-accent-soft);
     --code-string: var(--color-text);
     --code-function: var(--color-text);
-    --flow-gutter: 1.75rem;
+    --flow-gutter: min(1.75rem, 8.75vw); /* 28px; capped like the code size */
 }
 
+/* Code size: 12px, and never more than 3.75vw, so on the smallest phones
+   with large text (150% on a 320px screen) the code keeps the size 100%
+   text gives and wraps as designed, instead of breaking every few
+   characters and running past the panel. */
 .flow__code {
     margin: 0;
     padding: var(--space-4) var(--space-3) var(--space-3);
     font-family: var(--font-family-mono);
-    font-size: 0.75rem;
+    font-size: min(0.75rem, 3.75vw);
     line-height: 1.7;
     color: var(--code-text);
     white-space: pre-wrap;
@@ -639,7 +679,7 @@
     padding: var(--space-3) var(--space-4) var(--space-4);
     border-top: 1px solid var(--color-border);
     font-family: var(--font-family-mono);
-    font-size: 0.75rem;
+    font-size: min(0.75rem, 3.75vw);
     line-height: 1.7;
 }
 
@@ -1283,12 +1323,17 @@ html.anim.motion .step.is-again .step__mark::before {
 
 .skill__head {
     display: flex;
+    flex-wrap: wrap;
     align-items: flex-start;
     justify-content: space-between;
-    gap: var(--space-3);
+    gap: var(--space-2) var(--space-3);
 }
 
+/* With large text on a small phone the title and its tier badge can't share
+   a row; the badge then drops under the title instead of squeezing it until
+   words split. */
 .skill__title {
+    flex: 1 1 9rem;
     font-size: var(--font-size-lg);
 }
 
@@ -1505,9 +1550,10 @@ html.anim.motion .step.is-again .step__mark::before {
 
 .project__kicker {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    gap: var(--space-3);
+    gap: var(--space-1) var(--space-3);
 }
 
 .project__type {
@@ -1568,7 +1614,7 @@ html.anim.motion .step.is-again .step__mark::before {
 
 .capabilities {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(15rem, 100%), 1fr));
     gap: var(--space-2) var(--space-6);
     margin: 0;
     padding: 0;
