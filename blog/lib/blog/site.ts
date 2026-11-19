@@ -19,8 +19,9 @@ export const SITE_LANGUAGE = 'en-US'
 export const HOME_TITLE = 'QA Engineering Blog | Playwright, Automation & AI Testing – Dipak Bist'
 export const HOME_DESCRIPTION =
   'Explore practical QA engineering tutorials, software testing, Playwright automation, AI-powered testing, AI agents, API testing and CI/CD insights by Dipak Bist.'
+/* The owner added database and performance testing to the home heading and this description (19/11/2026). */
 export const SITE_DESCRIPTION =
-  'A practical knowledge hub covering Quality Assurance, software testing, Playwright automation, AI-powered testing, AI agents, API testing and modern QA engineering practices.'
+  'A practical knowledge hub covering Quality Assurance, software testing, Playwright automation, AI-powered testing, AI agents, API, database and performance testing, and modern QA engineering practices.'
 
 /** The author's X account, for twitter:site and twitter:creator on every page. */
 export const X_HANDLE = '@Deepak_B_08'
