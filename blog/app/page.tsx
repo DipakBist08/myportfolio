@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { getAllPostsMeta } from '@/lib/blog/mdx'
 import BlogPageContent, { BlogPageView } from '@/components/blog/BlogPageContent'
-import { AUTHOR_LD, BASE_URL, HOME_DESCRIPTION, HOME_TITLE, HOME_URL, SITE_LANGUAGE, SITE_NAME } from '@/lib/blog/site'
+import { AUTHOR_LD, BASE_URL, HOME_DESCRIPTION, HOME_TITLE, HOME_URL, SITE_DESCRIPTION, SITE_LANGUAGE, SITE_NAME } from '@/lib/blog/site'
 import { pageMetadata } from '@/lib/blog/metadata'
 
 export const metadata: Metadata = pageMetadata({ title: HOME_TITLE, description: HOME_DESCRIPTION, path: '/', absoluteTitle: true })
@@ -14,7 +14,7 @@ const websiteLd = {
   name: SITE_NAME,
   url: HOME_URL,
   inLanguage: SITE_LANGUAGE,
-  description: HOME_DESCRIPTION,
+  description: SITE_DESCRIPTION,
   author: AUTHOR_LD,
   publisher: AUTHOR_LD,
 }

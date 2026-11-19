@@ -104,11 +104,11 @@ export function BlogPageView({ allPosts, q = '', tag = '', category = '', page =
         <h1
           className="text-[clamp(2.25rem,1.5rem+3vw,3.75rem)] font-bold leading-[1.02] tracking-[-0.035em] text-ink"
         >
-          Software QA &amp; Test Automation Blog
+          QA Engineering, Test Automation &amp; AI Testing
         </h1>
         <p className="mt-4 max-w-[52ch] text-lg text-muted">
-          Practical, tested tutorials on Playwright with Python, API testing, Selenium, Pytest, manual QA and AI-assisted QA,
-          written by Dipak Bist, Software QA Engineer.
+          A practical knowledge hub covering Quality Assurance, software testing, Playwright automation, AI-powered testing,
+          AI agents, API testing and modern QA engineering practices. Written by Dipak Bist, Software QA Engineer.
         </p>
         <p className="mono-label mt-5 flex flex-wrap items-center gap-x-3">
           <span>{allPosts.length} article{allPosts.length === 1 ? '' : 's'}</span>
