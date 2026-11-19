@@ -27,6 +27,20 @@ def test_roles_chronological(home: Page):
     assert dates and dates == sorted(dates, reverse=True)
 
 
+def test_skills_cards_in_owner_order(home: Page):
+    expect(home.locator("#skills .skill__title")).to_have_text([
+        "Manual & Functional Testing",
+        "Test Automation",
+        "API Testing",
+        "AI-Assisted QA & AI Feature Testing",
+        "Test Management & Agile QA",
+        "Performance Testing",
+        "Databases & Version Control",
+    ])
+    # Every card except Manual & Functional Testing lists its tools as text.
+    expect(home.locator("#skills .skill__tools")).to_have_count(6)
+
+
 def test_evidence_links_safe(home: Page):
     expect(home.locator('#skills a[target="_blank"]:not([rel*="noopener"])')).to_have_count(0)
 
