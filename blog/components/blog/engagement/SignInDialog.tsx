@@ -179,7 +179,7 @@ export default function SignInDialog({ reason, available, onSignedIn, onClose }:
           {available && GOOGLE_CLIENT_ID ? (
             <div ref={buttonRef} className="flex w-full max-w-[320px] justify-center" />
           ) : (
-            <p role="status" className="text-sm text-muted">Sign-in isn&apos;t available right now. Please check back soon.</p>
+            <p role="status" className="text-sm text-muted">Sign in with Google is coming soon.</p>
           )}
         </div>
         <p role="status" aria-live="polite" className="mt-3 min-h-[1.25rem] text-center text-sm">

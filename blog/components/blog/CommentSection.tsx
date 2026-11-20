@@ -314,6 +314,27 @@ function AnonymousForm({ postSlug, parentId, onSuccess, onCancel, placeholder = 
   )
 }
 
+// ── Google sign-in announced but not switched on yet ──────────────────────────
+function GoogleComingSoon() {
+  return (
+    <div className="mb-4 flex flex-wrap items-center gap-x-3 gap-y-2">
+      <button
+        type="button"
+        disabled
+        aria-label="Sign in with Google (coming soon)"
+        className="inline-flex min-h-10 cursor-not-allowed items-center gap-2 rounded-full border border-line-strong bg-white px-4 text-sm font-medium text-[#1f1f1f] opacity-75"
+      >
+        <GoogleMark />
+        Sign in with Google
+      </button>
+      <span className="rounded-full border border-primary/40 bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary-light">
+        Coming soon
+      </span>
+      <p className="basis-full text-xs text-muted">Until then, respond with your name and email below.</p>
+    </div>
+  )
+}
+
 // ── What a signed-out reader sees instead of the form ──────────────────────────
 function SignInPrompt() {
   const { ready, requireSignIn } = useReader()
@@ -520,6 +541,7 @@ export default function CommentSection({ postSlug, postTitle = '' }: { postSlug:
           <SignInPrompt />
         ) : (
           <>
+            <GoogleComingSoon />
             {submitted && <p role="status" className="mb-3 text-sm text-pass">✓ Response posted. Thanks for adding to the discussion.</p>}
             <AnonymousForm postSlug={postSlug} onSuccess={handleNewComment} />
           </>
