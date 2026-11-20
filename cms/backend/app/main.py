@@ -114,4 +114,10 @@ app.include_router(public_router)
 def health():
     # "email" says whether outgoing mail is configured, so a missing
     # RESEND_API_KEY can be spotted from outside without reading the logs.
-    return {"status": "ok", "app": settings.APP_NAME, "email": "on" if settings.emails_enabled else "off"}
+    # "reader_sign_in" says whether GOOGLE_CLIENT_ID is set (blog claps and comments).
+    return {
+        "status": "ok",
+        "app": settings.APP_NAME,
+        "email": "on" if settings.emails_enabled else "off",
+        "reader_sign_in": "on" if settings.reader_sign_in_enabled else "off",
+    }

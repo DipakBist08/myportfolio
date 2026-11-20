@@ -3,22 +3,37 @@ from typing import Literal, Optional
 from datetime import datetime
 import bleach
 import html
+import re
+
+
+SLUG = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 
 
 class CommentCreate(BaseModel):
+    """A new comment or reply. With Google sign-in on (GOOGLE_CLIENT_ID set),
+    the name and email come from the reader's Google account and any in the
+    request are ignored. Until then, the commenter gives them here, as before."""
+
     post_slug: str
     parent_id: Optional[int] = None
-    author_name: str
-    author_email: EmailStr
     content: str
+    author_name: Optional[str] = None
+    author_email: Optional[EmailStr] = None
 
     @field_validator("author_name")
     @classmethod
-    def name_not_empty(cls, v: str) -> str:
-        v = v.strip()
-        if not v:
-            raise ValueError("Name is required")
-        return v[:100]
+    def clean_name(cls, v: Optional[str]) -> Optional[str]:
+        if v is None:
+            return None
+        v = html.unescape(bleach.clean(v, tags=[], strip=True)).strip()
+        return v[:100] or None
+
+    @field_validator("post_slug")
+    @classmethod
+    def slug_format(cls, v: str) -> str:
+        if len(v) > 200 or not SLUG.match(v):
+            raise ValueError("invalid slug")
+        return v
 
     @field_validator("content")
     @classmethod
@@ -38,6 +53,8 @@ class CommentCreate(BaseModel):
 class CommentReply(BaseModel):
     id: int
     author_name: str
+    # The Google profile picture of a signed-in author ("" for older comments).
+    author_picture: str = ""
     content: str
     created_at: datetime
     # Reactions (app.core.reactions.attach_reactions). my_reaction is the
@@ -53,6 +70,7 @@ class CommentOut(BaseModel):
     post_slug: str
     parent_id: Optional[int]
     author_name: str
+    author_picture: str = ""
     content: str
     created_at: datetime
     replies: list[CommentReply] = []

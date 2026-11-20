@@ -1,10 +1,26 @@
 """Visit counting, post readers, comment reactions and the admin traffic view."""
 import json
 
-from conftest import BROWSER, visitor
+from conftest import BLOG, BROWSER, visitor
 
+from app.core.readers import create_reader_session
 from app.database import SessionLocal
+from app.models.reader import Reader
 from app.models.traffic import PageView
+
+
+def reader_headers(ip="192.0.2.50", name="Reader"):
+    """A signed-in blog reader at this address (comments need a Google sign-in;
+    tests/test_readers.py covers the sign-in itself)."""
+    db = SessionLocal()
+    reader = db.query(Reader).filter(Reader.google_sub == f"sub-{ip}").first()
+    if reader is None:
+        reader = Reader(google_sub=f"sub-{ip}", email="reader@example.com", name=name)
+        db.add(reader)
+        db.commit()
+    token = create_reader_session(reader.id)
+    db.close()
+    return visitor(ip) | {"Origin": BLOG, "Cookie": f"reader_session={token}"}
 
 
 def track(client, ip, **body):
@@ -62,8 +78,8 @@ def test_title_is_stored_as_plain_text(client):
 
 
 def test_comment_text_keeps_ampersands_but_loses_tags(client):
-    r = client.post("/api/public/comments", json={"post_slug": "a-post", "author_name": "Reader",
-        "author_email": "r@example.com", "content": "<b>Q&A</b> 3 < 4"}, headers=visitor("192.0.2.77"))
+    r = client.post("/api/public/comments", json={"post_slug": "a-post", "content": "<b>Q&A</b> 3 < 4"},
+                    headers=reader_headers("192.0.2.77"))
     assert r.json()["content"] == "Q&A 3 < 4"
 
 
@@ -71,9 +87,8 @@ def test_comment_text_keeps_ampersands_but_loses_tags(client):
 
 def make_comment(client, parent_id=None):
     r = client.post("/api/public/comments", json={
-        "post_slug": "a-post", "parent_id": parent_id, "author_name": "Reader",
-        "author_email": "reader@example.com", "content": "Useful, thanks.",
-    }, headers=visitor("192.0.2.50"))
+        "post_slug": "a-post", "parent_id": parent_id, "content": "Useful, thanks.",
+    }, headers=reader_headers("192.0.2.50"))
     assert r.status_code == 201, r.text
     return r.json()["id"]
 
@@ -121,8 +136,8 @@ def test_reactions_go_when_the_comment_is_deleted(client, admin_headers):
 def test_comment_rate_limit_is_per_visitor_not_per_proxy(client):
     def comment(ip):
         return client.post("/api/public/comments", json={
-            "post_slug": "a-post", "author_name": "Reader", "author_email": "r@example.com", "content": "Hello there",
-        }, headers=visitor(ip)).status_code
+            "post_slug": "a-post", "content": "Hello there",
+        }, headers=reader_headers(ip)).status_code
 
     assert [comment("192.0.2.1") for _ in range(6)] == [201] * 5 + [429]
     assert comment("192.0.2.2") == 201  # a different reader behind the same proxy is unaffected

@@ -5,6 +5,6 @@
 export const SITE_PAGES = {
   about: { path: '/about', updated: '2026-11-18' },
   contact: { path: '/contact', updated: '2026-11-18' },
-  privacyPolicy: { path: '/privacy-policy', updated: '2026-11-12' },
+  privacyPolicy: { path: '/privacy-policy', updated: '2026-11-19' },
   disclaimer: { path: '/disclaimer', updated: '2026-11-12' },
 } as const

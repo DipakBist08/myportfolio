@@ -10,6 +10,7 @@ from app.models.comment import Comment
 from app.models.post_notification import PostNotification
 from app.models.traffic import PageView, CommentReaction
 from app.models.announcement import Announcement
+from app.models.reader import Reader, PostClap, CommentAuthor
 
 __all__ = [
     "User", "RefreshToken",
@@ -24,4 +25,5 @@ __all__ = [
     "PostNotification",
     "PageView", "CommentReaction",
     "Announcement",
+    "Reader", "PostClap", "CommentAuthor",
 ]

@@ -436,3 +436,21 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* The "+N" bubble over the clap button (components/blog/engagement/EngagementBar.tsx). */
+@keyframes clap-bubble {
+  0% { opacity: 0; transform: translate(-50%, 10px) scale(0.8); }
+  18% { opacity: 1; transform: translate(-50%, 0) scale(1); }
+  75% { opacity: 1; transform: translate(-50%, -2px) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -10px) scale(1); }
+}
+@keyframes clap-bubble-fade {
+  0%, 75% { opacity: 1; }
+  100% { opacity: 0; }
+}
+.clap-bubble {
+  animation: clap-bubble 1s var(--ease-out, ease-out) forwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  .clap-bubble { animation: clap-bubble-fade 1s linear forwards; }
+}
