@@ -357,6 +357,13 @@ MAX_NEW_PER_CHECK = 3
 _check_lock = asyncio.Lock()
 
 
+def _feed_slug(link: str) -> str:
+    """The post slug in a feed link such as https://blog.dipakbist.com.np/blog/<slug>."""
+    from urllib.parse import urlparse
+    path = urlparse(link).path.rstrip("/")
+    return path.rsplit("/", 1)[-1] if "/blog/" in path + "/" else ""
+
+
 async def announce_new_from_rss() -> dict:
     """
     Email subscribers about each article in the blog feed not yet announced.
@@ -395,6 +402,16 @@ async def announce_new_from_rss() -> dict:
             # Oldest first, so subscribers get articles in publishing order.
             new = [p for p in reversed(posts)
                    if p["link"] not in rows or rows[p["link"]].status == "failed"]
+
+            # Posts written in the CMS appear in the blog feed too, but the CMS
+            # announces those itself when they are published (or deliberately
+            # not, with "publish quietly"). Emailing them again here would send
+            # every CMS post twice.
+            cms_slugs = {slug for (slug,) in db.query(Post.slug).all()}
+            for post in [p for p in new if _feed_slug(p["link"]) in cms_slugs]:
+                _record(db, post, rows.get(post["link"]), "skipped",
+                        error="Written in the CMS, which announces its own posts.")
+                new.remove(post)
             if not new:
                 return {"announced": []}
 

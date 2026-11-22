@@ -27,6 +27,13 @@ class Post(Base):
     content_json = Column(Text, default="")     # TipTap JSON (for editor restore)
     content_text = Column(Text, default="")     # Stripped plain text (for search / reading time)
     excerpt = Column(Text, default="")
+    # "html": written in the rich-text editor (content is sanitised HTML).
+    # "mdx": written in Markdown (content is MDX source and may use the blog's
+    # components, e.g. <Callout>); stored as written, compiled by the blog.
+    content_format = Column(String(20), default="html", server_default="html", nullable=False)
+    # The blog's article details as JSON (schemas.post.BlogMeta): FAQ, target
+    # search queries, topic cluster, article type, difficulty, tools, etc.
+    blog_meta = Column(Text, default="", server_default="")
 
     # Featured image
     featured_image = Column(String(500), default="")
