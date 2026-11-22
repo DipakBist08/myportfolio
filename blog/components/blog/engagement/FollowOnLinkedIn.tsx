@@ -7,18 +7,20 @@ export const LINKEDIN_URL = PROFILES.find((p) => p.id === 'linkedin')!.url
 
 /** "Follow on LinkedIn": opens the author's LinkedIn profile in a new tab, so
  *  the reader keeps their place in the article. rel="me" and no other label,
- *  like every profile link on the blog (the SEO validator checks this). */
+ *  like every profile link on the blog (the SEO validator checks this).
+ *  Below 480px the label may wrap, so large text on a small phone never
+ *  pushes it off the screen. */
 export function FollowOnLinkedIn({ size = 'md', className = '' }: { size?: 'sm' | 'md'; className?: string }) {
   const sm = size === 'sm'
   return (
     <ExternalLink
       href={LINKEDIN_URL}
       rel="me"
-      className={`inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-full bg-[#0A66C2] font-semibold text-white no-underline transition-[background-color,box-shadow] hover:bg-[#004182] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0A66C2] ${
+      className={`inline-flex max-w-full items-center justify-center gap-1.5 whitespace-nowrap text-center rounded-full max-[479px]:whitespace-normal bg-[#0A66C2] font-semibold text-white no-underline transition-[background-color,box-shadow] hover:bg-[#004182] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0A66C2] ${
         sm ? 'min-h-8 px-3 text-xs' : 'min-h-10 px-4 text-sm'
       } ${className}`}
     >
-      <svg aria-hidden="true" viewBox="0 0 24 24" className={sm ? 'h-3.5 w-3.5' : 'h-4 w-4'} fill="currentColor">
+      <svg aria-hidden="true" viewBox="0 0 24 24" className={`shrink-0 ${sm ? 'h-3.5 w-3.5' : 'h-4 w-4'}`} fill="currentColor">
         <path d={BRAND_PATHS.linkedin} />
       </svg>
       Follow on LinkedIn
