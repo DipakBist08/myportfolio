@@ -244,6 +244,17 @@ def test_the_briefs_qa_keywords_are_in_the_page_and_its_data():
         assert phrase in text, phrase
 
 
+def test_section_headings_carry_his_name_and_qa_keywords():
+    """SEO playbook (22/11/2026), section 6.2: the name and QA terms in the section headings.
+    The menu keeps its short labels."""
+    html = (ROOT / "index.html").read_text(encoding="utf-8")
+    h2 = {m.group(1): m.group(2) for m in re.finditer(r'<h2 id="([a-z]+)-heading"[^>]*>(.*?)</h2>', html)}
+    assert h2["about"] == "About Dipak Bist"
+    assert h2["projects"] == "QA Projects"
+    assert h2["blog"] == "Latest Testing Guides from the Blog"
+    assert '<a href="#projects" class="nav__link">Projects</a>' in html
+
+
 def test_title_and_description_fit_a_search_result():
     """The brief's title, and a description short enough that Google shows all of it."""
     html = (ROOT / "index.html").read_text(encoding="utf-8")
@@ -252,8 +263,11 @@ def test_title_and_description_fit_a_search_result():
     p = page()
     meta = {m.get("name") or m.get("property"): m.get("content") for m in p.meta}
     assert 120 <= len(meta["description"]) <= 160, len(meta["description"])
-    # Starts with the name people search for (owner's choice, 22/11/2026).
-    assert meta["description"].startswith("Dipak Bist, Software QA Engineer in Kathmandu, Nepal with 4+ years")
+    # Starts with the name people search for (owner's choice, 22/11/2026), then the playbook's
+    # manual / automation / API terms with Postman, keeping the AI-assisted QA niche (22/11/2026).
+    assert meta["description"].startswith("Dipak Bist, Software QA Engineer in Kathmandu, Nepal: 4+ years")
+    for term in ("manual", "automation", "API testing", "Playwright", "Python", "Postman", "AI-assisted QA"):
+        assert term in meta["description"], term
     assert meta["og:title"] == meta["twitter:title"] == title
     assert meta["og:description"] == meta["twitter:description"] == meta["description"]
 
@@ -331,6 +345,8 @@ def test_sitemap_gets_a_lastmod_at_build_time(tmp_path):
     y, m, d = entry.group(1).split("-")
     built = (tmp_path / "site" / "index.html").read_text(encoding="utf-8")
     assert f'<time class="site-updated" datetime="{entry.group(1)}">{d}/{m}/{y}</time>' in built
+    # The ProfilePage's dateModified in the structured data carries the same date.
+    assert built.count('"dateModified"') == 1 and f'"dateModified": "{entry.group(1)}"' in built
     # The source file is left alone; only the built copy is stamped.
     assert "<lastmod>" not in (ROOT / "sitemap.xml").read_text(encoding="utf-8")
 

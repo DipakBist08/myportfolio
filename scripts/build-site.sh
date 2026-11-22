@@ -33,3 +33,10 @@ sed "s|<time class=\"site-updated\" datetime=\"[0-9-]*\">[0-9/]*</time>|<time cl
     site/index.html > site/index.html.tmp
 mv site/index.html.tmp site/index.html
 grep -q "datetime=\"$LASTMOD\">$LASTMOD_UK</time>" site/index.html
+
+# The ProfilePage's "dateModified" in the structured data: the same date
+# again, so search engines see one last-changed date everywhere.
+sed "s|\"dateModified\": \"[0-9-]*\"|\"dateModified\": \"$LASTMOD\"|" \
+    site/index.html > site/index.html.tmp
+mv site/index.html.tmp site/index.html
+grep -q "\"dateModified\": \"$LASTMOD\"" site/index.html
