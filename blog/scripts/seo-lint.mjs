@@ -34,6 +34,8 @@ export const RULES = {
 }
 
 const BASE_URL = 'https://blog.dipakbist.com.np'
+/* Kept in step with ARTICLE_TYPES in lib/blog/types.ts. */
+export const ARTICLE_TYPES = ['Tutorial', 'Opinion', 'Experiment', 'Project experience']
 const PLACEHOLDER = '[ADD YOUR EXPERIENCE'
 const FAQ_HEADING_ID = 'frequently-asked-questions'
 
@@ -262,6 +264,9 @@ export function lintBlog({
       error('frontmatter', '"secondaryQueries" must be a list of strings (it can be empty).')
     }
     if (!Array.isArray(d.tags) || d.tags.length === 0) error('frontmatter', '"tags" must be a non-empty list.')
+    if (!ARTICLE_TYPES.includes(d.articleType)) {
+      error('article-type', `"articleType" must be one of ${ARTICLE_TYPES.join(', ')} (got ${JSON.stringify(d.articleType ?? null)}), so readers can tell a tutorial from an opinion or an experiment.`)
+    }
 
     const published_ = toDay(d.datePublished)
     const modified = toDay(d.dateModified)

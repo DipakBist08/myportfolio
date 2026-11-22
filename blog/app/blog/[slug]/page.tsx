@@ -112,6 +112,7 @@ export default async function BlogPostPage({ params }: Params) {
     dateModified: meta.updatedAt ?? meta.date,
     inLanguage: SITE_LANGUAGE,
     articleSection: meta.category,
+    ...(meta.articleType ? { genre: meta.articleType } : {}),
     keywords: postKeywords(meta).join(', '),
     url,
     image: { '@type': 'ImageObject', url: postOgImage(meta.slug), width: 1200, height: 630 },
@@ -187,6 +188,12 @@ export default async function BlogPostPage({ params }: Params) {
                     <FollowOnLinkedIn size="sm" />
                   </p>
                   <p className="mono-label mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                    {meta.articleType && (
+                      <>
+                        <span className="text-ink">{meta.articleType}</span>
+                        <span aria-hidden="true">&middot;</span>
+                      </>
+                    )}
                     <span>
                       Posted on <time dateTime={meta.date}>{formatDate(meta.date)}</time>
                     </span>

@@ -33,6 +33,7 @@ npm run test:seo   # run the lint's own tests
 | `tags` | Yes | A few topic tags. |
 | `author` | Yes | `Dipak Bist`. |
 | `excerpt` | Yes | One or two sentences, shown under the H1 and on cards. |
+| `articleType` | Yes | One of `Tutorial`, `Opinion`, `Experiment`, `Project experience`. Shown in the byline and as the article's `genre`, so readers know what kind of piece it is. |
 | `difficulty`, `tools`, `featured` | No | Shown on the page and cards. |
 
 Older posts used `date` and `updatedAt`. The site still reads those, but the lint requires `datePublished` and `dateModified`.
@@ -117,6 +118,7 @@ category: "Playwright"
 tags: ["Playwright", "Python"]
 author: "Dipak Bist"
 excerpt: "One or two sentences shown under the title and on cards."
+articleType: "Tutorial"
 difficulty: "intermediate"
 faq:
   - q: "A question people actually search?"
