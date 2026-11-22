@@ -39,7 +39,9 @@ def test_signing_in_with_google_creates_the_reader_and_sets_a_private_session_co
 
 
 def test_me_says_who_is_signed_in(client, google):
-    assert client.get("/api/public/auth/me").json() == {"reader": None, "sign_in": True}
+    assert client.get("/api/public/auth/me").json() == {
+        "reader": None, "sign_in": True, "google_client_id": "test-client.apps.googleusercontent.com",
+    }
     headers = sign_in(client, google, sub="7", name="Ravi")
     me = client.get("/api/public/auth/me", headers=headers).json()
     assert me["reader"]["name"] == "Ravi" and me["sign_in"] is True
@@ -80,6 +82,7 @@ def test_sign_in_is_off_until_a_google_client_id_is_set(client, google, monkeypa
     monkeypatch.setattr(settings, "GOOGLE_CLIENT_ID", "")
     assert google_sign_in(client, google.token()).status_code == 503
     assert client.get("/api/public/auth/me").json()["sign_in"] is False
+    assert client.get("/api/public/auth/me").json()["google_client_id"] is None
     assert client.get("/health").json()["reader_sign_in"] == "off"
     monkeypatch.setattr(settings, "GOOGLE_CLIENT_ID", "test-client.apps.googleusercontent.com")
     assert client.get("/health").json()["reader_sign_in"] == "on"

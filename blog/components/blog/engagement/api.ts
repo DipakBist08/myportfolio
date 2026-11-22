@@ -6,7 +6,9 @@ import { API_URL } from '../visits'
 
 export { API_URL }
 
-/** The Google OAuth client ID (same value as the API's GOOGLE_CLIENT_ID). Empty = sign-in is off. */
+/** The Google OAuth client ID, if built in. Optional: when it is empty the blog uses the
+ *  API's GOOGLE_CLIENT_ID from /api/public/auth/me (ReaderContext), so Render's setting alone
+ *  switches sign-in on. */
 export const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ''
 
 export type Reader = { id: number; name: string; picture: string }
