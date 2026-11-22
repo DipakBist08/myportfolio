@@ -94,7 +94,7 @@ test.describe('the page', () => {
         for (const section of ['about', 'workflow', 'experience', 'skills', 'projects', 'blog', 'contact']) {
             await expect(page.locator(`#${section}`)).not.toContainText(/test_\w+\.py|::test_|\bPASSED\b|\bFAILED\b|test\.skip\(/);
         }
-        await expect(page.locator('#projects .project__skip')).toHaveText(['Repository not public yet', 'Internal work, no public link']);
+        await expect(page.locator('#projects .project__skip')).toHaveText(['Repository not public yet']);
     });
 
     test('title, alt text, in-page links and date order all hold', async ({ page }) => {
@@ -128,14 +128,14 @@ test.describe('navigation and actions', () => {
         await page.getByRole('link', { name: /view my work/i }).click();
         await expect(page.locator('#projects')).toBeInViewport({ ratio: 0.05 });
         const links = page.locator('#projects a.project__link');
-        await expect(links).toHaveCount(3);
+        await expect(links).toHaveCount(5);
         for (const link of await links.all()) {
             await expect(link).toHaveAttribute('href', /^https:\/\//);
             await expect(link).toHaveAttribute('rel', /noopener/);
             await expect(link).toHaveAttribute('target', '_blank');
         }
         // Projects without a public link are declared as skipped, not faked.
-        await expect(page.locator('#projects .project__skip')).toHaveCount(2);
+        await expect(page.locator('#projects .project__skip')).toHaveCount(1);
     });
 
     test('contact: email action and copy button', async ({ page, context, browserName }) => {
