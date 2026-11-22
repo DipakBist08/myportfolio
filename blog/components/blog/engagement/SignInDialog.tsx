@@ -16,6 +16,7 @@ type GsiButtonOptions = {
   shape?: 'rectangular' | 'pill' | 'circle' | 'square'
   logo_alignment?: 'left' | 'center'
   width?: number
+  locale?: string
 }
 
 type Gsi = {
@@ -130,6 +131,9 @@ export default function SignInDialog({ reason, available, onSignedIn, onClose }:
           theme: dark ? 'filled_black' : 'outline',
           size: 'large',
           text: 'continue_with',
+          // Always "Continue with Google": without this Google follows the reader's
+          // browser or account language (a Nepali browser got Nepali text).
+          locale: 'en',
           shape: 'pill',
           logo_alignment: 'left',
           width: Math.min(320, Math.max(200, buttonRef.current.clientWidth)),
@@ -177,7 +181,9 @@ export default function SignInDialog({ reason, available, onSignedIn, onClose }:
 
         <div className="mt-6 flex min-h-[44px] justify-center" aria-busy={state === 'loading' || state === 'signing-in'}>
           {available && GOOGLE_CLIENT_ID ? (
-            <div ref={buttonRef} className="flex w-full max-w-[320px] justify-center" />
+            // color-scheme light: Google's button page is light, and a browser paints an
+            // opaque white box behind any light iframe that sits in a dark-scheme page.
+            <div ref={buttonRef} className="flex w-full max-w-[320px] justify-center [color-scheme:light]" />
           ) : (
             <p role="status" className="text-sm text-muted">Sign in with Google is coming soon.</p>
           )}
