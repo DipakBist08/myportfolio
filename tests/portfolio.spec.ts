@@ -148,11 +148,13 @@ test.describe('navigation and actions', () => {
         expect(await page.evaluate(() => navigator.clipboard.readText())).toBe('dipakbeest@gmail.com');
     });
 
+    const SUBSCRIBED = "You're subscribed. You'll get an email when a new article is published.";
+
     test('subscribe form explains what is wrong before it sends anything', async ({ page }) => {
         let requests = 0;
         await page.route('**/api/v1/subscribers/subscribe', async (route) => {
             requests += 1;
-            await route.fulfill({ status: 202, contentType: 'application/json', body: JSON.stringify({ detail: 'Check your inbox to confirm.' }) });
+            await route.fulfill({ status: 202, contentType: 'application/json', body: JSON.stringify({ detail: SUBSCRIBED }) });
         });
         await page.goto('/');
         await page.locator('#subscribe-form').scrollIntoViewIfNeeded();
@@ -164,7 +166,7 @@ test.describe('navigation and actions', () => {
         expect(requests).toBe(0);
         await page.getByLabel('Email address').fill('reader@example.com');
         await page.getByRole('button', { name: 'Subscribe' }).click();
-        await expect(page.locator('#subscribe-feedback')).toHaveText('Check your inbox to confirm.');
+        await expect(page.locator('#subscribe-feedback')).toHaveText(SUBSCRIBED);
         expect(requests).toBe(1);
     });
 });

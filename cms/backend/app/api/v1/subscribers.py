@@ -13,7 +13,7 @@ from app.dependencies import get_current_user
 from app.models.user import User
 from app.models.subscriber import Subscriber
 from app.schemas.subscriber import SubscribeRequest, SubscriberOut, SubscriberStats, NewsletterSendRequest, NewsletterSendResult
-from app.core.email import send_confirmation_email, send_newsletter
+from app.core.email import send_welcome_email, send_newsletter
 from app.core.visitor import client_ip
 from app.core.notifications import announce_latest_from_rss, fetch_latest_post
 from app.config import settings
@@ -45,35 +45,37 @@ def _check_rate_limit(ip: str) -> None:
 @router.post("/subscribe", status_code=status.HTTP_202_ACCEPTED)
 async def subscribe(body: SubscribeRequest, request: Request, db: Session = Depends(get_db)):
     """
-    Double opt-in. Previously this marked a new address active immediately, which
-    meant anyone could add anyone else's email to the list — and once publish
-    announcements went live those forged addresses would receive real mail.
-    Complaints from people who never signed up damage the sending domain's
-    reputation, so an address is now inert until its owner clicks the link.
+    Single opt-in (the owner's choice, 16/11/2026): the address is active as soon
+    as the visitor clicks Subscribe, and receives every new-article announcement.
 
-    The response is deliberately identical whether or not the address is already
-    known, so this endpoint cannot be used to test who is subscribed.
+    That means anyone can add an address that is not theirs. What limits the harm:
+    the welcome email sent here carries a one-click unsubscribe link, so the
+    owner of the address can leave at once; the endpoint is rate limited per
+    visitor; and both sign-up forms have a honeypot field for bots.
+
+    The response is identical whether or not the address was already on the
+    list, so this endpoint cannot be used to test who is subscribed.
     """
     # The visitor's address, not the hosting proxy's: keyed on the proxy, every
     # visitor shared one limit of 3 attempts a minute.
     _check_rate_limit(client_ip(request))
 
-    GENERIC = {"detail": "Almost there — check your inbox for a confirmation link."}
+    GENERIC = {"detail": "You're subscribed. You'll get an email when a new article is published."}
 
     existing = db.query(Subscriber).filter(Subscriber.email == body.email).first()
 
     if existing and existing.is_active and not existing.is_unsubscribed:
-        return GENERIC  # already confirmed; say nothing that reveals it
+        return GENERIC  # already on the list; no second welcome email
 
-    token = secrets.token_urlsafe(32)
-
+    now = datetime.now(timezone.utc)
     if existing:
-        # Re-subscribing after unsubscribing, or never confirmed the first time.
+        # Coming back after unsubscribing, or left pending by the old
+        # confirmation step.
+        existing.is_active = True
         existing.is_unsubscribed = False
         existing.unsubscribed_at = None
-        existing.is_active = False
-        existing.confirmed_at = None
-        existing.confirmation_token = token
+        existing.confirmed_at = now
+        existing.confirmation_token = None
         if body.name:
             existing.name = body.name
         if not existing.unsubscribe_token:
@@ -83,27 +85,21 @@ async def subscribe(body: SubscribeRequest, request: Request, db: Session = Depe
         sub = Subscriber(
             email=body.email,
             name=body.name,
-            is_active=False,
-            confirmed_at=None,
-            confirmation_token=token,
+            is_active=True,
+            confirmed_at=now,
             unsubscribe_token=secrets.token_urlsafe(32),
         )
         db.add(sub)
 
     db.commit()
 
-    sent = False
+    # The subscription stands even if this email fails; it is a courtesy and
+    # the unsubscribe route, not a step the visitor has to complete.
     try:
-        sent = await send_confirmation_email(sub.email, sub.name or "", token)
+        if not await send_welcome_email(sub.email, sub.name or "", sub.unsubscribe_token):
+            logging.getLogger(__name__).warning("welcome email not sent to %s", sub.email)
     except Exception:
-        logging.getLogger(__name__).exception("confirmation email failed for %s", sub.email)
-    if not sent:
-        # Say so, instead of sending the visitor to an inbox that will stay
-        # empty. The pending row is kept; submitting again sends a fresh link.
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="We couldn't send the confirmation email just now. Please try again later.",
-        )
+        logging.getLogger(__name__).exception("welcome email failed for %s", sub.email)
 
     return GENERIC
 
@@ -130,6 +126,8 @@ def _page(title: str, message: str, ok: bool = True) -> HTMLResponse:
 
 @router.get("/confirm", response_class=HTMLResponse)
 def confirm_subscription(token: str, db: Session = Depends(get_db)):
+    # New sign-ups no longer get a confirmation link. This stays so that links
+    # already sent under the old confirmation step still work.
     sub = db.query(Subscriber).filter(Subscriber.confirmation_token == token).first()
     if not sub:
         return _page("Link expired",
