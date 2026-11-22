@@ -13,6 +13,8 @@ interface ReaderState {
   ready: boolean
   /** False when Google sign-in is not set up (no client ID here or on the API). */
   available: boolean
+  /** True when the API could not be reached, so sign-in's state is unknown. */
+  unreachable: boolean
   /** Run `then` now if signed in; otherwise ask the reader to sign in and run it after. */
   requireSignIn: (reason: Reason, then?: () => void) => void
   /** The session ended on the API (a 401): forget the reader and ask again. */
@@ -37,6 +39,7 @@ export function ReaderProvider({ children }: { children: React.ReactNode }) {
   // the one the API uses, so the blog and the API always agree on sign-in.
   const [clientId, setClientId] = useState(GOOGLE_CLIENT_ID)
   const [available, setAvailable] = useState(Boolean(GOOGLE_CLIENT_ID))
+  const [unreachable, setUnreachable] = useState(false)
   const [dialog, setDialog] = useState<Reason | null>(null)
   const pending = useRef<(() => void) | null>(null)
 
@@ -50,7 +53,7 @@ export function ReaderProvider({ children }: { children: React.ReactNode }) {
         setClientId(id)
         setAvailable(Boolean(id) && data.sign_in)
       })
-      .catch(() => {})
+      .catch(() => { if (alive) setUnreachable(true) })
       .finally(() => alive && setReady(true))
     return () => { alive = false }
   }, [])
@@ -90,8 +93,8 @@ export function ReaderProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const value = useMemo(
-    () => ({ reader, ready, available, requireSignIn, sessionExpired, signOut }),
-    [reader, ready, available, requireSignIn, sessionExpired, signOut],
+    () => ({ reader, ready, available, unreachable, requireSignIn, sessionExpired, signOut }),
+    [reader, ready, available, unreachable, requireSignIn, sessionExpired, signOut],
   )
 
   return (
