@@ -61,6 +61,34 @@ export interface PostListItem {
   author: AuthorBrief
   category: CategoryBrief | null
   tags: TagBrief[]
+  /** "html": rich-text editor. "mdx": Markdown that can use the blog's boxes. */
+  content_format?: ContentFormat
+}
+
+export type ContentFormat = 'html' | 'mdx'
+
+export const ARTICLE_TYPES = ['Tutorial', 'Opinion', 'Experiment', 'Project experience'] as const
+export const DIFFICULTIES = ['beginner', 'intermediate', 'advanced'] as const
+
+export interface FaqItem {
+  q: string
+  a: string
+}
+
+/** The blog's article details (same names as the blog's front matter). */
+export interface BlogMeta {
+  primaryQuery?: string
+  secondaryQueries?: string[]
+  cluster?: string
+  isPillar?: boolean
+  testedWith?: string
+  faq?: FaqItem[]
+  articleType?: (typeof ARTICLE_TYPES)[number] | null
+  difficulty?: (typeof DIFFICULTIES)[number] | null
+  tools?: string[]
+  keywords?: string[]
+  /** "Last updated" shown on the post, YYYY-MM-DD. */
+  dateModified?: string | null
 }
 
 export interface PostDetail extends PostListItem {
@@ -71,6 +99,7 @@ export interface PostDetail extends PostListItem {
   seo_keywords: string
   canonical_url: string
   featured_image_alt: string
+  blog_meta: BlogMeta
 }
 
 export interface PaginatedPosts {

@@ -258,7 +258,7 @@ export default async function BlogPostPage({ params }: Params) {
               </Reveal>
             )}
 
-            {rendered ? <HTMLContent html={rendered.html} /> : <MDXContent source={content} />}
+            {rendered ? <HTMLContent html={rendered.html} /> : <MDXContent source={content} fallbackToMarkdown={meta.source === 'cms'} />}
 
             <FaqSection items={meta.faq} />
 

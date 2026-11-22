@@ -7,16 +7,37 @@ import { z } from 'zod'
 import { toast } from 'sonner'
 import {
   Save, Eye, ArrowLeft, Loader2, ChevronDown, ChevronUp,
-  Globe, Image as ImageIcon, Tag as TagIcon, Settings2, Sparkles,
+  Globe, Image as ImageIcon, Tag as TagIcon, Settings2, Sparkles, ExternalLink,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import BlogEditor from '@/components/editor/BlogEditor'
+import MarkdownEditor from '@/components/editor/MarkdownEditor'
+import BlogDetails from '@/components/editor/BlogDetails'
 import api from '@/lib/api'
 import { slugify, formatDate } from '@/lib/utils'
-import type { PostDetail, Category, Tag, PostStatus } from '@/types'
+import type { PostDetail, Category, Tag, PostStatus, ContentFormat, BlogMeta } from '@/types'
+
+const BLOG_URL = (import.meta.env.VITE_BLOG_URL || 'https://blog.dipakbist.com.np').replace(/\/+$/, '')
+
+/** Escape text for the rich-text editor (switching from Markdown keeps the words). */
+const toParagraphs = (text: string) =>
+  text.split(/\n{2,}/).map((p) => p.trim()).filter(Boolean)
+    .map((p) => `<p>${p.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>`).join('')
+
+/** Drop empty fields, so the blog sees "not set" rather than blanks. */
+function cleanMeta(m: BlogMeta): BlogMeta {
+  const out: BlogMeta = {}
+  for (const [k, v] of Object.entries(m)) {
+    if (v === null || v === undefined || v === '' || v === false) continue
+    if (Array.isArray(v) && v.length === 0) continue
+    ;(out as Record<string, unknown>)[k] = v
+  }
+  if (out.faq) out.faq = out.faq.filter((f) => f.q.trim() && f.a.trim())
+  return out
+}
 
 const schema = z.object({
   title: z.string().min(1, 'Title required'),
@@ -55,6 +76,10 @@ export default function PostEditorPage() {
   const [seoOpen, setSeoOpen] = useState(false)
   const [saving, setSaving] = useState(false)
   const [lastSaved, setLastSaved] = useState<Date | null>(null)
+  const [format, setFormat] = useState<ContentFormat>('html')
+  const [markdown, setMarkdown] = useState('')
+  const [blogMeta, setBlogMeta] = useState<BlogMeta>({})
+  const [publishedOn, setPublishedOn] = useState('')
 
   const { data: post, isLoading: postLoading } = useQuery<PostDetail>({
     queryKey: ['post', id],
@@ -94,10 +119,30 @@ export default function PostEditorPage() {
         seo_title: post.seo_title, seo_description: post.seo_description,
         seo_keywords: post.seo_keywords, canonical_url: post.canonical_url,
       })
-      setContent(post.content)
-      setContentJson(post.content_json)
+      const fmt = post.content_format ?? 'html'
+      setFormat(fmt)
+      if (fmt === 'mdx') setMarkdown(post.content)
+      else { setContent(post.content); setContentJson(post.content_json) }
+      setBlogMeta(post.blog_meta ?? {})
+      setPublishedOn(post.published_at ? post.published_at.slice(0, 10) : '')
     }
   }, [post])
+
+  const switchFormat = (next: ContentFormat) => {
+    if (next === format) return
+    const hasText = format === 'mdx' ? markdown.trim() : contentText.trim() || content.replace(/<[^>]*>/g, '').trim()
+    if (hasText && !window.confirm(next === 'mdx'
+      ? 'Switch to Markdown? The words are kept, but headings, bold and lists need to be written in Markdown again.'
+      : 'Switch to rich text? The words are kept, but Markdown formatting and the blog\'s boxes are not converted.')) return
+    if (next === 'mdx') {
+      setMarkdown(contentText || content.replace(/<[^>]*>/g, ' ').replace(/\s+\n/g, '\n'))
+    } else {
+      const html = toParagraphs(markdown)
+      setContent(html); setContentJson(''); setContentText(markdown)
+    }
+    setPreviewMode(false)
+    setFormat(next)
+  }
 
   // Auto-slug from title
   const title = watch('title')
@@ -107,11 +152,15 @@ export default function PostEditorPage() {
 
   const saveMutation = useMutation({
     mutationFn: async (data: FormData) => {
+      const isMarkdown = format === 'mdx'
       const payload = {
         ...data,
-        content,
-        content_json: contentJson,
-        content_text: contentText,
+        content: isMarkdown ? markdown : content,
+        content_json: isMarkdown ? '' : contentJson,
+        content_text: isMarkdown ? markdown : contentText,
+        content_format: format,
+        blog_meta: cleanMeta(blogMeta),
+        ...(publishedOn ? { published_at: `${publishedOn}T09:00:00Z` } : {}),
         featured_image: data.featured_image || '',
         canonical_url: data.canonical_url || '',
       }
@@ -127,7 +176,14 @@ export default function PostEditorPage() {
     onError: (err: any) => toast.error(err.response?.data?.detail || 'Save failed'),
   })
 
-  const onSubmit = handleSubmit((data) => saveMutation.mutate(data))
+  const onSubmit = handleSubmit((data) => {
+    // The blog groups posts by category; a published post needs one.
+    if (data.status === 'published' && !data.category_id) {
+      toast.error('Pick a category before publishing: the blog groups posts by category.')
+      return
+    }
+    saveMutation.mutate(data)
+  })
 
   const handleEditorChange = useCallback((html: string, json: string, text: string) => {
     setContent(html)
@@ -160,7 +216,17 @@ export default function PostEditorPage() {
           )}
         </div>
         <div className="flex items-center gap-2">
-          <button
+          {post?.status === 'published' && (
+            <a
+              href={`${BLOG_URL}/blog/${post.slug}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm text-slate-400 hover:text-white hover:bg-white/5"
+            >
+              <ExternalLink size={15} /> View on blog
+            </a>
+          )}
+          {format === 'html' && <button
             type="button"
             onClick={() => setPreviewMode(p => !p)}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors ${
@@ -169,7 +235,7 @@ export default function PostEditorPage() {
           >
             <Eye size={15} />
             {previewMode ? 'Edit' : 'Preview'}
-          </button>
+          </button>}
           {/* Status selector */}
           <Controller
             name="status"
@@ -216,8 +282,34 @@ export default function PostEditorPage() {
             {errors.slug && <span className="text-xs text-destructive">{errors.slug.message}</span>}
           </div>
 
+          {/* Format */}
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="text-xs text-slate-500">Format:</span>
+            <div role="radiogroup" aria-label="Post format" className="inline-flex rounded-lg border border-border p-0.5">
+              {([['html', 'Rich text'], ['mdx', 'Markdown']] as const).map(([value, label]) => (
+                <button
+                  key={value}
+                  type="button"
+                  role="radio"
+                  aria-checked={format === value}
+                  onClick={() => switchFormat(value)}
+                  className={`px-3 py-1 rounded-md text-xs transition-colors ${
+                    format === value ? 'bg-primary/20 text-white' : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            <span className="text-xs text-slate-500">
+              {format === 'mdx' ? 'Markdown can use the blog\'s boxes (callouts, checklists, cards).' : 'Write like in a word processor.'}
+            </span>
+          </div>
+
           {/* Editor / Preview */}
-          {!previewMode ? (
+          {format === 'mdx' ? (
+            <MarkdownEditor value={markdown} onChange={setMarkdown} />
+          ) : !previewMode ? (
             <BlogEditor
               content={content}
               contentJson={contentJson}
@@ -244,6 +336,8 @@ export default function PostEditorPage() {
               rows={3}
             />
           </div>
+
+          <BlogDetails value={blogMeta} onChange={setBlogMeta} />
 
           {/* SEO section */}
           <div className="glass-card overflow-hidden">
@@ -365,6 +459,11 @@ export default function PostEditorPage() {
                 <Sparkles size={13} className="text-yellow-400" /> Featured post
               </span>
             </label>
+            <div>
+              <Label htmlFor="published_on">Publish date</Label>
+              <Input id="published_on" type="date" value={publishedOn} onChange={e => setPublishedOn(e.target.value)} />
+              <p className="text-xs text-slate-500 mt-1">Leave empty to use the day you publish. Set it to keep an article&apos;s original date.</p>
+            </div>
             {watchedStatus === 'scheduled' && (
               <div>
                 <Label htmlFor="scheduled_at">Schedule time</Label>

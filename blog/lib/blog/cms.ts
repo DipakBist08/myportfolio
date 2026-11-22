@@ -7,12 +7,9 @@
  * Pages that use these refresh at most every CMS_REVALIDATE seconds, so a post
  * published in the CMS appears on the blog within about a minute, no redeploy.
  *
- * Failure policy:
- * - Production: a failed request throws. A build then fails (Vercel keeps the
- *   previous deployment live) and a background refresh keeps the last good page,
- *   so an unreachable API never empties the blog.
- * - `next dev` without the API: a warning, and the blog shows only its files.
- * - CMS_POSTS=off: the CMS is not asked at all (offline builds and checks).
+ * Failure policy (details at offline() below): an unreachable API never empties
+ * the blog. A build falls back to the files; on the live site a failed refresh
+ * keeps the last good page. CMS_POSTS=off: the CMS is not asked at all.
  */
 import { cache } from 'react'
 import { AUTHOR } from './site'
@@ -79,10 +76,23 @@ async function cmsFetch<T>(path: string, allow404 = false): Promise<T | null> {
   throw lastError instanceof Error ? lastError : new CmsUnavailable(String(lastError))
 }
 
-/** In production a CMS failure must surface (see the failure policy above). */
+/**
+ * What a CMS failure does (see the failure policy above):
+ * - during `next build`: build from the files. On a deploy, Vercel builds the
+ *   blog while Render may still be starting the new API; the CMS posts arrive
+ *   with the first background refresh after it is up (pages refresh every
+ *   CMS_REVALIDATE seconds; posts published later render on first visit).
+ * - on the live site: throw, so a background refresh keeps the last good page.
+ * - next dev: files only, with a warning.
+ */
 function offline<T>(err: unknown, fallback: T): T {
+  const message = err instanceof Error ? err.message : String(err)
+  if (process.env.NEXT_PHASE === 'phase-production-build') {
+    console.warn(`[cms] ${message}; this build uses the blog's files only. CMS posts appear at the first refresh.`)
+    return fallback
+  }
   if (process.env.NODE_ENV === 'production') throw err
-  console.warn(`[cms] ${err instanceof Error ? err.message : err}; showing the blog's files only.`)
+  console.warn(`[cms] ${message}; showing the blog's files only.`)
   return fallback
 }
 
