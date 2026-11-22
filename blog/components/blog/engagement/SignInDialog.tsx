@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
-import { api, GOOGLE_CLIENT_ID, type Reader } from './api'
+import { api, type Reader } from './api'
 
 /* Google Identity Services ("Sign in with Google"). The script is loaded only
    when this dialog opens, so readers who never sign in never contact Google. */
@@ -71,12 +71,14 @@ const TITLES = {
 interface Props {
   reason: keyof typeof TITLES | null
   available: boolean
+  /** The Google client ID, from the build or from the API (ReaderContext). */
+  clientId: string
   onSignedIn: (reader: Reader) => void
   onClose: () => void
 }
 
 /** The sign-in dialog: Google's own button, what the blog keeps, and Close. */
-export default function SignInDialog({ reason, available, onSignedIn, onClose }: Props) {
+export default function SignInDialog({ reason, available, clientId, onSignedIn, onClose }: Props) {
   const dialogRef = useRef<HTMLDialogElement>(null)
   const buttonRef = useRef<HTMLDivElement>(null)
   const [state, setState] = useState<'loading' | 'ready' | 'signing-in' | 'error'>('loading')
@@ -95,7 +97,7 @@ export default function SignInDialog({ reason, available, onSignedIn, onClose }:
   }, [open])
 
   useEffect(() => {
-    if (!open || !available || !GOOGLE_CLIENT_ID) return
+    if (!open || !available || !clientId) return
     let alive = true
     setState('loading')
     setError('')
@@ -103,7 +105,7 @@ export default function SignInDialog({ reason, available, onSignedIn, onClose }:
       .then((gsi) => {
         if (!alive || !buttonRef.current) return
         gsi.accounts.id.initialize({
-          client_id: GOOGLE_CLIENT_ID,
+          client_id: clientId,
           ux_mode: 'popup',
           context: 'signin',
           itp_support: true,
@@ -146,7 +148,7 @@ export default function SignInDialog({ reason, available, onSignedIn, onClose }:
         setState('error')
       })
     return () => { alive = false }
-  }, [open, available])
+  }, [open, available, clientId])
 
   return (
     <dialog
@@ -180,7 +182,7 @@ export default function SignInDialog({ reason, available, onSignedIn, onClose }:
         </p>
 
         <div className="mt-6 flex min-h-[44px] justify-center" aria-busy={state === 'loading' || state === 'signing-in'}>
-          {available && GOOGLE_CLIENT_ID ? (
+          {available && clientId ? (
             // color-scheme light: Google's button page is light, and a browser paints an
             // opaque white box behind any light iframe that sits in a dark-scheme page.
             <div ref={buttonRef} className="flex w-full max-w-[320px] justify-center [color-scheme:light]" />

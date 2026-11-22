@@ -33,17 +33,22 @@ export function useReader(): ReaderState {
 export function ReaderProvider({ children }: { children: React.ReactNode }) {
   const [reader, setReader] = useState<Reader | null>(null)
   const [ready, setReady] = useState(false)
+  // The Google client ID: built in (NEXT_PUBLIC_GOOGLE_CLIENT_ID) or, if not,
+  // the one the API uses, so the blog and the API always agree on sign-in.
+  const [clientId, setClientId] = useState(GOOGLE_CLIENT_ID)
   const [available, setAvailable] = useState(Boolean(GOOGLE_CLIENT_ID))
   const [dialog, setDialog] = useState<Reason | null>(null)
   const pending = useRef<(() => void) | null>(null)
 
   useEffect(() => {
     let alive = true
-    api<{ reader: Reader | null; sign_in: boolean }>('/api/public/auth/me')
+    api<{ reader: Reader | null; sign_in: boolean; google_client_id?: string | null }>('/api/public/auth/me')
       .then((data) => {
         if (!alive) return
+        const id = GOOGLE_CLIENT_ID || data.google_client_id || ''
         setReader(data.reader)
-        setAvailable(Boolean(GOOGLE_CLIENT_ID) && data.sign_in)
+        setClientId(id)
+        setAvailable(Boolean(id) && data.sign_in)
       })
       .catch(() => {})
       .finally(() => alive && setReady(true))
@@ -92,7 +97,7 @@ export function ReaderProvider({ children }: { children: React.ReactNode }) {
   return (
     <ReaderContext.Provider value={value}>
       {children}
-      <SignInDialog reason={dialog} available={available} onSignedIn={onSignedIn} onClose={onClose} />
+      <SignInDialog reason={dialog} available={available} clientId={clientId} onSignedIn={onSignedIn} onClose={onClose} />
     </ReaderContext.Provider>
   )
 }

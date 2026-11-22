@@ -33,10 +33,14 @@ set (and the blog redeployed), Google sign-in and claps switch on by themselves.
    - Authorized redirect URIs: none (the popup flow does not use them).
 3. Copy the client ID (`….apps.googleusercontent.com`). It is not a secret: it
    is visible in the page. There is no client secret to store.
-4. **Vercel**, project `dipak-blog` → Settings → Environment Variables:
-   `NEXT_PUBLIC_GOOGLE_CLIENT_ID` = the client ID. Redeploy (the value is built in).
-5. **Render**, the API service → Environment: `GOOGLE_CLIENT_ID` = the same
-   client ID. Redeploy.
+4. **Render**, the API service → Environment: `GOOGLE_CLIENT_ID` = the client
+   ID. Redeploy. This one setting switches sign-in on for the API and the blog:
+   the blog reads the ID from `GET /api/public/auth/me` (`google_client_id`), so
+   the two can never disagree. Removing it switches both back to the
+   name-and-email form.
+5. Optional: **Vercel**, project `dipak-blog`, `NEXT_PUBLIC_GOOGLE_CLIENT_ID` =
+   the same ID builds it into the blog (the button is then ready before the API
+   answers). Needs a redeploy. Leave it unset unless it matches Render.
 6. Check: `https://api.dipakbist.com.np/health` shows `"reader_sign_in": "on"`.
 
 Readers, claps and responses live in the API database. If Render has no

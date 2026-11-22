@@ -1,7 +1,7 @@
 """Blog reader sign-in with Google.
 
 POST /api/public/auth/google   {credential}  verify Google's ID token, set the session cookie
-GET  /api/public/auth/me                     {"reader": {...} | null}
+GET  /api/public/auth/me                     {"reader": {...} | null, "sign_in": bool, "google_client_id": str | null}
 POST /api/public/auth/logout                 clear the session cookie
 """
 from __future__ import annotations
@@ -101,8 +101,18 @@ def sign_in_with_google(body: GoogleCredential, request: Request, response: Resp
 
 @router.get("/me")
 def me(response: Response, reader: Optional[Reader] = Depends(current_reader)):
+    """Who is signed in, whether sign-in is on, and the Google client ID the
+    blog's button needs. The ID is public (it is in every page that shows a
+    Google button); sending it from here makes the API's GOOGLE_CLIENT_ID the
+    one setting, so the blog can't show the name-and-email form while the API
+    requires sign-in."""
     response.headers.update(NO_STORE)
-    return {"reader": public_reader(reader) if reader else None, "sign_in": settings.reader_sign_in_enabled}
+    on = settings.reader_sign_in_enabled
+    return {
+        "reader": public_reader(reader) if reader else None,
+        "sign_in": on,
+        "google_client_id": settings.GOOGLE_CLIENT_ID if on else None,
+    }
 
 
 @router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
