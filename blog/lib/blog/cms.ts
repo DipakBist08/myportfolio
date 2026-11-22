@@ -85,14 +85,21 @@ async function cmsFetch<T>(path: string, allow404 = false): Promise<T | null> {
  * - on the live site: throw, so a background refresh keeps the last good page.
  * - next dev: files only, with a warning.
  */
+let warned = false
+function warnOnce(text: string) {
+  if (warned) return
+  warned = true
+  console.warn(text)
+}
+
 function offline<T>(err: unknown, fallback: T): T {
   const message = err instanceof Error ? err.message : String(err)
   if (process.env.NEXT_PHASE === 'phase-production-build') {
-    console.warn(`[cms] ${message}; this build uses the blog's files only. CMS posts appear at the first refresh.`)
+    warnOnce(`[cms] ${message}; this build uses the blog's files only. CMS posts appear at the first refresh.`)
     return fallback
   }
   if (process.env.NODE_ENV === 'production') throw err
-  console.warn(`[cms] ${message}; showing the blog's files only.`)
+  warnOnce(`[cms] ${message}; showing the blog's files only.`)
   return fallback
 }
 

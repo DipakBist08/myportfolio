@@ -177,10 +177,21 @@ export default function PostEditorPage() {
   })
 
   const onSubmit = handleSubmit((data) => {
-    // The blog groups posts by category; a published post needs one.
-    if (data.status === 'published' && !data.category_id) {
-      toast.error('Pick a category before publishing: the blog groups posts by category.')
-      return
+    // What the blog needs from every published post (its SEO checks enforce
+    // the same for article files). Drafts can be saved without them.
+    if (data.status === 'published') {
+      if (!data.category_id) {
+        toast.error('Pick a category before publishing: the blog groups posts by category.')
+        return
+      }
+      if (!data.excerpt.trim() && !data.seo_description.trim()) {
+        toast.error('Add an excerpt or a meta description before publishing: search results and link previews show it.')
+        return
+      }
+      if (!blogMeta.articleType) {
+        toast.error('Choose an article type in "Article details for the blog" before publishing.')
+        return
+      }
     }
     saveMutation.mutate(data)
   })
