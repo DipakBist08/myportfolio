@@ -43,7 +43,7 @@ A page drawn from new HTML with an older stylesheet or script looks broken (an u
 | `js/main.js` | Entry (ES module). Each init is isolated; a motion failure reveals the page. |
 | `js/flow.js` | The hero code panel's step-by-step run and its Re-run button. |
 | `tools/serve.py` | Local preview server behind `npm run serve` (port 4173, `Cache-Control: no-cache`). Not deployed. |
-| `tools/og/` | `render.py` renders `og-image.html` to `assets/og-image.png` (the link-preview image), failing on unloaded fonts, touching or overlapping text, text near the edge, or a file over 300 KB. The card quotes the hero's `test_login.py` verbatim; `test_link_preview_card_quotes_the_hero_verbatim` fails if they drift, so re-render after changing the hero. Not deployed (`.vercelignore`). |
+| `tools/og/` | `render.py` renders `og-image.html` to `assets/og-dipak-bist.png` (the link-preview image: name, title, his 800px portrait in a circle, and the hero's test lines), failing on unloaded fonts, touching or overlapping text, text near the edge, or a file over 300 KB. The card quotes the hero's `test_login.py` verbatim; `test_link_preview_card_quotes_the_hero_verbatim` fails if they drift, so re-render after changing the hero. Not deployed (`.vercelignore`). |
 | `js/motion.js` | Choreography on the vanilla framer-motion DOM API (`assets/vendor/framer-motion-dom.js`, `window.Motion`). |
 | `js/theme.js`, `js/nav.js`, `js/subscribe.js`, `js/contact.js` | Theme, navigation/menu/active section, newsletter form, contact form. |
 | `js/visit.js` | One visit beacon per page load for the CMS dashboard (see "Visits" below). |

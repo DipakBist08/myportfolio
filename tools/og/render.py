@@ -2,7 +2,7 @@
 """Render the site's link-preview image (the Open Graph card) from HTML.
 
     .venv/bin/python tools/og/render.py
-        renders tools/og/og-image.html to assets/og-image.png
+        renders tools/og/og-image.html to assets/og-dipak-bist.png
 
     .venv/bin/python tools/og/render.py SOURCE.html OUTPUT.png [--previews DIR]
         renders any card source; --previews also writes the crops and sizes
@@ -41,7 +41,7 @@ from playwright.sync_api import Route, sync_playwright
 
 REPO = Path(__file__).resolve().parents[2]
 DEFAULT_SOURCE = REPO / "tools" / "og" / "og-image.html"
-DEFAULT_OUTPUT = REPO / "assets" / "og-image.png"
+DEFAULT_OUTPUT = REPO / "assets" / "og-dipak-bist.png"
 
 WIDTH, HEIGHT = 1200, 630
 SAFE_MARGIN = 40

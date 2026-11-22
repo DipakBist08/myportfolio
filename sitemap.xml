@@ -4,10 +4,20 @@
   (blog.dipakbist.com.np) is a separate site with its own sitemap at
   https://blog.dipakbist.com.np/sitemap.xml, so none of its URLs belong here.
   scripts/build-site.sh stamps the homepage's last-modified date into the
-  published copy.
+  published copy, straight after <loc>, where the sitemap schema wants it.
+  The image entries list the page's pictures of Dipak (the About portrait and
+  the link-preview card) so image search can find them. Only image:loc is
+  used: Google retired the other image tags in 2022.
 -->
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
     <loc>https://dipakbist.com.np/</loc>
+    <image:image>
+      <image:loc>https://dipakbist.com.np/assets/dipak-bist-software-qa-engineer.webp</image:loc>
+    </image:image>
+    <image:image>
+      <image:loc>https://dipakbist.com.np/assets/og-dipak-bist.png</image:loc>
+    </image:image>
   </url>
 </urlset>
