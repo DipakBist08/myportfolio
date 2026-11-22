@@ -49,8 +49,11 @@ export default function MDXContent({ source }: MDXContentProps) {
               [rehypePrettyCode, rehypePrettyCodeOptions],
             ],
           },
-          // Allow JSX prop expressions like items={[...]} in MDX content
+          // Allow JSX prop expressions like items={[...]} in MDX content...
           blockJS: false,
+          // ...but strip dangerous ones (eval, Function, process, require,
+          // import...). MDX can come from the CMS now, not only from files.
+          blockDangerousJS: true,
         }}
       />
     </div>

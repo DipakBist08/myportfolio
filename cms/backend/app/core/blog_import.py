@@ -42,6 +42,11 @@ def _imported(db: Session) -> tuple[SiteSetting | None, set[str]]:
         return row, set()
 
 
+def imported_slugs(db: Session) -> set[str]:
+    """Slugs of the original articles the CMS has taken over (imported or already present)."""
+    return _imported(db)[1]
+
+
 def _category(db: Session, name: str) -> Category | None:
     if not name:
         return None

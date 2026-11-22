@@ -1,7 +1,7 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { getAllPostsMeta } from '@/lib/blog/mdx'
+import { getAllPostsMeta } from '@/lib/blog/posts'
 import { getHubs, hubIsIndexable, hubPosts, sortPostsByDate, slugify } from '@/lib/blog/utils'
 import { AUTHOR_LD, BASE_URL } from '@/lib/blog/site'
 import { pageMetadata } from '@/lib/blog/metadata'
@@ -16,16 +16,18 @@ interface Params {
 }
 
 export async function generateStaticParams() {
-  return getHubs(getAllPostsMeta()).map((hub) => ({ category: hub.slug }))
+  return getHubs(await getAllPostsMeta()).map((hub) => ({ category: hub.slug }))
 }
 
 // A hub is a menu section (lib/blog/site.ts) or a category with a post; any
 // other slug is a 404, not an empty page. A section with no published posts
 // yet shows its intro and stays out of search (noindex, not in the sitemap).
-export const dynamicParams = false
+// A category first used by a CMS post is rendered on demand.
+export const dynamicParams = true
+export const revalidate = 60
 
-function resolveCategory(slug: string) {
-  const allPosts = getAllPostsMeta()
+async function resolveCategory(slug: string) {
+  const allPosts = await getAllPostsMeta()
   const hubs = getHubs(allPosts)
   const hub = hubs.find((h) => h.slug === slug)
   const posts = hub ? sortPostsByDate(hubPosts(hub, allPosts)) : []
@@ -35,7 +37,7 @@ function resolveCategory(slug: string) {
 }
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
-  const { hub, label, posts, intro, summary } = resolveCategory(params.category)
+  const { hub, label, posts, intro, summary } = await resolveCategory(params.category)
   if (!hub || !label) return {}
   // The meta description: the cluster's short description, else its intro (both 160 characters or fewer).
   const description =
@@ -51,7 +53,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 }
 
 export default async function CategoryPage({ params }: Params) {
-  const { hubs, label, posts, cluster, intro } = resolveCategory(params.category)
+  const { hubs, label, posts, cluster, intro } = await resolveCategory(params.category)
   if (!label) notFound()
   const allCategories = hubs.map((h) => h.label)
   const categoryLabel = label

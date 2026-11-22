@@ -7,7 +7,7 @@ import PageViewTracker from '@/components/blog/PageViewTracker'
 import ConsentBanner from '@/components/analytics/ConsentBanner'
 import { BASE_URL, HOME_DESCRIPTION, HOME_TITLE, PORTFOLIO_URL, SITE_NAME, TITLE_SUFFIX, X_HANDLE } from '@/lib/blog/site'
 import { DEFAULT_SHARE_IMAGE } from '@/lib/blog/metadata'
-import { getAllPostsMeta } from '@/lib/blog/mdx'
+import { getAllPostsMeta } from '@/lib/blog/posts'
 import { getHubs, slugify } from '@/lib/blog/utils'
 
 export const metadata: Metadata = {
@@ -56,10 +56,10 @@ export const metadata: Metadata = {
    with the portfolio, so a choice made on one site carries to the other. */
 const themeScript = `(function(){try{var s=localStorage.getItem('portfolio-theme');var t=s==='light'||s==='dark'?s:(matchMedia('(prefers-color-scheme: light)').matches?'light':'dark');var h=document.documentElement;h.setAttribute('data-theme',t);h.classList.toggle('light',t==='light');}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();`
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
   // The menu is "Articles" plus the sections in lib/blog/site.ts, in that order.
   // The footer adds every other category hub that has a published post.
-  const hubs = getHubs(getAllPostsMeta().filter((p) => !p.draft))
+  const hubs = getHubs((await getAllPostsMeta()).filter((p) => !p.draft))
   const categoryLinks = hubs.map((h) => ({ href: `/blog/category/${h.slug}`, label: h.label }))
   const menuLinks = hubs
     .filter((h) => h.inMenu)

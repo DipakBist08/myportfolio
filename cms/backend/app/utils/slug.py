@@ -1,3 +1,4 @@
+import math
 from slugify import slugify as _slugify
 from sqlalchemy.orm import Session
 
@@ -21,6 +22,7 @@ def unique_slug(text: str, model, db: Session, exclude_id: int = None) -> str:
 
 
 def estimate_reading_time(text: str) -> int:
-    """Returns estimated minutes (200 wpm average)."""
+    """Estimated minutes at 200 words a minute, rounded up: the same formula as
+    the blog's calculateReadingTime, so a post shows the same time either way."""
     words = len(text.split())
-    return max(1, round(words / 200))
+    return max(1, math.ceil(words / 200))

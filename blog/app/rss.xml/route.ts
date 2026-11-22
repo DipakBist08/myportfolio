@@ -1,10 +1,12 @@
-import { getAllPostsMeta } from '@/lib/blog/mdx'
+import { getAllPostsMeta } from '@/lib/blog/posts'
 import { formatDate } from '@/lib/blog/utils'
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://blog.dipakbist.com.np'
 
+export const revalidate = 60
+
 export async function GET() {
-  const posts = getAllPostsMeta().filter((p) => !p.draft)
+  const posts = (await getAllPostsMeta()).filter((p) => !p.draft)
 
   const rss = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">

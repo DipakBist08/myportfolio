@@ -1,7 +1,10 @@
 """
 What the blog (blog.dipakbist.com.np) reads to show posts written in the CMS.
 
-GET /api/public/blog/posts          every published post, newest first, without its body
+GET /api/public/blog/posts          every published post, newest first, without its body,
+                                    plus `imported_slugs`: the blog's former MDX files the CMS
+                                    now owns (the blog hides those files, so unpublishing or
+                                    deleting one in the CMS takes it off the blog)
 GET /api/public/blog/posts/{slug}   one published post with its body
 
 Only published posts are returned. The body is sanitised HTML (rich-text posts)
@@ -11,8 +14,10 @@ MDX with dangerous JavaScript blocked.
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
 from sqlalchemy.orm import Session, joinedload
 
+from app.core.blog_import import imported_slugs
 from app.database import get_db
 from app.models.post import Post, PostStatus
 from app.schemas.post import BlogPostDetail, BlogPostSummary
@@ -26,9 +31,15 @@ def _published(db: Session):
             .filter(Post.status == PostStatus.PUBLISHED, Post.published_at.isnot(None)))
 
 
-@router.get("/posts", response_model=List[BlogPostSummary])
+class BlogFeed(BaseModel):
+    posts: List[BlogPostSummary]
+    imported_slugs: List[str]
+
+
+@router.get("/posts", response_model=BlogFeed)
 def blog_posts(db: Session = Depends(get_db)):
-    return _published(db).order_by(Post.published_at.desc()).all()
+    posts = _published(db).order_by(Post.published_at.desc()).all()
+    return {"posts": posts, "imported_slugs": sorted(imported_slugs(db))}
 
 
 @router.get("/posts/{slug}", response_model=BlogPostDetail)

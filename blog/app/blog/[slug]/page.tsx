@@ -2,11 +2,13 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import Image from 'next/image'
-import { getAllSlugs, getPostBySlug, getAllPostsMeta } from '@/lib/blog/mdx'
+import { getAllSlugs, getPostBySlug, getAllPostsMeta } from '@/lib/blog/posts'
+import { renderCmsHtml } from '@/lib/blog/html'
 import type { PostMeta } from '@/lib/blog/types'
 import { getRecommendationCandidates, getAdjacentPosts, formatDate, slugify, extractHeadings } from '@/lib/blog/utils'
 import { AUTHOR, AUTHOR_LD, BASE_URL, HOME_URL, SITE_LANGUAGE, SITE_NAME, X_HANDLE, postOgImage, postUrl } from '@/lib/blog/site'
 import MDXContent from '@/components/mdx/MDXContent'
+import HTMLContent from '@/components/mdx/HTMLContent'
 import TableOfContents from '@/components/blog/TableOfContents'
 import PostNavigation from '@/components/blog/PostNavigation'
 import ShareButtons from '@/components/blog/ShareButtons'
@@ -40,18 +42,21 @@ function postKeywords(meta: PostMeta): string[] {
 }
 
 export async function generateStaticParams() {
-  return getAllSlugs().map((slug) => ({ slug }))
+  return (await getAllSlugs()).map((slug) => ({ slug }))
 }
 
-// A slug that is not a visible post is a 404, never an on-demand render.
-export const dynamicParams = false
+// Posts known at build time are pre-rendered. A post published in the CMS
+// later is rendered on its first visit; a slug that is no post is a 404.
+export const dynamicParams = true
+// Every page is refreshed in the background at most once a minute (CMS edits).
+export const revalidate = 60
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
-  const result = getPostBySlug(params.slug)
+  const result = await getPostBySlug(params.slug)
   if (!result) return {}
 
   const { meta } = result
-  const title = meta.title
+  const title = meta.seoTitle ?? meta.title
   const description = meta.description || meta.excerpt
   const url = postUrl(meta.slug)
   const image = { url: postOgImage(meta.slug), width: 1200, height: 630, alt: meta.title }
@@ -87,15 +92,17 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 }
 
 export default async function BlogPostPage({ params }: Params) {
-  const result = getPostBySlug(params.slug)
+  const result = await getPostBySlug(params.slug)
   if (!result) notFound()
 
   const { meta, content } = result
-  const allPosts = getAllPostsMeta()
+  const allPosts = await getAllPostsMeta()
+  // Rich-text CMS posts are HTML; files and Markdown CMS posts are MDX.
+  const rendered = meta.format === 'html' ? await renderCmsHtml(content) : null
   const recommended = getRecommendationCandidates(meta, allPosts)
   const { prev, next } = getAdjacentPosts(meta.slug, allPosts)
   // Section-level headings only: h3s inside templates read as noise in a contents list.
-  const headings = extractHeadings(content).filter((h) => h.level === 2)
+  const headings = (rendered ? rendered.headings : extractHeadings(content)).filter((h) => h.level === 2)
   if (meta.faq?.length) headings.push({ id: FAQ_HEADING_ID, text: 'Frequently asked questions', level: 2 })
 
   const url = postUrl(meta.slug)
@@ -251,7 +258,7 @@ export default async function BlogPostPage({ params }: Params) {
               </Reveal>
             )}
 
-            <MDXContent source={content} />
+            {rendered ? <HTMLContent html={rendered.html} /> : <MDXContent source={content} />}
 
             <FaqSection items={meta.faq} />
 

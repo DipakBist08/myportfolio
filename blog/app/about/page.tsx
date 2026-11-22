@@ -3,7 +3,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import SitePage from '@/components/layout/SitePage'
 import ExternalLink from '@/components/layout/ExternalLink'
-import { getAllPostsMeta } from '@/lib/blog/mdx'
+import { getAllPostsMeta } from '@/lib/blog/posts'
 import { sortPostsByDate } from '@/lib/blog/utils'
 import { AUTHOR, AUTHOR_LD, BASE_URL, PROFILES } from '@/lib/blog/site'
 import { pageMetadata } from '@/lib/blog/metadata'
@@ -31,8 +31,10 @@ const ROLES = [
   { title: 'Quality Assurance Intern', org: 'Moru Digital Wallet', when: 'Mar 2023 to Aug 2023' },
 ]
 
-export default function AboutPage() {
-  const posts = sortPostsByDate(getAllPostsMeta().filter((p) => !p.draft))
+export const revalidate = 60
+
+export default async function AboutPage() {
+  const posts = sortPostsByDate((await getAllPostsMeta()).filter((p) => !p.draft))
 
   return (
     <SitePage title="About Dipak Bist and this blog" intro="Practical notes on software testing, written by a working QA engineer.">

@@ -100,7 +100,9 @@ def test_original_publishing_date_is_kept(client, admin_headers):
 def test_blog_feed_lists_only_published_posts_without_bodies(client, admin_headers):
     create(client, admin_headers, title="Live one", slug="live-one", content=MDX, content_format="mdx", blog_meta=META)
     create(client, admin_headers, title="Draft one", slug="draft-one", status="draft")
-    items = client.get(FEED).json()
+    feed = client.get(FEED).json()
+    items = feed["posts"]
+    assert feed["imported_slugs"] == []
     assert [i["slug"] for i in items] == ["live-one"]
     assert "content" not in items[0]
     assert items[0]["content_format"] == "mdx" and items[0]["blog_meta"]["cluster"] == "qa-fundamentals"
@@ -141,7 +143,8 @@ def test_import_creates_the_three_articles_once(client):
         assert bug.seo_description == expected[bug.slug]["description"]
     finally:
         db.close()
-    assert len(client.get(FEED).json()) == 3
+    feed = client.get(FEED).json()
+    assert len(feed["posts"]) == 3 and feed["imported_slugs"] == sorted(expected)
 
 
 def test_deleted_article_is_not_imported_again(client):
@@ -156,6 +159,10 @@ def test_deleted_article_is_not_imported_again(client):
         assert db.query(Post).filter(Post.slug == "manual-vs-automation-testing").first() is None
     finally:
         db.close()
+    # Still listed as taken over, so the blog keeps the old file hidden too.
+    feed = client.get(FEED).json()
+    assert "manual-vs-automation-testing" in feed["imported_slugs"]
+    assert "manual-vs-automation-testing" not in [p["slug"] for p in feed["posts"]]
 
 
 def test_import_waits_until_an_admin_exists(client):
