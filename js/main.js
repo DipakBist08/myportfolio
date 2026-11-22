@@ -1,13 +1,14 @@
 /* Entry point. Each init is isolated: a failure in one never takes the
    others down, and a failure in the motion layer reveals the page. */
 
-import { initTheme } from './theme.js?v=20261118r';
-import { initNav } from './nav.js?v=20261118r';
-import { initFlow } from './flow.js?v=20261118r';
-import { initMotion, revealAllImmediately } from './motion.js?v=20261118r';
-import { initSubscribe } from './subscribe.js?v=20261118r';
-import { initContact } from './contact.js?v=20261118r';
-import { initVisit } from './visit.js?v=20261118r';
+import { initTheme } from './theme.js?v=20261122a';
+import { initNav } from './nav.js?v=20261122a';
+import { initFlow } from './flow.js?v=20261122a';
+import { initMotion, revealAllImmediately } from './motion.js?v=20261122a';
+import { initSubscribe } from './subscribe.js?v=20261122a';
+import { initContact } from './contact.js?v=20261122a';
+import { initVisit } from './visit.js?v=20261122a';
+import { initAnalytics } from './analytics.js?v=20261122a';
 
 function safe(name, fn) {
     try {
@@ -48,6 +49,8 @@ safe('nav', initNav);
 (window.__introDone || Promise.resolve()).then(() => {
     safe('motion', initMotion);
     safe('flow', initFlow);
+    // The analytics question waits for the film too, so it never covers it.
+    safe('analytics', initAnalytics);
 });
 safe('subscribe', initSubscribe);
 safe('contact', initContact);

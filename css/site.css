@@ -225,6 +225,36 @@
     }
 }
 
+/* Small phones with large text (150% on a 320px screen): the logo, the theme
+   switch and the menu button must still share the header row, or the menu
+   button is pushed off the screen. The logo is capped at about the size
+   100% text gives at this width, and the two buttons stay at the 44px touch
+   size instead of growing with the text. At 100% text nothing changes. */
+@media (max-width: 479px) {
+    .nav {
+        gap: var(--space-2);
+    }
+
+    .nav__logo {
+        font-size: min(1.05rem, 5.6vw);
+    }
+
+    .nav__right .icon-btn {
+        width: min(2.75rem, 44px);
+        height: min(2.75rem, 44px);
+    }
+
+    /* A button label wider than the screen ("Connect on LinkedIn" at 150%)
+       wraps onto a second line instead of running off the side. */
+    .btn {
+        max-width: 100%;
+        white-space: normal;
+        text-align: center;
+        line-height: 1.25;
+        padding-block: var(--space-2);
+    }
+}
+
 /* ----- Buttons ----- */
 .btn {
     display: inline-flex;
@@ -388,6 +418,12 @@
     color: var(--color-text);
 }
 
+/* A phrase stays on one line while it fits; on a narrow screen with large
+   text it wraps between its words rather than splitting one. */
+.hero__phrase {
+    display: inline-block;
+}
+
 .hero__focus + .hero__stack {
     margin-top: calc(var(--space-3) - var(--space-6));
 }
@@ -431,7 +467,7 @@
 
 .spec__file {
     font-family: var(--font-family-mono);
-    font-size: 0.8125rem;
+    font-size: min(0.8125rem, 4.0625vw);
     font-weight: 500;
     letter-spacing: 0;
     color: var(--color-text-muted);
@@ -441,8 +477,8 @@
     display: inline-flex;
     align-items: center;
     gap: var(--space-2);
-    min-width: 4.5rem; /* ready / running / passed: the dot stays put */
-    font-size: 0.75rem;
+    min-width: min(4.5rem, 22.5vw); /* ready / running / passed: the dot stays put */
+    font-size: min(0.75rem, 3.75vw);
     color: var(--color-text-muted);
 }
 
@@ -495,14 +531,18 @@
     --code-decorator: var(--color-accent-soft);
     --code-string: var(--color-text);
     --code-function: var(--color-text);
-    --flow-gutter: 1.75rem;
+    --flow-gutter: min(1.75rem, 8.75vw); /* 28px; capped like the code size */
 }
 
+/* Code size: 12px, and never more than 3.75vw, so on the smallest phones
+   with large text (150% on a 320px screen) the code keeps the size 100%
+   text gives and wraps as designed, instead of breaking every few
+   characters and running past the panel. */
 .flow__code {
     margin: 0;
     padding: var(--space-4) var(--space-3) var(--space-3);
     font-family: var(--font-family-mono);
-    font-size: 0.75rem;
+    font-size: min(0.75rem, 3.75vw);
     line-height: 1.7;
     color: var(--code-text);
     white-space: pre-wrap;
@@ -639,7 +679,7 @@
     padding: var(--space-3) var(--space-4) var(--space-4);
     border-top: 1px solid var(--color-border);
     font-family: var(--font-family-mono);
-    font-size: 0.75rem;
+    font-size: min(0.75rem, 3.75vw);
     line-height: 1.7;
 }
 
@@ -1283,12 +1323,17 @@ html.anim.motion .step.is-again .step__mark::before {
 
 .skill__head {
     display: flex;
+    flex-wrap: wrap;
     align-items: flex-start;
     justify-content: space-between;
-    gap: var(--space-3);
+    gap: var(--space-2) var(--space-3);
 }
 
+/* With large text on a small phone the title and its tier badge can't share
+   a row; the badge then drops under the title instead of squeezing it until
+   words split. */
 .skill__title {
+    flex: 1 1 9rem;
     font-size: var(--font-size-lg);
 }
 
@@ -1327,37 +1372,56 @@ html.anim.motion .step.is-again .step__mark::before {
     color: var(--color-accent-text);
 }
 
+.skills-section .section__lede {
+    max-width: 68ch;
+}
+
+/* The AI card holds two lists, so on a 3-column desktop grid it takes a
+   whole row (3 cards, AI, 3 cards) and sets its lists side by side. */
+.skill--wide {
+    grid-column: 1 / -1;
+}
+
+.skill--wide .skill__desc {
+    max-width: 75ch;
+}
+
+.skill__groups {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-4) var(--space-8);
+}
+
+.skill__group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.skill__label {
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--color-text);
+}
+
 .skill__foot {
     margin-top: auto;
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
+    flex-direction: column;
+    align-items: flex-start;
     gap: var(--space-3);
     padding-top: var(--space-4);
     border-top: 1px solid var(--color-border);
 }
 
-.tools {
-    display: flex;
-    gap: var(--space-2);
-    list-style: none;
-    padding: 0;
+.skill__tools {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
 }
 
-.tool {
-    width: 1.75rem;
-    height: 1.75rem;
-    padding: 0.25rem;
-    border-radius: var(--radius-sm);
-    background: rgb(var(--ink-rgb) / 0.05);
-    display: grid;
-    place-items: center;
-}
-
-.tool svg {
-    width: 100%;
-    height: 100%;
+.skill__tools .skill__label {
+    display: block;
+    margin-bottom: var(--space-1);
 }
 
 .skill__evidence {
@@ -1440,30 +1504,41 @@ html.anim.motion .step.is-again .step__mark::before {
     box-shadow: var(--shadow-md);
 }
 
+/* Worked projects (FigsFlow, AakashTel, Moru): the logo sits in a narrow
+   rail on the left; below 1024px it sits above the text (see the
+   max-width: 1023px block). */
 .project--featured {
     display: grid;
-    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
-    gap: clamp(1.5rem, 4vw, 3rem);
-    align-items: center;
+    grid-template-columns: 11rem minmax(0, 1fr);
+    gap: var(--space-4) clamp(1.5rem, 3vw, 2.5rem);
+    align-items: start;
     margin-bottom: var(--space-4);
     padding: clamp(1.5rem, 3vw, 2.5rem);
 }
 
-/* The product logo is drawn for a white ground, so the tile keeps one in
-   both themes, like a thumbnail would. */
+.project--featured .project__desc {
+    max-width: 72ch;
+}
+
+/* The product logos are drawn for a white ground, so the tile keeps one in
+   both themes. The owner asked for small, rounded logos (about 50px) that
+   show the whole logo: every tile is 50px high, and a wordmark's tile is as
+   wide as the wordmark needs. */
 .project__media {
-    display: grid;
-    place-items: center;
-    aspect-ratio: 4 / 3;
+    justify-self: start;
+    display: flex;
+    align-items: center;
+    height: 3.125rem;
+    padding: 0.375rem 0.625rem;
     border-radius: var(--radius-md);
     background: var(--neutral-50);
     border: 1px solid var(--color-border);
-    padding: var(--space-6);
 }
 
 .project__media img {
-    width: min(100%, 320px);
-    height: auto;
+    width: auto;
+    height: 100%;
+    max-width: none;
 }
 
 .project__body {
@@ -1475,9 +1550,10 @@ html.anim.motion .step.is-again .step__mark::before {
 
 .project__kicker {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    gap: var(--space-3);
+    gap: var(--space-1) var(--space-3);
 }
 
 .project__type {
@@ -1538,7 +1614,7 @@ html.anim.motion .step.is-again .step__mark::before {
 
 .capabilities {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(15rem, 100%), 1fr));
     gap: var(--space-2) var(--space-6);
     margin: 0;
     padding: 0;
@@ -1704,6 +1780,7 @@ html.anim.motion .step.is-again .step__mark::before {
 }
 
 .contact__form {
+    container: contact-form / inline-size;
     display: flex;
     flex-direction: column;
     gap: var(--space-4);
@@ -1717,10 +1794,18 @@ html.anim.motion .step.is-again .step__mark::before {
     font-size: var(--font-size-lg);
 }
 
+/* One field per row, so a whole email address stays visible. Name and email
+   sit side by side only when the form itself is wide enough for both. */
 .contact__form-row {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1fr);
     gap: var(--space-4);
+}
+
+@container contact-form (min-width: 40rem) {
+    .contact__form-row {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
 }
 
 .contact__form .field {
@@ -1943,6 +2028,91 @@ html.anim.motion .step.is-again .step__mark::before {
     gap: var(--space-1);
 }
 
+/* "Cookie settings" (js/analytics.js): a button that reads as a footer link. */
+.footer__cookies {
+    min-height: 2.75rem;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    cursor: pointer;
+}
+
+.footer__cookies:hover {
+    color: var(--color-text);
+}
+
+/* ----- Analytics consent (js/analytics.js) -----
+   Above the page and the back-to-top button, under the opening film and the
+   open menu's overlay level. Decline and Allow look the same on purpose. */
+.consent {
+    position: fixed;
+    left: var(--space-4);
+    right: var(--space-4);
+    bottom: var(--space-4);
+    z-index: var(--z-overlay);
+    max-width: 34rem;
+    max-height: calc(100dvh - var(--header-height) - var(--space-8));
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-4) var(--space-5);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+}
+
+.consent[hidden] {
+    display: none;
+}
+
+.consent__text {
+    margin: 0;
+    max-width: none;
+}
+
+.consent__text strong {
+    color: var(--color-text);
+}
+
+.consent__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+}
+
+.consent__actions .btn {
+    flex: 1 1 8rem;
+}
+
+/* Small phones: less margin and padding, and the two buttons side by side,
+   so both stay on screen with large text. */
+@media (max-width: 479px) {
+    .consent {
+        left: var(--space-2);
+        right: var(--space-2);
+        bottom: var(--space-2);
+        padding: var(--space-3) var(--space-3);
+    }
+
+    .consent__actions {
+        flex-wrap: nowrap;
+    }
+
+    .consent__actions .btn {
+        flex: 1 1 0;
+        min-width: 0;
+        padding-inline: var(--space-2);
+    }
+}
+
 /* ----- Back to top ----- */
 .totop {
     position: fixed;
@@ -2002,6 +2172,20 @@ html.anim.motion .step.is-again .step__mark::before {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
+    /* Two columns: the AI card is an ordinary card again, and the last
+       card takes the full row instead of leaving a gap beside it. */
+    .skill--wide {
+        grid-column: auto;
+    }
+
+    .skill__groups {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .skills > .skill:last-child:nth-child(odd) {
+        grid-column: 1 / -1;
+    }
+
 }
 
 @media (max-width: 767px) {
@@ -2023,7 +2207,6 @@ html.anim.motion .step.is-again .step__mark::before {
 
     .subscribe,
     .subscribe__form,
-    .contact__form-row,
     .footer__grid {
         grid-template-columns: minmax(0, 1fr);
     }

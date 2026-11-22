@@ -39,7 +39,7 @@ export default function AboutPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(aboutLd) }} />
 
       <h2>Who writes it</h2>
-      <div className="not-prose my-6 flex items-center gap-4">
+      <div className="not-prose my-6 flex flex-wrap items-center gap-4">
         <Image
           src="/dipak-bist.png"
           alt="Dipak Bist, Software QA Engineer"
@@ -48,7 +48,7 @@ export default function AboutPage() {
           sizes="96px"
           className="h-24 w-24 shrink-0 rounded-full border border-line object-cover"
         />
-        <p className="text-muted">
+        <p className="min-w-[10rem] flex-1 text-muted">
           <span className="block text-lg font-semibold text-ink">{AUTHOR.name}</span>
           {AUTHOR.jobTitle} &middot; {AUTHOR.location}
         </p>
@@ -82,8 +82,8 @@ export default function AboutPage() {
 
       <h3>Projects</h3>
       <p>
-        FigsFlow, a REST API Testing Framework, Digital Wallet QA (Mobile &amp; Web), a BDD Test Framework and the
-        Dreamer&apos;s Youth Club website, each described under{' '}
+        The worked projects FigsFlow, AakashTel and Moru-Digital Wallet, plus a REST API Testing Framework, a BDD Test
+        Framework and the Dreamer&apos;s Youth Club website, each described under{' '}
         <ExternalLink href={`${AUTHOR.url}#projects`}>Projects</ExternalLink> on my portfolio.
       </p>
 

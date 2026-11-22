@@ -12,10 +12,16 @@ export const SITE_NAME = 'Dipak Bist QA Blog'
 export const TITLE_SUFFIX = ' | Dipak Bist'
 export const SITE_LANGUAGE = 'en-US'
 
-/** The home page's title and description (SEO brief of 18/11/2026, Part 8). */
-export const HOME_TITLE = 'Software QA & Test Automation Blog | Dipak Bist'
+/** The home page's title and description, and the blog's own description: the owner's
+ *  QA-blog SEO brief of 19/11/2026 (Phase 3), with the author's name as Bist. The title is
+ *  70 characters, longer than a results page shows; the owner chose it, and its first part
+ *  carries the topic. */
+export const HOME_TITLE = 'QA Engineering Blog | Playwright, Automation & AI Testing – Dipak Bist'
 export const HOME_DESCRIPTION =
-  'Practical software testing tutorials covering Playwright, Python, API testing, Selenium, Pytest, manual QA, automation and AI-assisted Quality Engineering.'
+  'Explore practical QA engineering tutorials, software testing, Playwright automation, AI-powered testing, AI agents, API testing and CI/CD insights by Dipak Bist.'
+/* The owner added database and performance testing to the home heading and this description (19/11/2026). */
+export const SITE_DESCRIPTION =
+  'A practical knowledge hub covering Quality Assurance, software testing, Playwright automation, AI-powered testing, AI agents, API, database and performance testing, and modern QA engineering practices.'
 
 /** The author's X account, for twitter:site and twitter:creator on every page. */
 export const X_HANDLE = '@Deepak_B_08'

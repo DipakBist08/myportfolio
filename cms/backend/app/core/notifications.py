@@ -9,6 +9,7 @@ successful row already exists for a post, the announcement is skipped. That is
 what makes re-publishing, editing a published post, or a bulk status change
 safe to do without emailing the list again.
 """
+import asyncio
 import html
 import logging
 
@@ -206,30 +207,35 @@ def _strip_html(text: str) -> str:
     return re.sub(r"<[^>]+>", "", text or "").strip()
 
 
-async def fetch_latest_post(timeout: float = 10.0) -> dict | None:
-    """Newest <item> from the blog RSS, or None if unavailable."""
+async def fetch_feed_posts(timeout: float = 10.0) -> list[dict]:
+    """Every <item> in the blog RSS, in feed order (newest first)."""
     async with httpx.AsyncClient(timeout=timeout, follow_redirects=True) as client:
         resp = await client.get(_rss_url())
         resp.raise_for_status()
         root = ET.fromstring(resp.text)
 
-    item = root.find(".//item")
-    if item is None:
-        return None
+    posts = []
+    for item in root.iter("item"):
+        def text(tag: str) -> str:
+            el = item.find(tag)
+            return (el.text or "").strip() if el is not None and el.text else ""
 
-    def text(tag: str) -> str:
-        el = item.find(tag)
-        return (el.text or "").strip() if el is not None and el.text else ""
+        link = text("link") or text("guid")
+        if not link:
+            continue
+        posts.append({
+            "title": text("title") or "New post",
+            "link": link,
+            "description": _strip_html(text("description"))[:400],
+            "published": text("pubDate"),
+        })
+    return posts
 
-    link = text("link") or text("guid")
-    if not link:
-        return None
-    return {
-        "title": text("title") or "New post",
-        "link": link,
-        "description": _strip_html(text("description"))[:400],
-        "published": text("pubDate"),
-    }
+
+async def fetch_latest_post(timeout: float = 10.0) -> dict | None:
+    """Newest <item> from the blog RSS, or None if the feed has none."""
+    posts = await fetch_feed_posts(timeout)
+    return posts[0] if posts else None
 
 
 def build_rss_announcement_html(post: dict) -> str:
@@ -277,44 +283,137 @@ async def announce_latest_from_rss(force: bool = False) -> dict:
             return {"skipped": "already announced", "title": post["title"],
                     "announced_at": str(existing.created_at)}
 
-        subs = (db.query(Subscriber)
-                .filter(Subscriber.is_active == True,          # noqa: E712
-                        Subscriber.is_unsubscribed == False)   # noqa: E712
-                .all())
+        subs = _active_subscribers(db)
         if not subs:
             return {"skipped": "no confirmed subscribers", "title": post["title"]}
 
-        recipients = [{"email": s.email, "name": s.name or "",
-                       "unsubscribe_token": s.unsubscribe_token or ""} for s in subs]
-
-        result = await send_newsletter(
-            recipients,
-            subject=post["title"],
-            content_html=build_rss_announcement_html(post),
-            blog_url=post["link"],
-        )
-
-        sent, failed = result.get("sent", 0), result.get("failed", 0)
-        status = "partial" if (failed and sent) else ("failed" if failed else "sent")
-        errors = "\n".join(result.get("errors", []) or [])[:2000] or None
-
-        if existing:
-            existing.status, existing.recipients, existing.failed = status, sent, failed
-            existing.error = errors
-            existing.delivered = 1 if settings.emails_enabled else 0
-            existing.title = post["title"]
-        else:
-            db.add(Announcement(
-                source_key=post["link"], title=post["title"], status=status,
-                recipients=sent, failed=failed, error=errors,
-                delivered=1 if settings.emails_enabled else 0,
-            ))
-        db.commit()
-
-        logger.info("announce_latest_from_rss: %r -> %s (%d sent, %d failed)",
-                    post["title"], status, sent, failed)
-        return {"status": status, "title": post["title"], "link": post["link"],
-                "sent": sent, "failed": failed,
-                "delivered": bool(settings.emails_enabled)}
+        return await _send_and_record(db, post, existing, subs)
     finally:
         db.close()
+
+
+def _active_subscribers(db) -> list:
+    return (db.query(Subscriber)
+            .filter(Subscriber.is_active == True,          # noqa: E712
+                    Subscriber.is_unsubscribed == False)   # noqa: E712
+            .all())
+
+
+def _record(db, post: dict, existing, status: str, sent: int = 0, failed: int = 0,
+            error: str | None = None) -> None:
+    if existing:
+        existing.status, existing.recipients, existing.failed = status, sent, failed
+        existing.error = error
+        existing.delivered = 1 if settings.emails_enabled else 0
+        existing.title = post["title"]
+    else:
+        db.add(Announcement(
+            source_key=post["link"], title=post["title"], status=status,
+            recipients=sent, failed=failed, error=error,
+            delivered=1 if settings.emails_enabled else 0,
+        ))
+    db.commit()
+
+
+async def _send_and_record(db, post: dict, existing, subs: list) -> dict:
+    """Email one feed article to `subs` and record the outcome."""
+    recipients = [{"email": s.email, "name": s.name or "",
+                   "unsubscribe_token": s.unsubscribe_token or ""} for s in subs]
+
+    result = await send_newsletter(
+        recipients,
+        subject=post["title"],
+        content_html=build_rss_announcement_html(post),
+        blog_url=post["link"],
+    )
+
+    sent, failed = result.get("sent", 0), result.get("failed", 0)
+    status = "partial" if (failed and sent) else ("failed" if failed else "sent")
+    errors = "\n".join(result.get("errors", []) or [])[:2000] or None
+    _record(db, post, existing, status, sent, failed, errors)
+
+    logger.info("announce: %r -> %s (%d sent, %d failed)", post["title"], status, sent, failed)
+    return {"status": status, "title": post["title"], "link": post["link"],
+            "sent": sent, "failed": failed,
+            "delivered": bool(settings.emails_enabled)}
+
+
+# ── Automatic announcements ───────────────────────────────────────────────────
+#
+# A scheduled job (.github/workflows/announce-new-articles.yml) calls
+# POST /api/public/announcements/check, which runs announce_new_from_rss().
+# Every article that appears in the blog feed is emailed to subscribers once.
+
+# Recorded the first time the automatic check runs. Articles already in the feed
+# at that moment are marked "skipped", so switching this on, or a database that
+# starts empty, never emails the list about old articles.
+BASELINE_KEY = "auto:baseline"
+
+# More new articles than this in one check is not someone publishing; it is the
+# feed itself changing (for example the post URLs or BLOG_URL). Those are
+# recorded as skipped rather than emailing the list about every old article.
+MAX_NEW_PER_CHECK = 3
+
+_check_lock = asyncio.Lock()
+
+
+async def announce_new_from_rss() -> dict:
+    """
+    Email subscribers about each article in the blog feed not yet announced.
+
+    Safe to call as often as you like: an article is announced once. A failed
+    send (for example while RESEND_API_KEY is unset) is retried on the next call.
+    The answer lists article titles only, never subscribers or their number,
+    because the endpoint that calls this is public.
+    """
+    if _check_lock.locked():
+        return {"skipped": "a check is already running"}
+    async with _check_lock:
+        try:
+            posts = await fetch_feed_posts()
+        except Exception:
+            logger.exception("announce_new_from_rss: could not read %s", _rss_url())
+            return {"error": "could not read the blog feed"}
+
+        db = SessionLocal()
+        try:
+            rows = {a.source_key: a for a in db.query(Announcement).all()}
+
+            if BASELINE_KEY not in rows:
+                marked = 0
+                for post in posts:
+                    row = rows.get(post["link"])
+                    if row is None or row.status not in Announcement.SUCCESSFUL:
+                        _record(db, post, row, "skipped",
+                                error="Already in the feed when automatic announcements started.")
+                        marked += 1
+                _record(db, {"link": BASELINE_KEY, "title": "Automatic announcements started"},
+                        None, "skipped")
+                logger.info("announce_new_from_rss: baseline, %d existing articles not announced", marked)
+                return {"started": True, "existing_articles_not_announced": marked}
+
+            # Oldest first, so subscribers get articles in publishing order.
+            new = [p for p in reversed(posts)
+                   if p["link"] not in rows or rows[p["link"]].status == "failed"]
+            if not new:
+                return {"announced": []}
+
+            if len(new) > MAX_NEW_PER_CHECK:
+                for post in new:
+                    _record(db, post, rows.get(post["link"]), "skipped",
+                            error=f"{len(new)} new articles at once; not announced automatically.")
+                logger.warning("announce_new_from_rss: %d new articles at once, none announced", len(new))
+                return {"skipped": f"{len(new)} new articles at once; announce them from the admin if wanted"}
+
+            announced = []
+            for post in new:
+                subs = _active_subscribers(db)
+                if not subs:
+                    _record(db, post, rows.get(post["link"]), "skipped", error="No subscribers yet.")
+                    announced.append({"title": post["title"], "status": "skipped"})
+                    continue
+                result = await _send_and_record(db, post, rows.get(post["link"]), subs)
+                announced.append({"title": post["title"], "status": result["status"]})
+            return {"announced": announced}
+        finally:
+            db.close()

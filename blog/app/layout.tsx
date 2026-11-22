@@ -4,6 +4,7 @@ import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import { ThemeProvider } from '@/components/layout/ThemeProvider'
 import PageViewTracker from '@/components/blog/PageViewTracker'
+import ConsentBanner from '@/components/analytics/ConsentBanner'
 import { BASE_URL, HOME_DESCRIPTION, HOME_TITLE, PORTFOLIO_URL, SITE_NAME, TITLE_SUFFIX, X_HANDLE } from '@/lib/blog/site'
 import { DEFAULT_SHARE_IMAGE } from '@/lib/blog/metadata'
 import { getAllPostsMeta } from '@/lib/blog/mdx'
@@ -87,6 +88,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <main id="main" className="flex-1" tabIndex={-1}>{children}</main>
           <Footer categoryLinks={categoryLinks} />
           <PageViewTracker />
+          <ConsentBanner />
         </ThemeProvider>
       </body>
     </html>

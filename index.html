@@ -10,6 +10,8 @@
     <link rel="canonical" href="https://dipakbist.com.np/">
     <meta name="robots" content="index, follow, max-image-preview:large">
     <meta name="author" content="Dipak Bist">
+    <!-- Google Analytics 4 measurement ID (G-...). Empty = off: no banner, nothing from Google. See js/analytics.js. -->
+    <meta name="ga-measurement-id" content="">
     <meta name="color-scheme" content="dark light">
     <meta name="theme-color" content="#0b0b0e" media="(prefers-color-scheme: dark)">
     <meta name="theme-color" content="#fafafa" media="(prefers-color-scheme: light)">
@@ -180,10 +182,10 @@
 
     <!-- Fonts are self-hosted (assets/fonts). Preload only the display face. -->
     <link rel="preload" href="assets/fonts/bricolage-grotesque-latin.woff2" as="font" type="font/woff2" crossorigin>
-    <link rel="stylesheet" href="css/tokens.css?v=20261118r">
-    <link rel="stylesheet" href="css/base.css?v=20261118r">
-    <link rel="stylesheet" href="css/site.css?v=20261118r">
-    <link rel="stylesheet" href="css/intro.css?v=20261118r">
+    <link rel="stylesheet" href="css/tokens.css?v=20261122a">
+    <link rel="stylesheet" href="css/base.css?v=20261122a">
+    <link rel="stylesheet" href="css/site.css?v=20261122a">
+    <link rel="stylesheet" href="css/intro.css?v=20261122a">
 </head>
 
 <body>
@@ -240,7 +242,7 @@
                         <span class="hero__line" data-reveal>Dipak Bist</span>
                         <span class="hero__line hero__line--role" data-reveal>Software QA Engineer</span>
                     </h1>
-                    <p class="hero__lede hero__focus" data-reveal>Test&nbsp;Automation&nbsp;<span class="hero__sep">|</span> AI&nbsp;Quality&nbsp;Engineering&nbsp;<span class="hero__sep">|</span> API&nbsp;&amp;&nbsp;Quality&nbsp;Assurance</p>
+                    <p class="hero__lede hero__focus" data-reveal><span class="hero__phrase">Test Automation&nbsp;<span class="hero__sep">|</span></span> <span class="hero__phrase">AI Quality Engineering&nbsp;<span class="hero__sep">|</span></span> <span class="hero__phrase">API &amp; Quality Assurance</span></p>
                     <p class="hero__lede hero__stack" data-reveal>Playwright&nbsp;<span class="hero__sep">·</span> Python&nbsp;<span class="hero__sep">·</span> Pytest&nbsp;<span class="hero__sep">·</span> Selenium&nbsp;<span class="hero__sep">·</span> Postman&nbsp;<span class="hero__sep">·</span> <strong>AI System Reliability &amp; Regression Testing</strong></p>
                     <div class="hero__actions" data-reveal>
                         <a class="btn btn--primary" href="#projects">View my work <svg class="icon" viewBox="0 0 256 256" aria-hidden="true"><path d="M221.66,133.66l-72,72a8,8,0,0,1-11.32-11.32L196.69,136H40a8,8,0,0,1,0-16H196.69L138.34,61.66a8,8,0,0,1,11.32-11.32l72,72A8,8,0,0,1,221.66,133.66Z"/></svg></a>
@@ -292,9 +294,8 @@
                 </div>
                 <div class="about__grid">
                     <div class="about__identity" data-reveal>
-                        <!-- TODO: Dipak to supply a higher-resolution portrait (800px+). This is the only copy:
-                             192x192, rendered at 160px here so it stays sharp. It is also the Person image. -->
-                        <img class="about__portrait" src="assets/dipak-bist-software-qa-engineer.webp" alt="Dipak Bist, Software QA Engineer, Kathmandu" width="192" height="192" loading="lazy" decoding="async">
+                        <!-- 800x800, shown at 160px here. The same file is the Person image for search engines. -->
+                        <img class="about__portrait" src="assets/dipak-bist-software-qa-engineer.webp?v=20261122" alt="Dipak Bist, Software QA Engineer, Kathmandu" width="800" height="800" loading="lazy" decoding="async">
                         <ul class="about__facts" aria-label="Quick facts">
                             <li class="tag">4+ Years Experience</li>
                             <li class="tag tag--neutral">Kathmandu, Nepal</li>
@@ -431,90 +432,121 @@
             <div class="container">
                 <div class="section__head" data-reveal>
                     <h2 id="skills-heading">Skills &amp; Expertise</h2>
+                    <p class="section__lede">My approach to Quality Engineering combines structured testing, automation, API validation and AI-assisted workflows. I focus on identifying risks early, validating real-world user journeys and providing actionable feedback that helps teams deliver reliable software.</p>
                 </div>
                 <ul class="skills" data-reveal data-reveal-group>
                     <li class="skill">
                         <div class="skill__head"><h3 class="skill__title">Manual &amp; Functional Testing</h3><span class="tier tier--core">Core</span></div>
-                        <p class="skill__desc">I own the manual coverage for a platform that accountancy practices run their client work through. The judgement call is where to go deep and where a quick check is enough.</p>
+                        <p class="skill__desc">I design and execute risk-based manual testing for SaaS platforms used by accountancy practices to manage their client workflows. My focus is understanding business requirements, identifying potential failure points and ensuring critical user journeys work as expected.</p>
                         <ul class="skill__points">
-                            <li>Risk-based test design — I rank features by how much damage a failure does, and test the expensive ones hardest</li>
-                            <li>Charter-driven exploratory sessions, to catch what scripted cases never look for</li>
-                            <li>Requirement-to-test traceability, so I can show which case covers which requirement</li>
+                            <li>Risk-based test design — prioritising features according to business impact, user risk and failure severity.</li>
+                            <li>Charter-driven exploratory testing to uncover unexpected behaviour beyond predefined test cases.</li>
+                            <li>Requirement-to-test traceability to maintain visibility between business requirements, test scenarios and execution results.</li>
+                            <li>Functional, integration, regression and user acceptance testing across critical workflows.</li>
                         </ul>
                         <div class="skill__foot">
-                            <a class="skill__evidence" href="https://blog.dipakbist.com.np/blog/manual-vs-automation-testing" target="_blank" rel="noopener">Read: when to automate and when not to <svg class="icon" viewBox="0 0 256 256" aria-hidden="true"><path d="M200,64V168a8,8,0,0,1-16,0V83.31L69.66,197.66a8,8,0,0,1-11.32-11.32L172.69,72H88a8,8,0,0,1,0-16H192A8,8,0,0,1,200,64Z"/></svg></a>
+                            <a class="skill__evidence" href="https://blog.dipakbist.com.np/blog/manual-vs-automation-testing" target="_blank" rel="noopener">Read: When to automate and when not to <svg class="icon" viewBox="0 0 256 256" aria-hidden="true"><path d="M200,64V168a8,8,0,0,1-16,0V83.31L69.66,197.66a8,8,0,0,1-11.32-11.32L172.69,72H88a8,8,0,0,1,0-16H192A8,8,0,0,1,200,64Z"/></svg></a>
                         </div>
                     </li>
                     <li class="skill">
                         <div class="skill__head"><h3 class="skill__title">Test Automation</h3><span class="tier tier--core">Core</span></div>
-                        <p class="skill__desc">Playwright with Python is my primary stack, and Selenium with Behave covers my earlier BDD work. I lean on fixtures and shared selectors so a suite stays cheap to maintain as the product moves.</p>
+                        <p class="skill__desc">Playwright with Python is my primary automation stack, supported by Selenium and Behave for BDD-based automation. I focus on building maintainable, reusable test frameworks using structured test organisation, fixtures and shared test utilities.</p>
                         <ul class="skill__points">
-                            <li>Pytest fixtures for setup, teardown and pre-authenticated sessions</li>
-                            <li>One source of truth for selectors, so a UI change is a one-line fix</li>
-                            <li>Allure reporting, and the same suite run across Chromium, Firefox and WebKit</li>
+                            <li>Pytest fixtures for test setup, teardown, reusable test data and pre-authenticated sessions.</li>
+                            <li>Playwright automation for browser-based workflows and end-to-end scenarios.</li>
+                            <li>Reusable selectors and automation components to reduce maintenance when application interfaces change.</li>
+                            <li>Cross-browser test execution across Chromium, Firefox and WebKit.</li>
+                            <li>Allure reporting for clear test execution results and failure analysis.</li>
                         </ul>
                         <div class="skill__foot">
-                            <ul class="tools" aria-label="Tools">
-                                <li class="tool" title="Playwright"><svg viewBox="0 0 24 24" fill="none" role="img" aria-label="Playwright"><path d="M7 3a4 4 0 00-4 4v6a4 4 0 004 4h10a4 4 0 004-4V7a4 4 0 00-4-4H7z" stroke="#2dd4bf" stroke-width="2"/><circle cx="9" cy="9" r="1.5" fill="#2dd4bf"/><circle cx="15" cy="9" r="1.5" fill="#2dd4bf"/><path d="M7 13a5 5 0 0010 0" stroke="#2dd4bf" stroke-width="2" stroke-linecap="round"/><path d="M12 17v4M8 21h8" stroke="#2dd4bf" stroke-width="2" stroke-linecap="round"/></svg></li>
-                                <li class="tool" title="Selenium"><svg viewBox="0 0 24 24" fill="none" role="img" aria-label="Selenium"><circle cx="12" cy="12" r="2" fill="#43b02a"/><ellipse cx="12" cy="12" rx="10" ry="4" stroke="#43b02a" stroke-width="2"/><ellipse cx="12" cy="12" rx="10" ry="4" stroke="#43b02a" stroke-width="2" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="10" ry="4" stroke="#43b02a" stroke-width="2" transform="rotate(120 12 12)"/></svg></li>
-                                <li class="tool" title="Python"><svg viewBox="0 0 128 128" role="img" aria-label="Python"><linearGradient id="python-original-a" gradientUnits="userSpaceOnUse" x1="70.252" y1="1237.476" x2="170.659" y2="1151.089" gradientTransform="matrix(.563 0 0 -.568 -29.215 707.817)"><stop offset="0" stop-color="#5A9FD4"/><stop offset="1" stop-color="#306998"/></linearGradient><linearGradient id="python-original-b" gradientUnits="userSpaceOnUse" x1="209.474" y1="1098.811" x2="173.62" y2="1149.537" gradientTransform="matrix(.563 0 0 -.568 -29.215 707.817)"><stop offset="0" stop-color="#FFD43B"/><stop offset="1" stop-color="#FFE873"/></linearGradient><path fill="url(#python-original-a)" d="M63.391 1.988c-4.222.02-8.252.379-11.8 1.007-10.45 1.846-12.346 5.71-12.346 12.837v9.411h24.693v3.137H29.977c-7.176 0-13.46 4.313-15.426 12.521-2.268 9.405-2.368 15.275 0 25.096 1.755 7.311 5.947 12.519 13.124 12.519h8.491V67.234c0-8.151 7.051-15.34 15.426-15.34h24.665c6.866 0 12.346-5.654 12.346-12.548V15.833c0-6.693-5.646-11.72-12.346-12.837-4.244-.706-8.645-1.027-12.866-1.008zM50.037 9.557c2.55 0 4.634 2.117 4.634 4.721 0 2.593-2.083 4.69-4.634 4.69-2.56 0-4.633-2.097-4.633-4.69-.001-2.604 2.073-4.721 4.633-4.721z" transform="translate(0 10.26)"/><path fill="url(#python-original-b)" d="M91.682 28.38v10.966c0 8.5-7.208 15.655-15.426 15.655H51.591c-6.756 0-12.346 5.783-12.346 12.549v23.515c0 6.691 5.818 10.628 12.346 12.547 7.816 2.297 15.312 2.713 24.665 0 6.216-1.801 12.346-5.423 12.346-12.547v-9.412H63.938v-3.138h37.012c7.176 0 9.852-5.005 12.348-12.519 2.578-7.735 2.467-15.174 0-25.096-1.774-7.145-5.161-12.521-12.348-12.521h-9.268zM77.809 87.927c2.561 0 4.634 2.097 4.634 4.692 0 2.602-2.074 4.719-4.634 4.719-2.55 0-4.633-2.117-4.633-4.719 0-2.595 2.083-4.692 4.633-4.692z" transform="translate(0 10.26)"/></svg></li>
-                            </ul>
+                            <p class="skill__tools"><strong class="skill__label">Tools &amp; Technologies:</strong> Playwright&nbsp;· Python&nbsp;· Pytest&nbsp;· Selenium&nbsp;· Behave&nbsp;· Allure</p>
                             <a class="skill__evidence" href="https://github.com/DipakBist08/BDD_Framework-" target="_blank" rel="noopener noreferrer">See the BDD framework on GitHub <svg class="icon" viewBox="0 0 256 256" aria-hidden="true"><path d="M200,64V168a8,8,0,0,1-16,0V83.31L69.66,197.66a8,8,0,0,1-11.32-11.32L172.69,72H88a8,8,0,0,1,0-16H192A8,8,0,0,1,200,64Z"/></svg></a>
                         </div>
                     </li>
                     <li class="skill">
                         <div class="skill__head"><h3 class="skill__title">API Testing</h3><span class="tier tier--core">Core</span></div>
-                        <p class="skill__desc">I work at the service layer as well as in the browser. In practice that means Postman collections per environment, plus Python Requests for the checks I want living inside the automated suite.</p>
+                        <p class="skill__desc">I validate application functionality at the service layer, ensuring that APIs behave correctly, handle authentication securely and return consistent, well-structured responses. I use Postman for exploratory and environment-based API testing, alongside Python Requests for automated API validation.</p>
                         <ul class="skill__points">
-                            <li>Auth and refresh-token flows, including expiry and re-issue</li>
-                            <li>Status code, header and JSON Schema response validation</li>
-                            <li>Environment-driven runs, so one collection covers dev and staging</li>
+                            <li>API validation covering HTTP methods, status codes, headers and response payloads.</li>
+                            <li>Authentication and refresh-token workflows, including token expiry and re-issue scenarios.</li>
+                            <li>JSON Schema validation to verify response structure and data consistency.</li>
+                            <li>Environment-driven Postman collections for testing across development and staging environments.</li>
+                            <li>Positive, negative and boundary-value API testing.</li>
                         </ul>
                         <div class="skill__foot">
-                            <ul class="tools" aria-label="Tools">
-                                <li class="tool" title="Postman"><svg viewBox="0 0 24 24" fill="none" role="img" aria-label="Postman"><circle cx="12" cy="12" r="10" stroke="#ff6c37" stroke-width="2"/><path d="M13 2l-8 11h7l-1 9 8-11h-7l1-9z" fill="#ff6c37"/></svg></li>
-                            </ul>
-                            <a class="skill__evidence" href="https://blog.dipakbist.com.np/blog/playwright-api-testing-guide" target="_blank" rel="noopener">Read: testing REST APIs with Playwright <svg class="icon" viewBox="0 0 256 256" aria-hidden="true"><path d="M200,64V168a8,8,0,0,1-16,0V83.31L69.66,197.66a8,8,0,0,1-11.32-11.32L172.69,72H88a8,8,0,0,1,0-16H192A8,8,0,0,1,200,64Z"/></svg></a>
+                            <p class="skill__tools"><strong class="skill__label">Tools &amp; Technologies:</strong> Postman&nbsp;· Python Requests&nbsp;· JSON&nbsp;· REST APIs&nbsp;· JSON Schema</p>
+                            <a class="skill__evidence" href="https://blog.dipakbist.com.np/blog/playwright-api-testing-guide" target="_blank" rel="noopener">Read: Testing REST APIs with Playwright <svg class="icon" viewBox="0 0 256 256" aria-hidden="true"><path d="M200,64V168a8,8,0,0,1-16,0V83.31L69.66,197.66a8,8,0,0,1-11.32-11.32L172.69,72H88a8,8,0,0,1,0-16H192A8,8,0,0,1,200,64Z"/></svg></a>
+                        </div>
+                    </li>
+                    <li class="skill skill--wide">
+                        <div class="skill__head"><h3 class="skill__title">AI-Assisted QA &amp; AI Feature Testing</h3><span class="tier tier--core">Core</span></div>
+                        <p class="skill__desc">I integrate AI tools into my day-to-day Quality Engineering workflow to improve productivity, accelerate test development and support investigation. I use AI as an assistant for reasoning, analysis and test preparation while maintaining independent QA judgement and validating every generated result.</p>
+                        <div class="skill__groups">
+                            <div class="skill__group">
+                                <h4 class="skill__label">AI-Assisted QA:</h4>
+                                <ul class="skill__points">
+                                    <li>Test scenario generation and brainstorming edge cases from business requirements.</li>
+                                    <li>AI-assisted development of automation scripts, test utilities and reusable test components.</li>
+                                    <li>Analysing error logs, stack traces and test failures to support debugging and investigation.</li>
+                                    <li>Refining test documentation, defect reports and technical explanations.</li>
+                                    <li>Reviewing test coverage and identifying potential gaps in existing scenarios.</li>
+                                </ul>
+                            </div>
+                            <div class="skill__group">
+                                <h4 class="skill__label">AI Feature Testing:</h4>
+                                <ul class="skill__points">
+                                    <li>Validating AI-generated responses for accuracy, relevance and consistency.</li>
+                                    <li>Testing prompt handling, instruction-following and behaviour with ambiguous or unexpected inputs.</li>
+                                    <li>Identifying hallucinations, misleading responses and inconsistent outputs.</li>
+                                    <li>Evaluating edge cases, error handling and graceful failure behaviour in AI-powered features.</li>
+                                    <li>Checking whether AI functionality behaves reliably against defined requirements and expected outcomes.</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="skill__foot">
+                            <p class="skill__tools"><strong class="skill__label">Tools &amp; Technologies:</strong> Claude Code&nbsp;· AI-Assisted Test Design&nbsp;· AI-Assisted Automation&nbsp;· Prompt-Based Testing</p>
                         </div>
                     </li>
                     <li class="skill">
                         <div class="skill__head"><h3 class="skill__title">Test Management &amp; Agile QA</h3><span class="tier tier--core">Core</span></div>
-                        <p class="skill__desc">I keep the QA side of a Scrum team legible — what is under test, what is blocked and what is ready. Defects live in Jira or Azure DevOps Boards depending on the project.</p>
+                        <p class="skill__desc">I work closely with development and product teams to maintain visibility throughout the QA lifecycle. My focus is keeping testing progress, defects, risks and release readiness transparent and actionable within an Agile environment.</p>
                         <ul class="skill__points">
-                            <li>Defects triaged, prioritised and driven through to verified, not just logged</li>
-                            <li>I take the QA slot in refinement so testability is agreed before build starts</li>
-                            <li>Confluence for test documentation the rest of the team can actually find</li>
+                            <li>Defect reporting, triage, prioritisation and verification through to resolution.</li>
+                            <li>Participation in refinement discussions to identify testability concerns and clarify acceptance criteria before development.</li>
+                            <li>Test planning, execution tracking and QA status reporting.</li>
+                            <li>Maintaining test documentation, test evidence and project knowledge in Confluence.</li>
+                            <li>Managing QA activities and tracking work items through Jira and Azure DevOps Boards.</li>
                         </ul>
                         <div class="skill__foot">
-                            <ul class="tools" aria-label="Tools">
-                                <li class="tool" title="Jira"><svg viewBox="0 0 24 24" fill="none" role="img" aria-label="Jira"><path d="M12 2L2 12l10 10 10-10L12 2z" stroke="#0052cc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 2v20" stroke="#0052cc" stroke-width="2" stroke-linecap="round"/><path d="M2 12h20" stroke="#0052cc" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="3" fill="#0052cc"/></svg></li>
-                                <li class="tool" title="Azure DevOps Boards"><svg viewBox="0 0 128 128" role="img" aria-label="Azure DevOps Boards"><path fill="#0078D4" d="M64 8L8 38v52l56 30 56-30V38L64 8zm0 12l44 23.5v41L64 108 20 84.5v-41L64 20z"/><path fill="#0078D4" d="M64 42L40 54v24l24 12 24-12V54L64 42z"/></svg></li>
-                            </ul>
-                            <a class="skill__evidence" href="https://blog.dipakbist.com.np/blog/how-to-write-good-bug-report" target="_blank" rel="noopener">Read: writing a bug report that gets fixed <svg class="icon" viewBox="0 0 256 256" aria-hidden="true"><path d="M200,64V168a8,8,0,0,1-16,0V83.31L69.66,197.66a8,8,0,0,1-11.32-11.32L172.69,72H88a8,8,0,0,1,0-16H192A8,8,0,0,1,200,64Z"/></svg></a>
+                            <p class="skill__tools"><strong class="skill__label">Tools &amp; Technologies:</strong> Jira&nbsp;· Azure DevOps Boards&nbsp;· Confluence&nbsp;· Agile&nbsp;· Scrum</p>
+                            <a class="skill__evidence" href="https://blog.dipakbist.com.np/blog/how-to-write-good-bug-report" target="_blank" rel="noopener">Read: Writing a bug report that gets fixed <svg class="icon" viewBox="0 0 256 256" aria-hidden="true"><path d="M200,64V168a8,8,0,0,1-16,0V83.31L69.66,197.66a8,8,0,0,1-11.32-11.32L172.69,72H88a8,8,0,0,1,0-16H192A8,8,0,0,1,200,64Z"/></svg></a>
                         </div>
                     </li>
                     <li class="skill">
                         <div class="skill__head"><h3 class="skill__title">Performance Testing</h3><span class="tier">Growing</span></div>
-                        <p class="skill__desc">The area I am actively building. I use JMeter to find where response times start to degrade, rather than assuming a page is fast because it feels fast on my machine.</p>
+                        <p class="skill__desc">I am developing my performance testing capabilities using Apache JMeter, focusing on understanding application behaviour under varying workloads and identifying performance bottlenecks.</p>
                         <ul class="skill__points">
-                            <li>Load and spike scenarios modelled on realistic concurrent usage</li>
-                            <li>Response time, throughput and error-rate analysis</li>
-                            <li>Reports that show where the ceiling actually is</li>
+                            <li>Designing load and spike testing scenarios based on realistic user activity and concurrent usage.</li>
+                            <li>Analysing response times, throughput and error rates under different load conditions.</li>
+                            <li>Identifying performance degradation and potential bottlenecks.</li>
+                            <li>Interpreting test results to understand application performance and scalability limitations.</li>
                         </ul>
+                        <div class="skill__foot">
+                            <p class="skill__tools"><strong class="skill__label">Tools &amp; Technologies:</strong> Apache JMeter&nbsp;· Performance Analysis</p>
+                        </div>
                     </li>
                     <li class="skill">
                         <div class="skill__head"><h3 class="skill__title">Databases &amp; Version Control</h3><span class="tier">Working</span></div>
-                        <p class="skill__desc">I use SQL to confirm that what the interface claims actually reached the database, and I work in Git the same way the developers on my team do.</p>
+                        <p class="skill__desc">I use SQL and database queries to verify data integrity and confirm that application workflows persist the expected information. I also work with Git-based version control to manage automation code and collaborate effectively with development teams.</p>
                         <ul class="skill__points">
-                            <li>SQL queries to check a workflow wrote what it was supposed to write</li>
-                            <li>Feature branches for automation work, merged through pull request</li>
-                            <li>Code review on test code, in both directions</li>
+                            <li>SQL queries to validate records, relationships, data integrity and workflow state changes.</li>
+                            <li>Database-level verification to identify inconsistencies between the application interface and persisted data.</li>
+                            <li>Git-based development using feature branches, commits and pull requests.</li>
+                            <li>Reviewing automation code for readability, maintainability and reusable test components.</li>
+                            <li>Maintaining version-controlled automation frameworks and collaborating through shared repositories.</li>
                         </ul>
                         <div class="skill__foot">
-                            <ul class="tools" aria-label="Tools">
-                                <li class="tool" title="Git"><svg viewBox="0 0 128 128" role="img" aria-label="Git"><path fill="#F05032" d="M124.742 58.378L69.625 3.264c-3.172-3.174-8.32-3.174-11.497 0L46.685 14.71l14.518 14.518c3.375-1.139 7.243-.375 9.932 2.314 2.703 2.706 3.462 6.607 2.293 9.993L87.42 55.529c3.385-1.167 7.292-.413 9.994 2.295 3.78 3.777 3.78 9.9 0 13.679-3.78 3.78-9.901 3.78-13.683 0-2.842-2.844-3.545-7.019-2.105-10.521L68.578 47.933l-.002 34.341c.922.455 1.791 1.063 2.559 1.828 3.778 3.777 3.778 9.898 0 13.683-3.779 3.777-9.904 3.777-13.679 0-3.778-3.784-3.778-9.905 0-13.683.934-.933 2.014-1.638 3.167-2.11V47.333c-1.153-.472-2.231-1.172-3.167-2.111-2.862-2.86-3.551-7.06-2.083-10.576L41.056 20.333 3.264 58.123c-3.174 3.174-3.174 8.324 0 11.499l55.117 55.114c3.174 3.174 8.322 3.174 11.499 0l54.858-54.858c3.174-3.176 3.174-8.327.004-11.5z"/></svg></li>
-                                <li class="tool" title="GitHub"><svg viewBox="0 0 128 128" role="img" aria-label="GitHub"><path fill-rule="evenodd" clip-rule="evenodd" fill="currentColor" d="M64 5.103c-33.347 0-60.388 27.035-60.388 60.388 0 26.682 17.303 49.317 41.297 57.303 3.017.56 4.125-1.31 4.125-2.905 0-1.44-.056-6.197-.082-11.243-16.8 3.653-20.345-7.125-20.345-7.125-2.747-6.98-6.705-8.836-6.705-8.836-5.48-3.748.413-3.67.413-3.67 6.063.425 9.257 6.223 9.257 6.223 5.386 9.23 14.127 6.562 17.573 5.02.542-3.903 2.107-6.568 3.834-8.076-13.413-1.525-27.514-6.704-27.514-29.843 0-6.593 2.36-11.98 6.223-16.21-.628-1.52-2.695-7.662.584-15.98 0 0 5.07-1.623 16.61 6.19C53.7 35 58.867 34.327 64 34.304c5.13.023 10.3.694 15.127 2.033 11.526-7.813 16.59-6.19 16.59-6.19 3.287 8.317 1.22 14.46.593 15.98 3.872 4.23 6.215 9.617 6.215 16.21 0 23.194-14.127 28.3-27.574 29.796 2.167 1.874 4.097 5.55 4.097 11.183 0 8.08-.07 14.583-.07 16.572 0 1.607 1.088 3.49 4.148 2.897 23.98-7.994 41.263-30.622 41.263-57.294C124.388 32.14 97.35 5.104 64 5.104z"/></svg></li>
-                            </ul>
+                            <p class="skill__tools"><strong class="skill__label">Tools &amp; Technologies:</strong> SQL&nbsp;· Git&nbsp;· GitHub&nbsp;· VS Code</p>
                         </div>
                     </li>
                 </ul>
@@ -598,6 +630,82 @@
                         </div>
                     </div>
                 </article>
+                <article class="project project--featured" data-reveal>
+                    <div class="project__media">
+                        <img src="assets/aakashtel-logo.png" alt="AakashTel logo" width="480" height="119" loading="lazy">
+                    </div>
+                    <div class="project__body">
+                        <div class="project__kicker"><span class="project__type">Business Communications</span></div>
+                        <div class="project__heading">
+                            <h3 class="project__title">AakashTel</h3>
+                            <p class="project__tagline">AI-Powered Business Communication Platform</p>
+                        </div>
+                        <p class="project__desc">AakashTel is an integrated business communication platform providing cloud telephony, IVR solutions, Bulk SMS, Voice Campaigns, WhatsApp Business API, and call management solutions, with AI-powered Chatbots and Voice Agents.</p>
+                        <div>
+                            <h4 class="project__subhead">Role: Software QA Engineer</h4>
+                            <p class="project__desc">Contributed to ensuring the functionality, reliability, and quality of the platform through comprehensive testing across its communication modules.</p>
+                        </div>
+                        <details class="disclosure">
+                            <summary>Key QA Contributions <svg class="icon" viewBox="0 0 256 256" aria-hidden="true"><path d="M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,53.66,90.34L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z"/></svg></summary>
+                            <div class="disclosure__body project__more">
+                                <div>
+                                    <h4 class="project__subhead" id="aakashtel-contributions">Key QA Contributions</h4>
+                                    <ul class="capabilities" aria-labelledby="aakashtel-contributions">
+                                        <li>Performed functional, regression, integration, and exploratory testing.</li>
+                                        <li>Validated IVR workflows, call routing, and voice campaign functionality.</li>
+                                        <li>Tested Bulk SMS delivery and messaging workflows.</li>
+                                        <li>Verified omnichannel communication and customer interaction workflows.</li>
+                                        <li>Evaluated AI Chatbots and Voice Agents for response accuracy and conversational consistency.</li>
+                                        <li>Conducted REST API testing and backend response validation.</li>
+                                        <li>Identified, documented, and tracked defects throughout the development lifecycle.</li>
+                                        <li>Performed regression testing to ensure system stability across releases.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </details>
+                        <ul class="tags" aria-label="Technologies &amp; Tools"><li class="tag tag--neutral">Playwright</li><li class="tag tag--neutral">Python</li><li class="tag tag--neutral">Selenium</li><li class="tag tag--neutral">Postman</li><li class="tag tag--neutral">Azure DevOps</li></ul>
+                        <div class="project__foot">
+                            <a class="project__link" href="https://aakashtel.com/" target="_blank" rel="noopener noreferrer">Visit AakashTel <svg class="icon" viewBox="0 0 256 256" aria-hidden="true"><path d="M200,64V168a8,8,0,0,1-16,0V83.31L69.66,197.66a8,8,0,0,1-11.32-11.32L172.69,72H88a8,8,0,0,1,0-16H192A8,8,0,0,1,200,64Z"/></svg></a>
+                        </div>
+                    </div>
+                </article>
+                <article class="project project--featured" data-reveal>
+                    <div class="project__media">
+                        <img src="assets/moru-logo.png" alt="Moru logo" width="480" height="213" loading="lazy">
+                    </div>
+                    <div class="project__body">
+                        <div class="project__kicker"><span class="project__type">Fintech</span></div>
+                        <div class="project__heading">
+                            <h3 class="project__title">Moru-Digital Wallet</h3>
+                            <p class="project__tagline">Digital Wallet &amp; Payment Platform</p>
+                        </div>
+                        <p class="project__desc">Moru is a digital payment platform that provides services including mobile recharge, utility bill payments, bank transfers, merchant payments, fund transfers, and online ticket booking.</p>
+                        <div>
+                            <h4 class="project__subhead">Role: Quality Assurance Intern</h4>
+                        </div>
+                        <details class="disclosure">
+                            <summary>Key Responsibilities <svg class="icon" viewBox="0 0 256 256" aria-hidden="true"><path d="M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,53.66,90.34L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z"/></svg></summary>
+                            <div class="disclosure__body project__more">
+                                <div>
+                                    <h4 class="project__subhead" id="morudigital-contributions">Key Responsibilities</h4>
+                                    <ul class="capabilities" aria-labelledby="morudigital-contributions">
+                                        <li>Performed functional and exploratory testing of web application features.</li>
+                                        <li>Tested user registration, login, and wallet-related workflows.</li>
+                                        <li>Validated mobile recharge, utility bill payments, and fund transfer scenarios.</li>
+                                        <li>Verified payment workflows, transaction status, and error handling.</li>
+                                        <li>Identified, documented, and reported software defects.</li>
+                                        <li>Assisted in regression testing to verify bug fixes and application stability.</li>
+                                        <li>Collaborated with developers to communicate issues and support quality improvements.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </details>
+                        <ul class="tags" aria-label="Technologies &amp; Tools"><li class="tag tag--neutral">Manual Testing</li><li class="tag tag--neutral">Functional Testing</li><li class="tag tag--neutral">Regression Testing</li><li class="tag tag--neutral">Bug Reporting</li><li class="tag tag--neutral">JIRA</li></ul>
+                        <div class="project__foot">
+                            <a class="project__link" href="https://www.moru.com.np/home" target="_blank" rel="noopener noreferrer">Visit Moru <svg class="icon" viewBox="0 0 256 256" aria-hidden="true"><path d="M200,64V168a8,8,0,0,1-16,0V83.31L69.66,197.66a8,8,0,0,1-11.32-11.32L172.69,72H88a8,8,0,0,1,0-16H192A8,8,0,0,1,200,64Z"/></svg></a>
+                        </div>
+                    </div>
+                </article>
                 <ul class="projects__grid" data-reveal data-reveal-group>
                     <li>
                         <article class="project">
@@ -607,16 +715,6 @@
                             <ul class="tags" aria-label="Technologies"><li class="tag tag--neutral">Python</li><li class="tag tag--neutral">Requests</li><li class="tag tag--neutral">JSON Schema</li><li class="tag tag--neutral">Postman</li></ul>
                             <!-- TODO: Dipak to publish this repository and supply the URL, then replace the skip line with a link. -->
                             <div class="project__foot"><p class="project__skip">Repository not public yet</p></div>
-                        </article>
-                    </li>
-                    <li>
-                        <article class="project">
-                            <div class="project__kicker"><span class="project__type">Fintech</span></div>
-                            <h3 class="project__title">Digital Wallet QA (Mobile &amp; Web)</h3>
-                            <p class="project__desc">Hands-on QA for a digital wallet, covering both the mobile app and the web side. I wrote and ran the functional cases, checked the interface against the designs at several screen sizes, and joined the triage sessions where incoming defects were prioritised. All manual work — no automation on this one.</p>
-                            <ul class="tags" aria-label="Technologies"><li class="tag tag--neutral">Manual QA</li><li class="tag tag--neutral">Mobile</li><li class="tag tag--neutral">Web</li><li class="tag tag--neutral">Jira</li></ul>
-                            <!-- No public link: internal employed work. -->
-                            <div class="project__foot"><p class="project__skip">Internal work, no public link</p></div>
                         </article>
                     </li>
                     <li>
@@ -778,8 +876,8 @@
 
     <!-- Framer Motion's vanilla DOM build (framer-motion@14.1.0, MIT), then the page modules. -->
     <script src="assets/vendor/framer-motion-dom.js" defer></script>
-    <script type="module" src="js/intro.js?v=20261118r"></script>
-    <script type="module" src="js/main.js?v=20261118r"></script>
+    <script type="module" src="js/intro.js?v=20261122a"></script>
+    <script type="module" src="js/main.js?v=20261122a"></script>
 </body>
 
 </html>

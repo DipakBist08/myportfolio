@@ -73,7 +73,7 @@ def test_sections_show_content_not_test_scaffolding(pg: Page):
     for section in ["about", "workflow", "experience", "skills", "projects", "blog", "contact"]:
         expect(pg.locator(f"#{section}")).not_to_contain_text(scaffolding)
     # Projects without a public link say so in plain words, not code.
-    expect(pg.locator("#projects .project__skip")).to_have_text(["Repository not public yet", "Internal work, no public link"])
+    expect(pg.locator("#projects .project__skip")).to_have_text(["Repository not public yet"])
 
 
 # ----- the hero code panel ---------------------------------------------------
@@ -260,8 +260,8 @@ def test_view_my_work_lands_on_real_safe_links(pg: Page):
     pg.get_by_role("link", name=re.compile("view my work", re.I)).click()
     expect(pg.locator("#projects")).to_be_in_viewport(ratio=0.05)
     links = pg.locator("#projects a.project__link")
-    expect(links).to_have_count(3)
-    for i in range(3):
+    expect(links).to_have_count(5)
+    for i in range(5):
         link = links.nth(i)
         expect(link).to_have_attribute("href", re.compile(r"^https://"))
         expect(link).to_have_attribute("rel", re.compile("noopener"))
@@ -277,11 +277,14 @@ def test_contact_email_and_copy(pg: Page, ctx: BrowserContext):
     assert pg.evaluate("() => navigator.clipboard.readText()") == "dipakbeest@gmail.com"
 
 
+SUBSCRIBED = "You're subscribed. You'll get an email when a new article is published."
+
+
 def test_subscribe_explains_before_sending(pg: Page):
     calls = []
     pg.route(
         "**/api/v1/subscribers/subscribe",
-        lambda route: (calls.append(1), route.fulfill(status=202, content_type="application/json", body='{"detail": "Check your inbox to confirm."}')),
+        lambda route: (calls.append(1), route.fulfill(status=202, content_type="application/json", body=json.dumps({"detail": SUBSCRIBED}))),
     )
     pg.goto("/")
     pg.locator("#subscribe-form").scroll_into_view_if_needed()
@@ -293,8 +296,26 @@ def test_subscribe_explains_before_sending(pg: Page):
     assert calls == []
     pg.get_by_label("Email address").fill("reader@example.com")
     pg.get_by_role("button", name="Subscribe").click()
-    expect(pg.locator("#subscribe-feedback")).to_have_text("Check your inbox to confirm.")
+    expect(pg.locator("#subscribe-feedback")).to_have_text(SUBSCRIBED)
     assert len(calls) == 1
+
+
+def test_subscribe_waits_for_the_api_to_wake_up(pg: Page):
+    """The API sleeps when idle and takes about 50 s to wake. The form used to
+    give up after 8 s; a late answer must still count, with a note meanwhile."""
+    pending = []
+    pg.route("**/api/v1/subscribers/subscribe", lambda route: pending.append(route))
+    pg.goto("/")
+    pg.locator("#subscribe-form").scroll_into_view_if_needed()
+    pg.get_by_label("Email address").fill("reader@example.com")
+    pg.get_by_role("button", name="Subscribe").click()
+    feedback = pg.locator("#subscribe-feedback")
+    expect(feedback).to_contain_text("Still subscribing", timeout=8_000)
+    pg.wait_for_timeout(4_000)  # now past the old 8 s limit
+    expect(feedback).to_contain_text("Still subscribing")
+    assert len(pending) == 1
+    pending[0].fulfill(status=202, content_type="application/json", body=json.dumps({"detail": SUBSCRIBED}))
+    expect(feedback).to_have_text(SUBSCRIBED)
 
 
 def test_contact_form_validates_then_sends(pg: Page):

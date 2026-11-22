@@ -94,7 +94,7 @@ test.describe('the page', () => {
         for (const section of ['about', 'workflow', 'experience', 'skills', 'projects', 'blog', 'contact']) {
             await expect(page.locator(`#${section}`)).not.toContainText(/test_\w+\.py|::test_|\bPASSED\b|\bFAILED\b|test\.skip\(/);
         }
-        await expect(page.locator('#projects .project__skip')).toHaveText(['Repository not public yet', 'Internal work, no public link']);
+        await expect(page.locator('#projects .project__skip')).toHaveText(['Repository not public yet']);
     });
 
     test('title, alt text, in-page links and date order all hold', async ({ page }) => {
@@ -128,14 +128,14 @@ test.describe('navigation and actions', () => {
         await page.getByRole('link', { name: /view my work/i }).click();
         await expect(page.locator('#projects')).toBeInViewport({ ratio: 0.05 });
         const links = page.locator('#projects a.project__link');
-        await expect(links).toHaveCount(3);
+        await expect(links).toHaveCount(5);
         for (const link of await links.all()) {
             await expect(link).toHaveAttribute('href', /^https:\/\//);
             await expect(link).toHaveAttribute('rel', /noopener/);
             await expect(link).toHaveAttribute('target', '_blank');
         }
         // Projects without a public link are declared as skipped, not faked.
-        await expect(page.locator('#projects .project__skip')).toHaveCount(2);
+        await expect(page.locator('#projects .project__skip')).toHaveCount(1);
     });
 
     test('contact: email action and copy button', async ({ page, context, browserName }) => {
@@ -148,11 +148,13 @@ test.describe('navigation and actions', () => {
         expect(await page.evaluate(() => navigator.clipboard.readText())).toBe('dipakbeest@gmail.com');
     });
 
+    const SUBSCRIBED = "You're subscribed. You'll get an email when a new article is published.";
+
     test('subscribe form explains what is wrong before it sends anything', async ({ page }) => {
         let requests = 0;
         await page.route('**/api/v1/subscribers/subscribe', async (route) => {
             requests += 1;
-            await route.fulfill({ status: 202, contentType: 'application/json', body: JSON.stringify({ detail: 'Check your inbox to confirm.' }) });
+            await route.fulfill({ status: 202, contentType: 'application/json', body: JSON.stringify({ detail: SUBSCRIBED }) });
         });
         await page.goto('/');
         await page.locator('#subscribe-form').scrollIntoViewIfNeeded();
@@ -164,7 +166,7 @@ test.describe('navigation and actions', () => {
         expect(requests).toBe(0);
         await page.getByLabel('Email address').fill('reader@example.com');
         await page.getByRole('button', { name: 'Subscribe' }).click();
-        await expect(page.locator('#subscribe-feedback')).toHaveText('Check your inbox to confirm.');
+        await expect(page.locator('#subscribe-feedback')).toHaveText(SUBSCRIBED);
         expect(requests).toBe(1);
     });
 });

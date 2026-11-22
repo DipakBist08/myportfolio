@@ -3,7 +3,7 @@ JWT access/refresh token management + TOTP-based MFA.
 """
 from datetime import datetime, timedelta, timezone
 from typing import Optional
-import hashlib, secrets, base64, io, threading, time
+import hashlib, hmac, secrets, base64, io, threading, time
 
 import jwt
 import bcrypt
@@ -73,6 +73,24 @@ def create_mfa_setup_token(user_id: int, secret: str) -> str:
         "type": "mfa_setup",
         "secret": secret,
         "exp": _now() + timedelta(minutes=10),
+    }
+    return jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+
+
+def password_fingerprint(hashed_password: str) -> str:
+    """A keyed digest of the stored password hash. A reset link carries it,
+    so the link stops working as soon as the password changes: it can be
+    used once, and an old link is dead after any later password change."""
+    return hmac.new(settings.SECRET_KEY.encode(), hashed_password.encode(), hashlib.sha256).hexdigest()[:32]
+
+
+def create_password_reset_token(user_id: int, hashed_password: str) -> str:
+    payload = {
+        "sub": str(user_id),
+        "type": "password_reset",
+        "pwd": password_fingerprint(hashed_password),
+        "jti": secrets.token_urlsafe(16),
+        "exp": _now() + timedelta(minutes=settings.PASSWORD_RESET_EXPIRE_MINUTES),
     }
     return jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
 

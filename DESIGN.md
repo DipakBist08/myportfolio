@@ -47,7 +47,8 @@ A page drawn from new HTML with an older stylesheet or script looks broken (an u
 | `js/motion.js` | Choreography on the vanilla framer-motion DOM API (`assets/vendor/framer-motion-dom.js`, `window.Motion`). |
 | `js/theme.js`, `js/nav.js`, `js/subscribe.js`, `js/contact.js` | Theme, navigation/menu/active section, newsletter form, contact form. |
 | `js/visit.js` | One visit beacon per page load for the CMS dashboard (see "Visits" below). |
-| `tests/portfolio.spec.ts` | Playwright suite from the visitor's perspective (`npm test`). |
+| `js/analytics.js` | Google Analytics 4 behind a consent banner; off until a measurement ID is set (see "Google Analytics 4" below). |
+| `tests/portfolio.spec.ts` | Playwright suite from the visitor's perspective (`npm run test:ts`). It starts its own server for this checkout on a free port and never reuses a running one; set `BASE_URL` to test a built `site/` folder or a deploy. |
 
 ## Visits and comment reactions (CMS)
 
@@ -57,6 +58,17 @@ The portfolio (`js/visit.js`) and the blog (`components/blog/PageViewTracker.tsx
 - **Nothing is sent** from a local preview against the live API, or when the browser sends Do Not Track or Global Privacy Control.
 - The portfolio sends its beacon as `text/plain` with `navigator.sendBeacon`, which needs no CORS permission; the blog reads its numbers back, so its origin must be in the API's `ALLOWED_ORIGINS` (it already is).
 - The data lives in two new tables, `page_views` and `comment_reactions`, which `create_all` adds at startup; no existing table changes. Backend tests: `cd cms/backend && pip install -r requirements.txt && pytest`.
+
+## Google Analytics 4 (consent first)
+
+`js/analytics.js` adds Google Analytics 4 next to the CMS visit counter. It is off until `index.html` has a measurement ID in `<meta name="ga-measurement-id" content="G-...">`; empty means no banner and nothing from Google.
+
+- With an ID, a banner asks first. Nothing from Google loads until the visitor chooses Allow; Decline is one click and looks the same.
+- The choice is kept for 180 days in the first-party cookie `dipak_analytics_consent`, set for `dipakbist.com.np`, so the blog shares it.
+- "Cookie settings" in the footer reopens the banner. Declining after allowing stops GA on the page (`ga-disable-<id>`) and deletes the `_ga` cookies.
+- Global Privacy Control or Do Not Track: never asked, never tracked. Google signals and ad personalisation are off.
+- Local previews show the banner but never load Google. `vercel.json`'s CSP allows `www.googletagmanager.com` scripts and the GA collection hosts.
+- The blog does the same (`blog/lib/analytics.ts`, `blog/components/analytics/`); its privacy policy has the analytics section the banner links to. `tests/test_analytics.py` covers the flow with Google stubbed.
 
 ## Type and colour
 
@@ -75,7 +87,7 @@ The portfolio (`js/visit.js`) and the blog (`components/blog/PageViewTracker.tsx
 
 ## Content rules
 
-Every number, employer, date, title, link and description is the owner's own copy, carried over verbatim. Projects without a public link say so in plain words ("Repository not public yet", "Internal work, no public link") rather than show a fake link. Open items for Dipak are left as HTML comments (higher-resolution portrait, REST framework repository URL, QADocs artefacts, whether to list other AI tools). Social links are LinkedIn, GitHub and Instagram only, as confirmed by the owner on 12/11/2026.
+Every number, employer, date, title, link and description is the owner's own copy, carried over verbatim. Projects without a public link say so in plain words ("Repository not public yet", "Internal work, no public link") rather than show a fake link. Open items for Dipak are left as HTML comments (REST framework repository URL, QADocs artefacts, whether to list other AI tools). Social links are LinkedIn, GitHub and Instagram only, as confirmed by the owner on 12/11/2026.
 
 ## Running the tests (pytest + Playwright, Python)
 

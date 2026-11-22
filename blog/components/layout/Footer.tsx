@@ -3,6 +3,7 @@ import NewsletterForm from '@/components/blog/NewsletterForm'
 import { BRAND_PATHS } from '@/components/blog/ShareLinks'
 import { PORTFOLIO_URL, PROFILES, type Profile } from '@/lib/blog/site'
 import ExternalLink from './ExternalLink'
+import CookieSettingsButton from '@/components/analytics/CookieSettingsButton'
 
 /* One mark per profile, in the order of PROFILES. LinkedIn and GitHub keep the
    marks the footer already used; the others are the shared brand marks. */
@@ -57,6 +58,7 @@ export default function Footer({ categoryLinks }: FooterProps) {
             <FooterLink href="/contact">Contact</FooterLink>
             <FooterLink href="/privacy-policy">Privacy Policy</FooterLink>
             <FooterLink href="/disclaimer">Disclaimer</FooterLink>
+            <CookieSettingsButton className="inline-flex min-h-11 items-center text-muted transition-colors hover:text-ink" />
             <ExternalLink href={PORTFOLIO_URL} className="inline-flex min-h-11 items-center text-muted no-underline transition-colors hover:text-ink">Portfolio</ExternalLink>
           </nav>
 

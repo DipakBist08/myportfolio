@@ -126,6 +126,23 @@ MFA_FAILURES = FailureLimiter(
 # MFA sign-in tokens, each usable for one successful sign-in.
 USED_MFA_TOKENS = OneTimeTokens()
 
+# "Forgot password?" requests. Every request counts, whether or not the
+# address has an account, so a 429 never reveals which emails exist. The
+# per-account limit caps how many reset emails anyone can make us send to
+# one inbox.
+RESET_REQUESTS_PER_ACCOUNT = FailureLimiter(
+    limit=3, window_seconds=15 * 60,
+    message="Too many reset requests. Try again in a few minutes.",
+)
+RESET_REQUESTS_PER_IP = FailureLimiter(
+    limit=10, window_seconds=60 * 60,
+    message="Too many reset requests. Try again later.",
+)
+
+# Password-reset tokens, each usable once (two requests racing with the same
+# link cannot both set a password).
+USED_RESET_TOKENS = OneTimeTokens()
+
 
 def account_key(email: str) -> str:
     return f"account:{email.strip().lower()}"

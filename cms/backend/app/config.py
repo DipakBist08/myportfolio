@@ -48,6 +48,17 @@ class Settings(BaseSettings):
     # so this delay never blocks an API response.
     RESEND_SEND_DELAY: float = 0.6
 
+    # Blog readers sign in with Google to clap and comment. The OAuth client ID
+    # from Google Cloud Console (APIs & Services > Credentials > OAuth client ID,
+    # type "Web application"); the blog uses the same value as
+    # NEXT_PUBLIC_GOOGLE_CLIENT_ID. Empty = reader sign-in is off.
+    GOOGLE_CLIENT_ID: str = ""
+    READER_SESSION_DAYS: int = 30
+
+    @property
+    def reader_sign_in_enabled(self) -> bool:
+        return bool(self.GOOGLE_CLIENT_ID)
+
     # Master switch for the automatic "new post published" announcement.
     # Set to False to publish without ever emailing the list.
     NOTIFY_SUBSCRIBERS_ON_PUBLISH: bool = True
@@ -58,12 +69,18 @@ class Settings(BaseSettings):
 
     # URLs
     FRONTEND_URL: str = "http://localhost:5173"
+    # The CMS admin site. Password-reset emails link here, so it must be the
+    # real address (set CMS_URL=http://localhost:5173 in a local .env).
+    CMS_URL: str = "https://cms.dipakbist.com.np"
     BACKEND_URL: str = "http://localhost:8000"
     # Public blog root, used to build post links in announcement emails.
     BLOG_URL: str = "https://blog.dipakbist.com.np"
 
     # MFA
     MFA_ISSUER: str = "QA Portfolio CMS"
+
+    # How long a "Forgot password?" email link works.
+    PASSWORD_RESET_EXPIRE_MINUTES: int = 30
 
     @model_validator(mode="after")
     def validate_secret_key(self) -> "Settings":
