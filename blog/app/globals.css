@@ -341,6 +341,13 @@
     --tw-prose-th-borders: var(--color-border-strong);
     --tw-prose-td-borders: var(--color-border);
   }
+  /* A token longer than the line (a URL such as
+     policies.google.com/technologies/partner-sites, or inline code such as
+     PLAYWRIGHT_BROWSERS_PATH) breaks rather than running off a small phone.
+     break-word, not anywhere, so table columns are sized as before. */
+  .prose {
+    overflow-wrap: break-word;
+  }
   .prose :where(code):not(:where(pre code)) {
     background: rgb(var(--accent-rgb) / 0.1);
     border: 1px solid rgb(var(--accent-rgb) / 0.18);
@@ -435,4 +442,17 @@
     animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* The clap button's icon pops once when the reader claps (EngagementBar). */
+@keyframes clap-pop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.25) rotate(-8deg); }
+  100% { transform: scale(1); }
+}
+.clap-pop {
+  animation: clap-pop 0.35s var(--ease-out, ease-out);
+}
+@media (prefers-reduced-motion: reduce) {
+  .clap-pop { animation: none; }
 }

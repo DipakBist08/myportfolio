@@ -1,5 +1,10 @@
 export type Difficulty = 'beginner' | 'intermediate' | 'advanced'
 
+/** What kind of article it is, shown to readers so they can tell a tutorial from an opinion,
+ *  an experiment or a write-up of real project experience (QA-blog SEO brief, 19/11/2026, Phase 7). */
+export const ARTICLE_TYPES = ['Tutorial', 'Opinion', 'Experiment', 'Project experience'] as const
+export type ArticleType = (typeof ARTICLE_TYPES)[number]
+
 export type Category =
   | 'QA Fundamentals'
   | 'Manual Testing'
@@ -57,6 +62,7 @@ export interface PostFrontmatter {
   featured?: boolean
   draft?: boolean
   difficulty?: Difficulty
+  articleType?: ArticleType
   tools?: string[]
   keywords?: string[]
 }

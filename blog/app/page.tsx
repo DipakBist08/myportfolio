@@ -2,34 +2,19 @@ import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { getAllPostsMeta } from '@/lib/blog/mdx'
 import BlogPageContent, { BlogPageView } from '@/components/blog/BlogPageContent'
-import { AUTHOR_LD, BASE_URL, SITE_LANGUAGE, SITE_NAME } from '@/lib/blog/site'
+import { AUTHOR_LD, BASE_URL, HOME_DESCRIPTION, HOME_TITLE, HOME_URL, SITE_DESCRIPTION, SITE_LANGUAGE, SITE_NAME } from '@/lib/blog/site'
+import { pageMetadata } from '@/lib/blog/metadata'
 
-const HOME_TITLE = 'Dipak Bist | QA Engineering Blog'
-const HOME_DESCRIPTION =
-  'Practical, tested guides on Playwright with Python, API testing, bug reporting and QA careers, written by Dipak Bist, a Software QA Engineer in Kathmandu.'
-
-export const metadata: Metadata = {
-  title: { absolute: HOME_TITLE },
-  description: HOME_DESCRIPTION,
-  alternates: { canonical: BASE_URL },
-  openGraph: {
-    type: 'website',
-    url: BASE_URL,
-    title: HOME_TITLE,
-    description: HOME_DESCRIPTION,
-    siteName: SITE_NAME,
-    images: [{ url: `${BASE_URL}/og-default.png`, width: 1200, height: 630, alt: SITE_NAME }],
-  },
-}
+export const metadata: Metadata = pageMetadata({ title: HOME_TITLE, description: HOME_DESCRIPTION, path: '/', absoluteTitle: true })
 
 const websiteLd = {
   '@context': 'https://schema.org',
   '@type': 'Blog',
   '@id': `${BASE_URL}/#blog`,
   name: SITE_NAME,
-  url: BASE_URL,
+  url: HOME_URL,
   inLanguage: SITE_LANGUAGE,
-  description: HOME_DESCRIPTION,
+  description: SITE_DESCRIPTION,
   author: AUTHOR_LD,
   publisher: AUTHOR_LD,
 }

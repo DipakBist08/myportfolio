@@ -21,6 +21,8 @@
   },
   "homepage": "https://dipakbist.com.np/",
   "dependencies": {
+    "@neon/config": "^1.14.6",
+    "@neon/env": "^2.1.9",
     "framer-motion": "^14.1.0"
   },
   "devDependencies": {

@@ -4,11 +4,10 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { getAllSlugs, getPostBySlug, getAllPostsMeta } from '@/lib/blog/mdx'
 import type { PostMeta } from '@/lib/blog/types'
-import { getRelatedPosts, getAdjacentPosts, formatDate, slugify, extractHeadings } from '@/lib/blog/utils'
-import { AUTHOR, AUTHOR_LD, BASE_URL, SITE_LANGUAGE, SITE_NAME, postOgImage, postUrl } from '@/lib/blog/site'
+import { getRecommendationCandidates, getAdjacentPosts, formatDate, slugify, extractHeadings } from '@/lib/blog/utils'
+import { AUTHOR, AUTHOR_LD, BASE_URL, HOME_URL, SITE_LANGUAGE, SITE_NAME, X_HANDLE, postOgImage, postUrl } from '@/lib/blog/site'
 import MDXContent from '@/components/mdx/MDXContent'
 import TableOfContents from '@/components/blog/TableOfContents'
-import RelatedPosts from '@/components/blog/RelatedPosts'
 import PostNavigation from '@/components/blog/PostNavigation'
 import ShareButtons from '@/components/blog/ShareButtons'
 import ShareLinks from '@/components/blog/ShareLinks'
@@ -22,6 +21,11 @@ import ExternalLink from '@/components/layout/ExternalLink'
 import AdSlot from '@/components/ads/AdSlot'
 import AdSenseScript from '@/components/ads/AdSenseScript'
 import { Reveal } from '@/components/motion/Reveal'
+import { ReaderProvider } from '@/components/blog/engagement/ReaderContext'
+import { PostEngagementProvider } from '@/components/blog/engagement/PostEngagement'
+import EngagementBar from '@/components/blog/engagement/EngagementBar'
+import { AuthorAside, FollowOnLinkedIn } from '@/components/blog/engagement/FollowOnLinkedIn'
+import RecommendedPosts from '@/components/blog/engagement/RecommendedPosts'
 
 interface Params {
   params: { slug: string }
@@ -70,6 +74,8 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
     },
     twitter: {
       card: 'summary_large_image',
+      site: X_HANDLE,
+      creator: X_HANDLE,
       title,
       description,
       images: [image.url],
@@ -86,7 +92,7 @@ export default async function BlogPostPage({ params }: Params) {
 
   const { meta, content } = result
   const allPosts = getAllPostsMeta()
-  const related = getRelatedPosts(meta, allPosts)
+  const recommended = getRecommendationCandidates(meta, allPosts)
   const { prev, next } = getAdjacentPosts(meta.slug, allPosts)
   // Section-level headings only: h3s inside templates read as noise in a contents list.
   const headings = extractHeadings(content).filter((h) => h.level === 2)
@@ -106,19 +112,20 @@ export default async function BlogPostPage({ params }: Params) {
     dateModified: meta.updatedAt ?? meta.date,
     inLanguage: SITE_LANGUAGE,
     articleSection: meta.category,
+    ...(meta.articleType ? { genre: meta.articleType } : {}),
     keywords: postKeywords(meta).join(', '),
     url,
     image: { '@type': 'ImageObject', url: postOgImage(meta.slug), width: 1200, height: 630 },
     author: AUTHOR_LD,
     publisher: AUTHOR_LD,
-    isPartOf: { '@type': 'Blog', '@id': `${BASE_URL}/#blog`, name: SITE_NAME, url: BASE_URL },
+    isPartOf: { '@type': 'Blog', '@id': `${BASE_URL}/#blog`, name: SITE_NAME, url: HOME_URL },
   }
 
   const breadcrumbLd = {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Blog', item: BASE_URL },
+      { '@type': 'ListItem', position: 1, name: 'Blog', item: HOME_URL },
       { '@type': 'ListItem', position: 2, name: meta.category, item: categoryUrl },
       { '@type': 'ListItem', position: 3, name: meta.title, item: url },
     ],
@@ -131,6 +138,8 @@ export default async function BlogPostPage({ params }: Params) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
 
+      <ReaderProvider>
+      <PostEngagementProvider slug={meta.slug}>
       <div className="container-page py-10 lg:py-14">
         <div className="grid gap-12 xl:grid-cols-[minmax(0,1fr)_15rem]">
           <article className="min-w-0 xl:max-w-[76ch]">
@@ -157,33 +166,63 @@ export default async function BlogPostPage({ params }: Params) {
                 <p className="mt-5 max-w-[60ch] text-lg leading-relaxed text-muted">{meta.excerpt}</p>
               )}
 
-              <p className="mono-label mt-6 flex flex-wrap items-center gap-x-2 border-y border-line py-3">
-                <span>
-                  By{' '}
-                  <ExternalLink href={AUTHOR.url} rel="author" className="text-ink no-underline hover:text-primary-light">
-                    {AUTHOR.name}
-                  </ExternalLink>
-                  , {AUTHOR.jobTitle}
-                </span>
-                <span aria-hidden="true">&middot;</span>
-                <time dateTime={meta.date}>{formatDate(meta.date)}</time>
-                {meta.updatedAt && meta.updatedAt !== meta.date && (
-                  <>
-                    <span aria-hidden="true">&middot;</span>
-                    <span>
-                      Updated <time dateTime={meta.updatedAt}>{formatDate(meta.updatedAt)}</time>
+              {/* Author row, Medium-style: who wrote it, a one-click LinkedIn follow, when it was posted. */}
+              <div className="mt-7 flex items-start gap-3">
+                <Image
+                  src="/dipak-bist.png"
+                  alt=""
+                  width={44}
+                  height={44}
+                  sizes="44px"
+                  priority
+                  className="h-11 w-11 shrink-0 rounded-full border border-line object-cover"
+                />
+                <div className="min-w-0">
+                  <p className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+                    <span className="font-semibold text-ink">
+                      <ExternalLink href={AUTHOR.url} rel="author" className="text-ink no-underline hover:text-primary-light">
+                        {AUTHOR.name}
+                      </ExternalLink>
+                      <span className="font-normal text-muted">, {AUTHOR.jobTitle}</span>
                     </span>
-                  </>
-                )}
-                <span aria-hidden="true">&middot;</span>
-                <span>{meta.readingTime}</span>
-                {meta.difficulty && (
-                  <>
+                    <FollowOnLinkedIn size="sm" />
+                  </p>
+                  <p className="mono-label mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                    {meta.articleType && (
+                      <>
+                        <span className="text-ink">{meta.articleType}</span>
+                        <span aria-hidden="true">&middot;</span>
+                      </>
+                    )}
+                    <span>
+                      Posted on <time dateTime={meta.date}>{formatDate(meta.date)}</time>
+                    </span>
+                    {meta.updatedAt && meta.updatedAt !== meta.date && (
+                      <>
+                        <span aria-hidden="true">&middot;</span>
+                        <span>
+                          Updated <time dateTime={meta.updatedAt}>{formatDate(meta.updatedAt)}</time>
+                        </span>
+                      </>
+                    )}
                     <span aria-hidden="true">&middot;</span>
-                    <span className="capitalize">{meta.difficulty}</span>
-                  </>
-                )}
-              </p>
+                    <span>{meta.readingTime}</span>
+                    {meta.difficulty && (
+                      <>
+                        <span aria-hidden="true">&middot;</span>
+                        <span className="capitalize">{meta.difficulty}</span>
+                      </>
+                    )}
+                  </p>
+                </div>
+              </div>
+
+              {/* Clap, responses, share: the same bar returns after the article. */}
+              <div className="mt-6 border-y border-line py-1.5">
+                <EngagementBar>
+                  <ShareLinks title={meta.title} url={url} text={meta.description || meta.excerpt} />
+                </EngagementBar>
+              </div>
 
               {meta.testedWith && (
                 <p className="mono-label mt-3">
@@ -196,10 +235,6 @@ export default async function BlogPostPage({ params }: Params) {
                   <li key={tag}><TagBadge tag={tag} /></li>
                 ))}
               </ul>
-
-              <div className="mt-4">
-                <ShareLinks title={meta.title} url={url} text={meta.description || meta.excerpt} label="Share" />
-              </div>
             </Reveal>
 
             {meta.coverImage && (
@@ -220,25 +255,6 @@ export default async function BlogPostPage({ params }: Params) {
 
             <FaqSection items={meta.faq} />
 
-            {/* Ad position 3 of 3: after the article and FAQ, before the author box. */}
-            <AdSlot position="end-of-article" />
-
-            <AuthorBox />
-
-            <div className="mt-10 border-t border-line pt-6">
-              <ShareButtons title={meta.title} url={url} text={meta.description || meta.excerpt} label="Share this article" />
-            </div>
-
-            <div className="mt-8">
-              <PostNavigation prev={prev} next={next} />
-            </div>
-
-            {related.length > 0 && (
-              <div className="mt-12 border-t border-line pt-8">
-                <RelatedPosts posts={related} />
-              </div>
-            )}
-
             {meta.tools && meta.tools.length > 0 && (
               <div className="mt-8 rounded-xl border border-line p-5">
                 <p className="mono-label mb-3 uppercase tracking-[0.06em]">Tools covered</p>
@@ -250,19 +266,45 @@ export default async function BlogPostPage({ params }: Params) {
               </div>
             )}
 
+            {/* Ad position 3 of 3: after the article and FAQ, before the clap bar and author box. */}
+            <AdSlot position="end-of-article" />
+
+            <div className="mt-10 border-y border-line py-3">
+              <EngagementBar size="lg">
+                <ShareButtons title={meta.title} url={url} text={meta.description || meta.excerpt} label="Share" />
+              </EngagementBar>
+            </div>
+
+            <AuthorBox />
+
+            <div className="mt-12 border-t border-line pt-8">
+              <CommentSection postSlug={meta.slug} postTitle={meta.title} />
+            </div>
+
+            <div className="mt-12">
+              <PostNavigation prev={prev} next={next} />
+            </div>
+
+            {recommended.length > 0 && (
+              <div className="mt-12 border-t border-line pt-8">
+                <RecommendedPosts candidates={recommended} siteName={SITE_NAME} authorName={AUTHOR.name} />
+              </div>
+            )}
+
             <NewsletterForm />
-            <CommentSection postSlug={meta.slug} postTitle={meta.title} />
           </article>
 
-          {headings.length > 0 && (
-            <aside className="hidden xl:block">
-              <div className="sticky top-[calc(var(--header-height)+2rem)]">
-                <TableOfContents headings={headings} />
-              </div>
-            </aside>
-          )}
+          {/* Wide screens: author + LinkedIn follow, then the contents, beside the article. */}
+          <aside className="hidden xl:block">
+            <div className="sticky top-[calc(var(--header-height)+2rem)] max-h-[calc(100vh-var(--header-height)-3rem)] space-y-8 overflow-y-auto pb-4">
+              <AuthorAside />
+              {headings.length > 0 && <TableOfContents headings={headings} />}
+            </div>
+          </aside>
         </div>
       </div>
+      </PostEngagementProvider>
+      </ReaderProvider>
     </>
   )
 }

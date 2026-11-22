@@ -7,6 +7,12 @@
 
 const BACKEND_API = 'https://api.dipakbist.com.np';
 
+// The API runs on a free Render instance that sleeps when idle and takes about
+// 50 seconds to wake. Waiting only 8 seconds made the first sign-up after a
+// quiet spell fail with "couldn't reach the server".
+const TIMEOUT_MS = 75000;
+const SLOW_NOTE_MS = 5000;
+
 function detailToText(detail) {
     if (!detail) return '';
     if (typeof detail === 'string') return detail;
@@ -62,19 +68,24 @@ export function initSubscribe() {
         btn.disabled = true;
         btn.setAttribute('aria-busy', 'true');
         btn.textContent = 'Subscribing…';
+        const slowNote = setTimeout(() => {
+            feedback.textContent = 'Still subscribing. The server can take up to a minute to wake up.';
+        }, SLOW_NOTE_MS);
         try {
             const res = await fetch(`${BACKEND_API}/api/v1/subscribers/subscribe`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email }),
-                signal: withTimeout(8000),
+                signal: withTimeout(TIMEOUT_MS),
             });
             const data = await res.json().catch(() => ({}));
             if (!(res.ok || res.status === 202)) throw new Error(detailToText(data.detail) || 'Subscribe failed');
+            clearTimeout(slowNote);
             feedback.classList.add('is-success');
-            feedback.textContent = detailToText(data.detail) || 'Check your email to confirm.';
+            feedback.textContent = detailToText(data.detail) || "You're subscribed.";
             input.value = '';
         } catch (err) {
+            clearTimeout(slowNote);
             feedback.classList.add('is-error');
             const network = err instanceof TypeError || (err && err.name === 'TimeoutError') || (err && err.name === 'AbortError')
                 || /failed to fetch|load failed|networkerror/i.test(err && err.message ? err.message : '');

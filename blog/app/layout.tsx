@@ -4,13 +4,11 @@ import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import { ThemeProvider } from '@/components/layout/ThemeProvider'
 import PageViewTracker from '@/components/blog/PageViewTracker'
-import { BASE_URL, PORTFOLIO_URL, SITE_NAME, TITLE_SUFFIX } from '@/lib/blog/site'
+import ConsentBanner from '@/components/analytics/ConsentBanner'
+import { BASE_URL, HOME_DESCRIPTION, HOME_TITLE, PORTFOLIO_URL, SITE_NAME, TITLE_SUFFIX, X_HANDLE } from '@/lib/blog/site'
+import { DEFAULT_SHARE_IMAGE } from '@/lib/blog/metadata'
 import { getAllPostsMeta } from '@/lib/blog/mdx'
 import { getHubs, slugify } from '@/lib/blog/utils'
-
-const HOME_TITLE = 'Dipak Bist | QA Engineering Blog'
-const HOME_DESCRIPTION =
-  'Practical, tested guides on Playwright with Python, API testing, bug reporting and QA careers, written by Dipak Bist, a Software QA Engineer in Kathmandu.'
 
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
@@ -26,20 +24,20 @@ export const metadata: Metadata = {
   alternates: {
     types: { 'application/rss+xml': `${BASE_URL}/rss.xml` },
   },
+  // Site-wide fallbacks only. Every page sets its own url, title and description
+  // (lib/blog/metadata.ts); a fallback naming the home page would leak onto pages
+  // that forgot to, as og:url did on /about, /contact and the tag pages.
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: BASE_URL,
     siteName: SITE_NAME,
-    title: HOME_TITLE,
-    description: HOME_DESCRIPTION,
-    images: [{ url: `${BASE_URL}/og-default.png`, width: 1200, height: 630, alt: SITE_NAME }],
+    images: [DEFAULT_SHARE_IMAGE],
   },
   twitter: {
     card: 'summary_large_image',
-    title: HOME_TITLE,
-    description: HOME_DESCRIPTION,
-    images: [`${BASE_URL}/og-default.png`],
+    site: X_HANDLE,
+    creator: X_HANDLE,
+    images: [DEFAULT_SHARE_IMAGE.url],
   },
   robots: {
     index: true,
@@ -90,6 +88,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <main id="main" className="flex-1" tabIndex={-1}>{children}</main>
           <Footer categoryLinks={categoryLinks} />
           <PageViewTracker />
+          <ConsentBanner />
         </ThemeProvider>
       </body>
     </html>

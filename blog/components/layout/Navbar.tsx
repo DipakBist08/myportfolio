@@ -33,6 +33,11 @@ const PATHS = {
 /* `links` is built in app/layout.tsx: "Articles", then the sections listed in
    NAV_SECTIONS (lib/blog/site.ts), in that order. Every section has a page,
    even before its first post, so the menu never points at a missing page. */
+/* Small phones with large text (150% on a 320px screen): the logo, the theme
+   switch and the menu button must share the header row, or the menu button
+   is pushed off the screen. Below 480px the logo is capped near its 100%-text
+   size (5.6vw) and the two buttons stay at the 44px touch size; at 100% text
+   nothing changes. */
 export default function Navbar({ links: LINKS }: { links: NavLink[] }) {
   const [open, setOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
@@ -61,8 +66,8 @@ export default function Navbar({ links: LINKS }: { links: NavLink[] }) {
     <header
       className={`sticky top-0 z-50 h-[var(--header-height)] border-b bg-bg transition-colors duration-300 ${scrolled ? 'border-line' : 'border-transparent'}`}
     >
-      <nav className="container-page flex h-full items-center justify-between gap-6" aria-label="Primary">
-        <Link href="/" className="inline-flex min-h-11 items-center font-mono text-[1.05rem] font-semibold tracking-tight text-ink no-underline">
+      <nav className="container-page flex h-full items-center justify-between gap-2 min-[480px]:gap-6" aria-label="Primary">
+        <Link href="/" className="inline-flex min-h-11 items-center font-mono text-[length:min(1.05rem,5.6vw)] font-semibold tracking-tight text-ink no-underline">
           <span className="text-primary-light">&lt;</span>Dipak.Blog<span className="text-primary-light">/&gt;</span>
         </Link>
 
@@ -89,7 +94,7 @@ export default function Navbar({ links: LINKS }: { links: NavLink[] }) {
             aria-pressed={isLight}
             aria-label={isLight ? 'Switch to dark theme' : 'Switch to light theme'}
             title={isLight ? 'Switch to dark theme' : 'Switch to light theme'}
-            className="inline-grid h-11 w-11 place-items-center rounded-lg text-muted transition-colors hover:bg-[rgb(var(--ink-rgb)/0.06)] hover:text-ink"
+            className="inline-grid h-11 w-11 place-items-center rounded-lg text-muted max-[479px]:h-[min(2.75rem,44px)] max-[479px]:w-[min(2.75rem,44px)] transition-colors hover:bg-[rgb(var(--ink-rgb)/0.06)] hover:text-ink"
           >
             <Icon d={isLight ? PATHS.sun : PATHS.moon} />
           </button>
@@ -101,7 +106,7 @@ export default function Navbar({ links: LINKS }: { links: NavLink[] }) {
             aria-expanded={open}
             aria-controls="mobile-menu"
             aria-label={open ? 'Close menu' : 'Open menu'}
-            className="inline-grid h-11 w-11 place-items-center rounded-lg text-muted transition-colors hover:bg-[rgb(var(--ink-rgb)/0.06)] hover:text-ink md:hidden"
+            className="inline-grid h-11 w-11 place-items-center rounded-lg text-muted max-[479px]:h-[min(2.75rem,44px)] max-[479px]:w-[min(2.75rem,44px)] transition-colors hover:bg-[rgb(var(--ink-rgb)/0.06)] hover:text-ink md:hidden"
           >
             <Icon d={open ? PATHS.x : PATHS.list} />
           </button>

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -23,6 +23,9 @@ export default function LoginPage() {
   const { setTokens } = useAuthStore()
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
+  // The API sleeps when idle (free Render instance) and takes about 50 s to
+  // wake, so a slow first sign-in says why instead of spinning silently.
+  const [slow, setSlow] = useState(false)
 
   const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -30,8 +33,10 @@ export default function LoginPage() {
 
   const onSubmit = async (data: FormData) => {
     setLoading(true)
+    setSlow(false)
+    const slowNote = setTimeout(() => setSlow(true), 5_000)
     try {
-      const res = await api.post<TokenResponse>('/api/v1/auth/login', data)
+      const res = await api.post<TokenResponse>('/api/v1/auth/login', data, { timeout: 90_000 })
       if (res.data.requires_mfa && res.data.temp_token) {
         // Store temp token, navigate to MFA page
         sessionStorage.setItem('mfa_temp_token', res.data.temp_token)
@@ -42,8 +47,13 @@ export default function LoginPage() {
       toast.success('Welcome back!')
       navigate('/dashboard')
     } catch (err: any) {
-      toast.error(err.response?.data?.detail || 'Login failed')
+      const detail = err.response?.data?.detail
+      if (typeof detail === 'string') toast.error(detail)
+      else if (!err.response) toast.error("Couldn't reach the server. Check your connection and try again.")
+      else toast.error('Sign-in failed. Try again.')
     } finally {
+      clearTimeout(slowNote)
+      setSlow(false)
       setLoading(false)
     }
   }
@@ -58,7 +68,7 @@ export default function LoginPage() {
 
       <div className="relative z-10 w-full max-w-md">
         {/* Card */}
-        <div className="glass-card p-8">
+        <div className="glass-card p-6 sm:p-8">
           {/* Logo */}
           <div className="flex flex-col items-center mb-8">
             <div className="w-14 h-14 rounded-2xl bg-gradient-primary flex items-center justify-center shadow-glow mb-4">
@@ -82,7 +92,15 @@ export default function LoginPage() {
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="password">Password</Label>
+              <div className="flex items-center justify-between gap-3">
+                <Label htmlFor="password">Password</Label>
+                <Link
+                  to="/forgot-password"
+                  className="text-xs text-primary hover:text-white underline-offset-4 hover:underline py-1"
+                >
+                  Forgot password?
+                </Link>
+              </div>
               <div className="relative">
                 <Input
                   id="password"
@@ -107,6 +125,10 @@ export default function LoginPage() {
               {loading ? <Loader2 size={16} className="animate-spin mr-2" /> : null}
               Sign In
             </Button>
+            {/* Space is reserved so the note does not push the card when it appears. */}
+            <p className="text-xs text-slate-400 text-center min-h-[2.5em]" role="status" aria-live="polite">
+              {slow ? 'Waking up the server. The first sign-in after a quiet spell can take up to a minute.' : ''}
+            </p>
           </form>
 
           <p className="text-center text-xs text-slate-500 mt-6">

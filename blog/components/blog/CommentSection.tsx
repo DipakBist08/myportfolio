@@ -2,8 +2,9 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import PostViews from './PostViews'
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.dipakbist.com.np'
+import { api, ApiError, API_URL, type Reader } from './engagement/api'
+import { useReader } from './engagement/ReaderContext'
+import { usePostEngagement } from './engagement/PostEngagement'
 
 /** Likes and dislikes, and this reader's own reaction: 1, -1 or 0. */
 interface Reacted {
@@ -15,15 +16,13 @@ interface Reacted {
 interface Reply extends Reacted {
   id: number
   author_name: string
+  /** The Google profile picture of a signed-in author; "" for older comments. */
+  author_picture?: string
   content: string
   created_at: string
 }
 
-interface Comment extends Reacted {
-  id: number
-  author_name: string
-  content: string
-  created_at: string
+interface Comment extends Reply {
   replies: Reply[]
 }
 
@@ -102,29 +101,155 @@ function Reactions({ id, author, item, onChange }: {
   )
 }
 
-function timeAgo(dateStr: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime()
+/** The API sends UTC times without a zone; read them as UTC. */
+function toDate(dateStr: string): Date {
+  return new Date(/[zZ]|[+-]\d\d:?\d\d$/.test(dateStr) ? dateStr : `${dateStr}Z`)
+}
+
+function timeAgo(date: Date): string {
+  const diff = Date.now() - date.getTime()
   const m = Math.floor(diff / 60000)
   if (m < 1) return 'just now'
   if (m < 60) return `${m}m ago`
   const h = Math.floor(m / 60)
   if (h < 24) return `${h}h ago`
   const d = Math.floor(h / 24)
-  if (d < 30) return `${d}d ago`
-  return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+  if (d < 7) return `${d}d ago`
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
-function Avatar({ name }: { name: string }) {
-  const initials = name.trim().split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpperCase()
+/** When a response was posted: "3h ago" for the last week, then the date; the
+ *  full date and time on hover. */
+function Posted({ at }: { at: string }) {
+  const date = toDate(at)
+  const full = date.toLocaleString('en-US', { dateStyle: 'long', timeStyle: 'short' })
+  return (
+    <time dateTime={date.toISOString()} title={`Posted ${full}`} className="text-xs text-muted">
+      {timeAgo(date)}
+    </time>
+  )
+}
+
+function Avatar({ name, picture, size = 'md' }: { name: string; picture?: string; size?: 'sm' | 'md' }) {
+  const [broken, setBroken] = useState(false)
+  const box = size === 'sm' ? 'h-7 w-7' : 'h-8 w-8'
+  if (picture && !broken) {
     return (
-    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-primary/30 bg-primary/10 font-mono text-xs font-semibold text-primary-light">
+      // eslint-disable-next-line @next/next/no-img-element -- a Google profile picture: tiny, remote, not worth the image optimiser
+      <img
+        src={picture}
+        alt=""
+        width={32}
+        height={32}
+        loading="lazy"
+        referrerPolicy="no-referrer"
+        onError={() => setBroken(true)}
+        className={`${box} shrink-0 rounded-full border border-line object-cover`}
+      />
+    )
+  }
+  const initials = name.trim().split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpperCase()
+  return (
+    <div className={`${box} flex shrink-0 items-center justify-center rounded-full border border-primary/30 bg-primary/10 font-mono text-xs font-semibold text-primary-light`}>
       {initials || '?'}
     </div>
   )
 }
 
-// ── Inline comment / reply form ───────────────────────────────────────────────
+function GoogleMark() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18">
+      <path fill="#4285F4" d="M23.5 12.27c0-.79-.07-1.54-.2-2.27H12v4.3h6.45a5.52 5.52 0 0 1-2.39 3.62v3h3.87c2.26-2.09 3.57-5.17 3.57-8.65Z" />
+      <path fill="#34A853" d="M12 24c3.24 0 5.96-1.07 7.94-2.91l-3.87-3c-1.08.72-2.45 1.15-4.07 1.15-3.13 0-5.78-2.11-6.73-4.96H1.27v3.1A12 12 0 0 0 12 24Z" />
+      <path fill="#FBBC05" d="M5.27 14.28a7.2 7.2 0 0 1 0-4.56v-3.1H1.27a12 12 0 0 0 0 10.76l4-3.1Z" />
+      <path fill="#EA4335" d="M12 4.77c1.76 0 3.34.61 4.59 1.8l3.43-3.43A11.5 11.5 0 0 0 12 0 12 12 0 0 0 1.27 6.62l4 3.1C6.22 6.88 8.87 4.77 12 4.77Z" />
+    </svg>
+  )
+}
+
+// ── Response / reply form (signed-in readers) ────────────────────────────────
 interface FormProps {
+  postSlug: string
+  reader: Reader
+  parentId?: number
+  onSuccess: (comment: Comment | Reply) => void
+  onCancel?: () => void
+  placeholder?: string
+  compact?: boolean
+  autoFocus?: boolean
+}
+
+function CommentForm({ postSlug, reader, parentId, onSuccess, onCancel, placeholder = 'What are your thoughts?', compact = false, autoFocus = false }: FormProps) {
+  const { sessionExpired } = useReader()
+  const [content, setContent] = useState('')
+  const [state, setState] = useState<'idle' | 'loading' | 'error'>('idle')
+  const [error, setError] = useState('')
+
+  async function submit(e?: React.FormEvent) {
+    e?.preventDefault()
+    if (!content.trim()) return
+    setState('loading')
+    setError('')
+    try {
+      const data = await api<Comment | Reply>('/api/public/comments', {
+        method: 'POST',
+        body: JSON.stringify({ post_slug: postSlug, parent_id: parentId ?? null, content }),
+      })
+      onSuccess(data)
+      setContent('')
+      setState('idle')
+    } catch (err) {
+      setState('error')
+      if (err instanceof ApiError && err.status === 401) {
+        setError('Your sign-in has ended. Sign in again to post; your text is kept.')
+        sessionExpired(parentId ? 'reply' : 'respond')
+        return
+      }
+      setError(err instanceof Error ? err.message : 'Could not post. Please try again.')
+    }
+  }
+
+  const textId = `response-${parentId ?? 'new'}`
+  return (
+    <form onSubmit={submit} className={compact ? 'space-y-2' : 'space-y-3'}>
+      {!compact && (
+        <div className="flex items-center gap-2.5">
+          <Avatar name={reader.name} picture={reader.picture} />
+          <span className="text-sm font-semibold text-ink">{reader.name}</span>
+        </div>
+      )}
+      <label htmlFor={textId} className="sr-only">{parentId ? 'Your reply' : 'Your response'}</label>
+      <textarea
+        id={textId}
+        required
+        maxLength={2000}
+        autoFocus={autoFocus}
+        rows={compact ? 2 : 4}
+        value={content}
+        onChange={e => setContent(e.target.value)}
+        onKeyDown={e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) submit() }}
+        placeholder={placeholder}
+        className={`w-full resize-y rounded-lg border border-line bg-surface-card px-3 py-2 text-ink outline-none placeholder:text-subtle focus:border-primary light:bg-white ${compact ? 'text-sm' : 'text-[0.9375rem]'}`}
+      />
+      {error && <p role="alert" className="text-xs text-fail">{error}</p>}
+      <div className="flex flex-wrap items-center gap-2">
+        <button type="submit" disabled={state === 'loading' || !content.trim()}
+          className={`rounded-full bg-primary px-4 font-semibold text-white transition-colors hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60 ${compact ? 'min-h-8 text-xs' : 'min-h-10 text-sm'}`}>
+          {state === 'loading' ? 'Posting…' : compact ? 'Reply' : 'Respond'}
+        </button>
+        {onCancel && (
+          <button type="button" onClick={onCancel}
+            className={`rounded-full border border-line px-4 text-muted transition-colors hover:text-ink ${compact ? 'min-h-8 text-xs' : 'min-h-10 text-sm'}`}>
+            Cancel
+          </button>
+        )}
+      </div>
+    </form>
+  )
+}
+
+// ── Name-and-email form, used until Google sign-in is switched on ──────────────
+interface AnonymousFormProps {
   postSlug: string
   parentId?: number
   onSuccess: (comment: Comment | Reply) => void
@@ -133,7 +258,7 @@ interface FormProps {
   compact?: boolean
 }
 
-function CommentForm({ postSlug, parentId, onSuccess, onCancel, placeholder = 'Share your thoughts…', compact = false }: FormProps) {
+function AnonymousForm({ postSlug, parentId, onSuccess, onCancel, placeholder = 'What are your thoughts?', compact = false }: AnonymousFormProps) {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [content, setContent] = useState('')
@@ -145,70 +270,96 @@ function CommentForm({ postSlug, parentId, onSuccess, onCancel, placeholder = 'S
     setState('loading')
     setError('')
     try {
-      const res = await fetch(`${API_URL}/api/public/comments`, {
+      const data = await api<Comment | Reply>('/api/public/comments', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ post_slug: postSlug, parent_id: parentId ?? null, author_name: name, author_email: email, content }),
       })
-      const data = await res.json()
-      if (!res.ok) {
-        const detail = data.detail
-        const msg = Array.isArray(detail) ? detail[0]?.msg ?? 'Invalid input' : detail ?? 'Failed to post'
-        setError(msg)
-        setState('error')
-        return
-      }
       onSuccess(data)
-      setName('')
-      setEmail('')
       setContent('')
       setState('idle')
-    } catch {
-      setError('Could not connect. Please try again.')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not post. Please try again.')
       setState('error')
     }
   }
 
+  const field = `rounded-lg border border-line bg-surface-card px-3 py-2 text-ink outline-none placeholder:text-subtle focus:border-primary light:bg-white ${compact ? 'text-xs' : 'text-sm'}`
+  const id = `anon-${parentId ?? 'new'}`
   return (
     <form onSubmit={submit} className={compact ? 'space-y-2' : 'space-y-3'}>
-      {!compact && (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <input required value={name} onChange={e => setName(e.target.value)} placeholder="Your name *"
-            className="rounded-lg border border-line bg-surface-card px-3 py-2 text-sm text-ink placeholder:text-subtle outline-none focus:border-primary " />
-          <input required type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Email (private) *"
-            className="rounded-lg border border-line bg-surface-card px-3 py-2 text-sm text-ink placeholder:text-subtle outline-none focus:border-primary " />
-        </div>
-      )}
-      {compact && (
-        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-          <input required value={name} onChange={e => setName(e.target.value)} placeholder="Name *"
-            className="rounded-lg border border-line bg-surface-card px-3 py-2 text-xs text-ink placeholder:text-subtle outline-none focus:border-primary" />
-          <input required type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Email (private) *"
-            className="rounded-lg border border-line bg-surface-card px-3 py-2 text-xs text-ink placeholder:text-subtle outline-none focus:border-primary" />
-        </div>
-      )}
-      <textarea
-        required
-        rows={compact ? 2 : 4}
-        value={content}
-        onChange={e => setContent(e.target.value)}
-        placeholder={placeholder}
-        className={`w-full rounded-lg border border-line bg-surface-card px-3 py-2 text-ink placeholder:text-subtle outline-none focus:border-primary  resize-y ${compact ? 'text-xs' : 'text-sm'}`}
-      />
-      {error && <p className="text-xs text-fail">{error}</p>}
-      <div className="flex gap-2">
+      <div className={`grid grid-cols-1 sm:grid-cols-2 ${compact ? 'gap-2' : 'gap-3'}`}>
+        <label htmlFor={`${id}-name`} className="sr-only">Your name</label>
+        <input id={`${id}-name`} required maxLength={100} value={name} onChange={e => setName(e.target.value)} placeholder="Your name *" autoComplete="name" className={field} />
+        <label htmlFor={`${id}-email`} className="sr-only">Your email (not shown)</label>
+        <input id={`${id}-email`} required type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Email (private) *" autoComplete="email" className={field} />
+      </div>
+      <label htmlFor={`${id}-text`} className="sr-only">{parentId ? 'Your reply' : 'Your response'}</label>
+      <textarea id={`${id}-text`} required maxLength={2000} rows={compact ? 2 : 4} value={content} onChange={e => setContent(e.target.value)}
+        placeholder={placeholder} className={`w-full resize-y ${field}`} />
+      {error && <p role="alert" className="text-xs text-fail">{error}</p>}
+      <div className="flex flex-wrap items-center gap-2">
         <button type="submit" disabled={state === 'loading'}
-          className={`rounded-lg bg-primary px-4 font-semibold text-white hover:bg-primary-dark transition-colors disabled:opacity-60 disabled:cursor-not-allowed ${compact ? 'py-1.5 text-xs' : 'py-2 text-sm'}`}>
-          {state === 'loading' ? 'Posting…' : compact ? 'Reply' : 'Post comment'}
+          className={`rounded-full bg-primary px-4 font-semibold text-white transition-colors hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60 ${compact ? 'min-h-8 text-xs' : 'min-h-10 text-sm'}`}>
+          {state === 'loading' ? 'Posting…' : compact ? 'Reply' : 'Respond'}
         </button>
         {onCancel && (
           <button type="button" onClick={onCancel}
-            className={`rounded-lg border border-line px-4 text-muted hover:text-ink transition-colors ${compact ? 'py-1.5 text-xs' : 'py-2 text-sm'}`}>
+            className={`rounded-full border border-line px-4 text-muted transition-colors hover:text-ink ${compact ? 'min-h-8 text-xs' : 'min-h-10 text-sm'}`}>
             Cancel
           </button>
         )}
       </div>
+      {!compact && <p className="text-xs text-muted">Your email address is never shown.</p>}
     </form>
+  )
+}
+
+// ── Google sign-in announced but not switched on yet ──────────────────────────
+function GoogleComingSoon() {
+  return (
+    <div className="mb-4 flex flex-wrap items-center gap-x-3 gap-y-2">
+      <button
+        type="button"
+        disabled
+        aria-label="Sign in with Google (coming soon)"
+        className="inline-flex min-h-10 cursor-not-allowed items-center gap-2 rounded-full border border-line-strong bg-white px-4 text-sm font-medium text-[#1f1f1f] opacity-75"
+      >
+        <GoogleMark />
+        Sign in with Google
+      </button>
+      <span className="rounded-full border border-primary/40 bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary-light">
+        Coming soon
+      </span>
+      <p className="basis-full text-xs text-muted">Until then, respond with your name and email below.</p>
+    </div>
+  )
+}
+
+// ── What a signed-out reader sees instead of the form ──────────────────────────
+function SignInPrompt() {
+  const { ready, requireSignIn } = useReader()
+  if (!ready) return <div className="h-[7.5rem] animate-pulse rounded-lg bg-surface-card light:bg-black/5" aria-hidden="true" />
+  return (
+    <div>
+      <button
+        type="button"
+        onClick={() => requireSignIn('respond')}
+        className="block w-full rounded-lg border border-line bg-surface-card px-3 py-3 text-left text-[0.9375rem] text-subtle transition-colors hover:border-line-strong light:bg-white"
+      >
+        What are your thoughts?
+      </button>
+      <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2">
+        <button
+          type="button"
+          onClick={() => requireSignIn('respond')}
+          className="inline-flex min-h-10 items-center gap-2 rounded-full border border-line-strong bg-white px-4 text-sm font-medium text-[#1f1f1f] transition-shadow hover:shadow-card-hover"
+        >
+          <GoogleMark />
+          Sign in with Google to respond
+        </button>
+        <p className="text-xs text-muted">Your name and picture are shown with your response; your email stays private.</p>
+      </div>
+    </div>
   )
 }
 
@@ -221,19 +372,21 @@ interface CommentItemProps {
 }
 
 function CommentItem({ comment, postSlug, onReplyAdded, onReaction }: CommentItemProps) {
+  const { reader, available, requireSignIn } = useReader()
   const [showReplyForm, setShowReplyForm] = useState(false)
+  const openReply = () => (available ? requireSignIn('reply', () => setShowReplyForm(true)) : setShowReplyForm(true))
 
   return (
     <div className="flex gap-3">
-      <Avatar name={comment.author_name} />
+      <Avatar name={comment.author_name} picture={comment.author_picture} />
       <div className="flex-1 min-w-0">
         {/* Comment bubble */}
         <div className="rounded-xl rounded-tl-none border border-line bg-white/3 px-4 py-3">
-          <div className="flex items-center gap-2 mb-1.5">
+          <div className="mb-1.5 flex flex-wrap items-center gap-x-2">
             <span className="text-sm font-semibold text-ink">{comment.author_name}</span>
-            <span className="text-xs text-muted">{timeAgo(comment.created_at)}</span>
+            <Posted at={comment.created_at} />
           </div>
-          <p className="text-sm text-ink/90 leading-relaxed whitespace-pre-wrap">{comment.content}</p>
+          <p className="text-sm text-ink/90 leading-relaxed whitespace-pre-wrap break-words">{comment.content}</p>
         </div>
 
         {/* Like / dislike, then reply */}
@@ -241,27 +394,44 @@ function CommentItem({ comment, postSlug, onReplyAdded, onReaction }: CommentIte
           <Reactions id={comment.id} author={comment.author_name} item={comment} onChange={onReaction} />
           <button
             type="button"
-            onClick={() => setShowReplyForm(v => !v)}
-            className="text-xs text-muted hover:text-ink transition-colors"
+            onClick={() => (showReplyForm ? setShowReplyForm(false) : openReply())}
+            className="min-h-8 text-xs text-muted transition-colors hover:text-ink"
+            aria-expanded={showReplyForm}
           >
             {showReplyForm ? 'Cancel reply' : '↩ Reply'}
           </button>
         </div>
 
         {/* Inline reply form */}
-        {showReplyForm && (
+        {showReplyForm && (reader || !available) && (
           <div className="mt-2">
-            <CommentForm
-              postSlug={postSlug}
-              parentId={comment.id}
-              compact
-              placeholder={`Replying to ${comment.author_name}…`}
-              onCancel={() => setShowReplyForm(false)}
-              onSuccess={(reply) => {
-                onReplyAdded(comment.id, reply as Reply)
-                setShowReplyForm(false)
-              }}
-            />
+            {reader ? (
+              <CommentForm
+                postSlug={postSlug}
+                reader={reader}
+                parentId={comment.id}
+                compact
+                autoFocus
+                placeholder={`Replying to ${comment.author_name}…`}
+                onCancel={() => setShowReplyForm(false)}
+                onSuccess={(reply) => {
+                  onReplyAdded(comment.id, reply as Reply)
+                  setShowReplyForm(false)
+                }}
+              />
+            ) : (
+              <AnonymousForm
+                postSlug={postSlug}
+                parentId={comment.id}
+                compact
+                placeholder={`Replying to ${comment.author_name}…`}
+                onCancel={() => setShowReplyForm(false)}
+                onSuccess={(reply) => {
+                  onReplyAdded(comment.id, reply as Reply)
+                  setShowReplyForm(false)
+                }}
+              />
+            )}
           </div>
         )}
 
@@ -270,14 +440,14 @@ function CommentItem({ comment, postSlug, onReplyAdded, onReaction }: CommentIte
           <div className="mt-3 space-y-3 border-l-2 border-line pl-4">
             {comment.replies.map(reply => (
               <div key={reply.id} className="flex gap-2.5">
-                <Avatar name={reply.author_name} />
+                <Avatar name={reply.author_name} picture={reply.author_picture} size="sm" />
                 <div className="flex-1 min-w-0">
                   <div className="rounded-xl rounded-tl-none border border-line bg-white/2 px-3 py-2.5">
-                    <div className="flex items-center gap-2 mb-1">
+                    <div className="mb-1 flex flex-wrap items-center gap-x-2">
                       <span className="text-xs font-semibold text-ink">{reply.author_name}</span>
-                      <span className="text-xs text-muted">{timeAgo(reply.created_at)}</span>
+                      <Posted at={reply.created_at} />
                     </div>
-                    <p className="text-xs text-ink/90 leading-relaxed whitespace-pre-wrap">{reply.content}</p>
+                    <p className="text-sm text-ink/90 leading-relaxed whitespace-pre-wrap break-words">{reply.content}</p>
                   </div>
                   <div className="mt-1.5 ml-1">
                     <Reactions id={reply.id} author={reply.author_name} item={reply} onChange={onReaction} />
@@ -292,18 +462,29 @@ function CommentItem({ comment, postSlug, onReplyAdded, onReaction }: CommentIte
   )
 }
 
+const countAll = (list: Comment[]) => list.reduce((n, c) => n + 1 + c.replies.length, 0)
+
 // ── Main export ───────────────────────────────────────────────────────────────
+/** Responses to a post, Medium-style: anyone can read them; posting one, or a
+ *  reply, needs a Google sign-in (ReaderProvider). Until sign-in is switched on
+ *  (no Google client ID here or on the API), the name-and-email form is used. */
 export default function CommentSection({ postSlug, postTitle = '' }: { postSlug: string; postTitle?: string }) {
+  const { reader, available, signOut } = useReader()
+  const { setResponses } = usePostEngagement()
   const [comments, setComments] = useState<Comment[]>([])
   const [loading, setLoading] = useState(true)
+  const [loaded, setLoaded] = useState(false)
   const [submitted, setSubmitted] = useState(false)
 
   const fetchComments = useCallback(async () => {
     try {
       const res = await fetch(`${API_URL}/api/public/comments?slug=${encodeURIComponent(postSlug)}`)
-      if (res.ok) setComments(await res.json())
+      if (res.ok) {
+        setComments(await res.json())
+        setLoaded(true)
+      }
     } catch {
-      // Comments are optional: a blocked or offline API leaves the thread empty.
+      // Responses are optional: a blocked or offline API leaves the thread empty.
     } finally {
       setLoading(false)
     }
@@ -311,15 +492,19 @@ export default function CommentSection({ postSlug, postTitle = '' }: { postSlug:
 
   useEffect(() => { fetchComments() }, [fetchComments])
 
+  // The clap bars show the same count next to their responses link.
+  useEffect(() => {
+    if (loaded) setResponses(countAll(comments))
+  }, [comments, loaded, setResponses])
+
   function handleNewComment(comment: Comment | Reply) {
-    setComments(prev => [...prev, comment as Comment])
+    setComments(prev => [...prev, { replies: [], ...comment } as Comment])
+    setLoaded(true)
     setSubmitted(true)
   }
 
   function handleReplyAdded(commentId: number, reply: Reply) {
-    setComments(prev =>
-      prev.map(c => c.id === commentId ? { ...c, replies: [...c.replies, reply] } : c)
-    )
+    setComments(prev => prev.map(c => c.id === commentId ? { ...c, replies: [...c.replies, reply] } : c))
   }
 
   function handleReaction(id: number, next: ReactionState) {
@@ -328,18 +513,42 @@ export default function CommentSection({ postSlug, postTitle = '' }: { postSlug:
       : { ...c, replies: c.replies.map(r => (r.id === id ? { ...r, ...next } : r)) }))
   }
 
+  const total = countAll(comments)
+
   return (
-    <div className="mt-12 border-t border-line pt-8 light:border-line">
+    <section id="responses" aria-labelledby="responses-heading" className="scroll-mt-[calc(var(--header-height)+1.5rem)]">
       <div className="mb-6 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-        <h3 className="font-heading text-lg font-bold text-ink light:text-muted">
-          {loading ? 'Comments' : `${comments.length} Comment${comments.length !== 1 ? 's' : ''}`}
-        </h3>
+        <h2 id="responses-heading" className="text-xl font-semibold tracking-[-0.01em] text-ink">
+          {loading ? 'Responses' : `Responses (${total})`}
+        </h2>
         <p className="text-sm text-muted" aria-live="polite">
           <PostViews slug={postSlug} title={postTitle} />
         </p>
       </div>
 
-      {/* Comment list */}
+      {/* New response */}
+      <div className="mb-8 rounded-xl border border-line bg-white/2 p-5">
+        {reader ? (
+          <>
+            {submitted && <p role="status" className="mb-3 text-sm text-pass">✓ Response posted. Thanks for adding to the discussion.</p>}
+            <CommentForm postSlug={postSlug} reader={reader} onSuccess={handleNewComment} />
+            <p className="mt-3 text-xs text-muted">
+              Signed in with Google as {reader.name}.{' '}
+              <button type="button" onClick={signOut} className="text-primary-light underline-offset-2 hover:underline">Sign out</button>
+            </p>
+          </>
+        ) : available ? (
+          <SignInPrompt />
+        ) : (
+          <>
+            <GoogleComingSoon />
+            {submitted && <p role="status" className="mb-3 text-sm text-pass">✓ Response posted. Thanks for adding to the discussion.</p>}
+            <AnonymousForm postSlug={postSlug} onSuccess={handleNewComment} />
+          </>
+        )}
+      </div>
+
+      {/* Response list */}
       {loading ? (
         <div className="space-y-4">
           {[1, 2].map(i => (
@@ -359,23 +568,8 @@ export default function CommentSection({ postSlug, postTitle = '' }: { postSlug:
           ))}
         </div>
       ) : (
-        <p className="mb-6 text-sm text-muted">No comments yet — be the first!</p>
+        <p className="text-sm text-muted">No responses yet. Be the first to share your thoughts.</p>
       )}
-
-      {/* New comment form */}
-      <div className="mt-8 rounded-xl border border-line bg-white/2 p-5">
-        <h4 className="mb-4 text-sm font-semibold text-ink/90">
-          {submitted ? '✓ Comment posted! Leave another:' : 'Leave a comment'}
-        </h4>
-        <CommentForm
-          postSlug={postSlug}
-          onSuccess={handleNewComment}
-          placeholder="Share your thoughts, questions, or feedback…"
-        />
-        <p className="mt-3 text-xs text-muted">
-          Your email is never shown publicly.
-        </p>
-      </div>
-    </div>
+    </section>
   )
 }

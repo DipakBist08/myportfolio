@@ -39,6 +39,7 @@ function post(slug, options = {}) {
     tags: ['QA'],
     author: 'Dipak Bist',
     excerpt: 'An excerpt.',
+    articleType: options.articleType ?? 'Tutorial',
     faq: options.faq ?? FAQ,
     ...(options.testedWith ? { testedWith: options.testedWith } : {}),
   }
@@ -217,4 +218,12 @@ test('a link to a menu section hub is valid, even before the section has posts',
   assert.ok(!codes(report, 'alpha').includes('broken-link'), JSON.stringify(report.results, null, 2))
   const unknown = blog({ alpha: post('alpha', { extra: 'See [nothing](/blog/category/no-such-section).' }) })
   assert.ok(codes(unknown, 'alpha').includes('broken-link'))
+})
+
+test('a published post must say what kind of article it is', () => {
+  assert.ok(codes(blog({ alpha: post('alpha', { omit: ['articleType'] }) }), 'alpha').includes('article-type'))
+  assert.ok(codes(blog({ alpha: post('alpha', { articleType: 'Listicle' }) }), 'alpha').includes('article-type'))
+  for (const t of ['Tutorial', 'Opinion', 'Experiment', 'Project experience']) {
+    assert.ok(!codes(blog({ alpha: post('alpha', { articleType: t }) }), 'alpha').includes('article-type'), t)
+  }
 })

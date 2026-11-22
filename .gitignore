@@ -27,6 +27,9 @@ Desktop.ini
 .env.*.local
 cms/backend/.env
 cms/frontend/.env.local
+# Example env files stay out of git too (owner's choice, 22/11/2026);
+# cms/SETUP.md lists the variables instead.
+.env.example
 
 # ── Node / JS ─────────────────────────────────────────────
 node_modules/
@@ -121,3 +124,4 @@ cms/frontend/vite.config.d.ts
 
 # ── Portfolio build output (scripts/build-site.sh) ────────
 site/
+.neon

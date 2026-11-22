@@ -16,10 +16,14 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 PERSON_ID = "https://dipakbist.com.np/#person"
+# His profiles, exactly as he gave them (18/11/2026). LinkedIn and GitHub first:
+# they carry the most professional weight.
 PROFILES = (
-    "https://www.linkedin.com/in/dipakbist",
+    "https://www.linkedin.com/in/dipakbist/",
     "https://github.com/DipakBist08",
+    "https://www.facebook.com/dipak.beesta",
     "https://www.instagram.com/dipak.beest/",
+    "https://x.com/Deepak_B_08",
 )
 OUTDATED = ("linkedin.com/in/dipakbist08", "61585825412139")
 
@@ -89,6 +93,58 @@ def test_structured_data_names_one_person_with_the_blogs_author_id():
     assert set(PROFILES) <= set(person["sameAs"])
     assert not any(o in url for url in person["sameAs"] for o in OUTDATED)
     assert not any("blog.dipakbist.com.np" in url for url in person["sameAs"])
+    # The brief's skills (Part 13), and the employer the page already names.
+    for skill in ("Software Testing", "Quality Assurance", "Manual Testing", "Test Automation", "Playwright",
+                  "Python", "Pytest", "Selenium", "API Testing", "Postman", "AI-Assisted QA", "Performance Testing"):
+        assert skill in person["knowsAbout"], skill
+    assert person["worksFor"] == {"@type": "Organization", "name": "Sterling Wells"}
+    # His real portrait, published under a name that says who it is.
+    image = person["image"]
+    assert image == "https://dipakbist.com.np/assets/dipak-bist-software-qa-engineer.webp"
+    assert (ROOT / image.removeprefix("https://dipakbist.com.np/")).is_file()
+
+
+def _webp_size_and_chunks(data: bytes) -> tuple[tuple[int, int], set[str]]:
+    """Width, height and chunk names of a WebP file (RIFF container), read without Pillow."""
+    assert data[:4] == b"RIFF" and data[8:12] == b"WEBP", "not a WebP file"
+    chunks, size, pos = set(), None, 12
+    while pos + 8 <= len(data):
+        name, length = data[pos:pos + 4].decode("latin-1"), int.from_bytes(data[pos + 4:pos + 8], "little")
+        body = data[pos + 8:pos + 8 + length]
+        chunks.add(name)
+        if name == "VP8X":
+            size = (int.from_bytes(body[4:7], "little") + 1, int.from_bytes(body[7:10], "little") + 1)
+        elif name == "VP8 " and size is None:
+            size = (int.from_bytes(body[6:8], "little") & 0x3FFF, int.from_bytes(body[8:10], "little") & 0x3FFF)
+        elif name == "VP8L" and size is None:
+            bits = int.from_bytes(body[1:5], "little")
+            size = ((bits & 0x3FFF) + 1, ((bits >> 14) & 0x3FFF) + 1)
+        pos += 8 + length + (length & 1)
+    return size, chunks
+
+
+def _png_size_and_chunks(data: bytes) -> tuple[tuple[int, int], set[str]]:
+    assert data[:8] == b"\x89PNG\r\n\x1a\n", "not a PNG file"
+    chunks, pos = set(), 8
+    while pos + 8 <= len(data):
+        length, name = int.from_bytes(data[pos:pos + 4], "big"), data[pos + 4:pos + 8].decode("latin-1")
+        chunks.add(name)
+        pos += 12 + length
+    return (int.from_bytes(data[16:20], "big"), int.from_bytes(data[20:24], "big")), chunks
+
+
+def test_portraits_are_large_enough_and_carry_no_camera_or_location_data():
+    """Search engines want a Person image of 800px or more, and the blog shows the same
+    face in a 96px circle (288px on a 3x phone). Phone photos also record where they were
+    taken (EXIF/XMP GPS), so neither published copy may carry EXIF, XMP or text chunks."""
+    (w, h), chunks = _webp_size_and_chunks((ROOT / "assets/dipak-bist-software-qa-engineer.webp").read_bytes())
+    assert w == h and w >= 800, (w, h)
+    assert not chunks & {"EXIF", "XMP "}, chunks
+    blog = ROOT / "blog/public/dipak-bist.png"
+    if blog.is_file():  # the built site/ folder has no blog
+        (w, h), chunks = _png_size_and_chunks(blog.read_bytes())
+        assert w == h and w >= 288, (w, h)
+        assert not chunks & {"eXIf", "tEXt", "iTXt", "zTXt"}, chunks
 
 
 def test_every_reference_in_the_graph_points_at_a_node_in_it():
@@ -125,6 +181,38 @@ def test_head_tells_search_engines_what_this_page_is():
     assert not [m for m in p.meta if m.get("name") == "keywords"], "no meta keywords"
 
 
+def test_title_and_description_fit_a_search_result():
+    """The brief's title, and a description short enough that Google shows all of it."""
+    html = (ROOT / "index.html").read_text(encoding="utf-8")
+    title = re.search(r"<title>(.*?)</title>", html, re.S).group(1)
+    assert title == "Dipak Bist | Software QA Engineer in Nepal"
+    p = page()
+    meta = {m.get("name") or m.get("property"): m.get("content") for m in p.meta}
+    assert 120 <= len(meta["description"]) <= 160, len(meta["description"])
+    assert meta["description"].startswith("Software QA Engineer with 4+ years")
+    assert meta["og:title"] == meta["twitter:title"] == title
+    assert meta["og:description"] == meta["twitter:description"]
+
+
+def test_every_profile_is_linked_in_the_footer_and_contact_section():
+    html = (ROOT / "index.html").read_text(encoding="utf-8")
+    footer = html[html.index('<ul class="footer__social"'):]
+    footer = footer[: footer.index("</ul>")]
+    contact = html[html.index('id="contact"'):html.index('<form id="contact-form"')]
+    for url in PROFILES:
+        assert f'href="{url}"' in footer, f"footer lacks {url}"
+        assert f'href="{url}"' in contact, f"contact section lacks {url}"
+    assert graph()[0]["sameAs"] == list(PROFILES)
+    # An old form of a profile URL must not linger next to the exact one.
+    assert 'href="https://www.linkedin.com/in/dipakbist"' not in html
+
+
+def test_x_cards_name_his_account():
+    p = page()
+    tags = {m.get("name"): m.get("content") for m in p.meta if m.get("name", "").startswith("twitter:")}
+    assert tags["twitter:site"] == tags["twitter:creator"] == "@Deepak_B_08"
+
+
 def test_profile_links_say_they_are_his():
     p = page()
     for a in p.anchors:
@@ -157,7 +245,8 @@ def test_sitemap_gets_a_lastmod_at_build_time(tmp_path):
     import shutil
     import subprocess
 
-    for name in ("index.html", "404.html", "robots.txt", "sitemap.xml", "favicon.ico", "scripts/build-site.sh"):
+    keyfile = re.search(r'^KEY = "(\w+)"$', (ROOT / "tools" / "indexnow.py").read_text(encoding="utf-8"), re.M).group(1) + ".txt"
+    for name in ("index.html", "404.html", "robots.txt", "sitemap.xml", "favicon.ico", keyfile, "scripts/build-site.sh"):
         (tmp_path / name).parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(ROOT / name, tmp_path / name)
     for folder in ("css", "js", "assets", "admin"):
@@ -166,5 +255,48 @@ def test_sitemap_gets_a_lastmod_at_build_time(tmp_path):
     xml = (tmp_path / "site" / "sitemap.xml").read_text(encoding="utf-8")
     entry = re.search(r"<loc>https://dipakbist\.com\.np/</loc>\s*<lastmod>(\d{4}-\d{2}-\d{2})</lastmod>", xml)
     assert entry, "the homepage entry carries a <lastmod> date"
+    # The footer's "Last updated" shows that same date, in DD/MM/YYYY.
+    y, m, d = entry.group(1).split("-")
+    built = (tmp_path / "site" / "index.html").read_text(encoding="utf-8")
+    assert f'<time class="site-updated" datetime="{entry.group(1)}">{d}/{m}/{y}</time>' in built
     # The source file is left alone; only the built copy is stamped.
     assert "<lastmod>" not in (ROOT / "sitemap.xml").read_text(encoding="utf-8")
+
+
+def test_sitemap_lists_only_this_sites_pages():
+    """Separate sites, separate sitemaps: the blog lists its own URLs."""
+    import xml.etree.ElementTree as ET
+
+    ns = {"s": "http://www.sitemaps.org/schemas/sitemap/0.9"}
+    root = ET.parse(ROOT / "sitemap.xml").getroot()
+    locs = [e.text.strip() for e in root.findall("s:url/s:loc", ns)]
+    assert locs == ["https://dipakbist.com.np/"]
+
+
+def test_robots_txt_lets_crawlers_in_and_names_the_sitemap():
+    lines = [l.strip() for l in (ROOT / "robots.txt").read_text(encoding="utf-8").splitlines()
+             if l.strip() and not l.startswith("#")]
+    assert lines == ["User-agent: *", "Allow: /", "Sitemap: https://dipakbist.com.np/sitemap.xml"]
+    # /admin stays out of the index through its response header, not robots.txt.
+    config = json.loads((ROOT / "vercel.json").read_text(encoding="utf-8"))
+    admin = next(h for h in config["headers"] if h["source"] == "/admin/(.*)")
+    assert {"key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive"} in admin["headers"]
+
+
+def test_blog_cards_use_each_posts_current_title():
+    """The cards' link text is the post's own title, so both sites say the same thing."""
+    html = (ROOT / "index.html").read_text(encoding="utf-8")
+    cards = re.findall(
+        r'<h3 class="post__title"><a href="https://blog\.dipakbist\.com\.np/blog/([^"]+)"[^>]*>(.*?)</a></h3>', html)
+    assert len(cards) == 3
+    for slug, text in cards:
+        mdx = (ROOT / "blog" / "content" / "blog" / f"{slug}.mdx").read_text(encoding="utf-8")
+        title = re.search(r'^title: "(.*)"$', mdx, re.M).group(1)
+        assert text == title, slug
+
+
+def test_indexnow_key_file_matches_the_script():
+    """Bing and others check https://dipakbist.com.np/<key>.txt before they accept a notice."""
+    script = (ROOT / "tools" / "indexnow.py").read_text(encoding="utf-8")
+    key = re.search(r'^KEY = "([0-9a-f]{32})"$', script, re.M).group(1)
+    assert (ROOT / f"{key}.txt").read_text(encoding="utf-8") == key

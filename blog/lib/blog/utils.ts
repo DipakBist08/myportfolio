@@ -174,31 +174,47 @@ export function getHubs(posts: PostMeta[]): Hub[] {
 
 export const hubPosts = (hub: Hub, posts: PostMeta[]) => posts.filter((p) => hub.categories.includes(p.category))
 
-/** Find related posts based on shared tags and category */
-export function getRelatedPosts(
+/** A post offered under "Recommended from", with how closely it matches the
+ *  post being read. Only what the card shows, so the page stays small. */
+export interface RecommendationCandidate {
+  slug: string
+  title: string
+  excerpt: string
+  category: string
+  date: string
+  readingTime: string
+  /** Topic match: same cluster 4, same category 3, each shared tag 1. */
+  relevance: number
+}
+
+/** Every other post, closest topic first, then newest. Posts on other topics
+ *  stay in (with relevance 0), so readers of any post get recommendations; the
+ *  page re-ranks them with readers' claps and responses
+ *  (components/blog/engagement/RecommendedPosts.tsx). */
+export function getRecommendationCandidates(
   currentPost: PostMeta,
   allPosts: PostMeta[],
-  limit = 3
-): PostMeta[] {
-  const others = allPosts.filter((p) => p.slug !== currentPost.slug)
-
-  const scored = others.map((post) => {
-    let score = 0
-    // Same cluster = 4 points, same category = 3 points
-    if (currentPost.cluster && post.cluster === currentPost.cluster) score += 4
-    if (post.category === currentPost.category) score += 3
-    // Shared tags = 1 point each
-    currentPost.tags.forEach((tag) => {
-      if (post.tags.includes(tag)) score += 1
+  limit = 8
+): RecommendationCandidate[] {
+  return allPosts
+    .filter((p) => p.slug !== currentPost.slug && !p.draft)
+    .map((post) => {
+      let relevance = 0
+      if (currentPost.cluster && post.cluster === currentPost.cluster) relevance += 4
+      if (post.category === currentPost.category) relevance += 3
+      relevance += currentPost.tags.filter((tag) => post.tags.includes(tag)).length
+      return {
+        slug: post.slug,
+        title: post.title,
+        excerpt: post.excerpt,
+        category: post.category,
+        date: post.date,
+        readingTime: post.readingTime,
+        relevance,
+      }
     })
-    return { post, score }
-  })
-
-  return scored
-    .filter((s) => s.score > 0)
-    .sort((a, b) => b.score - a.score)
+    .sort((a, b) => b.relevance - a.relevance || b.date.localeCompare(a.date))
     .slice(0, limit)
-    .map((s) => s.post)
 }
 
 /** Paginate posts */

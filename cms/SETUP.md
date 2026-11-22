@@ -15,13 +15,26 @@
 
 ### 1 — Clone & configure
 
-```bash
-cd cms/backend
-cp .env.example .env        # Edit values (SECRET_KEY, ADMIN_EMAIL, etc.)
+Create `cms/backend/.env` (git ignores it). Only `SECRET_KEY` is required;
+everything else has a default in `backend/app/config.py`:
 
-cd ../frontend
-cp .env.example .env        # Edit VITE_API_URL if needed
+```bash
+# cms/backend/.env
+SECRET_KEY=            # python3 -c "import secrets; print(secrets.token_hex(32))"
+DEBUG=true             # local only: turns on /docs and SQL logging
+ADMIN_EMAIL=           # first admin, created by `python seed.py`
+ADMIN_PASSWORD=
+# Optional
+# DATABASE_URL=sqlite:///./cms.db
+# ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000
+# RESEND_API_KEY=      # without it, no emails are sent
+# BACKEND_URL=http://localhost:8000
+# BLOG_URL=https://blog.dipakbist.com.np
+# GOOGLE_CLIENT_ID=    # reader Google sign-in on the blog
 ```
+
+The admin app needs only the API address, and defaults to `http://localhost:8000`.
+To point it elsewhere, create `cms/frontend/.env.local` with `VITE_API_URL=...`.
 
 ### 2 — Backend
 
@@ -65,9 +78,8 @@ There are no default credentials.
 ```bash
 cd cms
 
-# Copy and configure env files
-cp backend/.env.example backend/.env
-cp frontend/.env.example frontend/.env
+# Create backend/.env first (see Quick Start, step 1).
+# Set VITE_API_URL for the admin app's build if the API is not on localhost:8000.
 
 # Build & start
 docker-compose up -d --build
@@ -80,6 +92,57 @@ docker-compose exec backend python seed.py
 - Frontend: http://localhost:5173
 
 ---
+
+## Forgotten password
+
+On the sign-in page, choose **Forgot password?** and enter the admin email. If it
+belongs to an active account, the API emails a link to `CMS_URL/reset-password`
+(through Resend, so `RESEND_API_KEY` must be set). The link works once, expires
+after `PASSWORD_RESET_EXPIRE_MINUTES` (30), and stops working as soon as the
+password changes. Setting a new password signs out every session; MFA stays on,
+so the next sign-in still asks for the authenticator code.
+
+- `CMS_URL` must be the admin site's address. It defaults to
+  `https://cms.dipakbist.com.np`; set `CMS_URL=http://localhost:5173` in a local `.env`.
+- Locally, with `DEBUG=true` and no `RESEND_API_KEY`, the link is written to the
+  API log instead of being emailed.
+- If email is not working, or the authenticator app is lost too, use
+  `python reset_admin_password.py` (add `--clear-mfa`) from the backend host.
+
+---
+
+## Production database: Neon PostgreSQL
+
+On Render's free plan there is no persistent disk, so `DATABASE_URL=sqlite:///./cms.db`
+loses every account, comment, clap and subscriber on each deploy and restart (on
+22/11/2026 this deleted the only admin). Production uses **Neon** (project
+`nameless-scene-82381240`, default branch `production`, AWS us-east-1).
+
+| Variable | Which Neon URL | Used for |
+|---|---|---|
+| `DATABASE_URL` | pooled (host ends in `-pooler`) | all API queries |
+| `DATABASE_URL_UNPOOLED` | direct (no `-pooler`) | creating the tables at startup (`create_all`), as Neon advises for schema work |
+
+1. **Render** → the API service → Environment: set both variables to the `production`
+   branch's URLs (Neon console → Connect, or `neon connection-string production --pooled`
+   and `neon connection-string production`). Render redeploys; the tables are created at startup.
+2. Keep `ADMIN_EMAIL` and `ADMIN_PASSWORD` set there: if the database has no admin, the API
+   creates one from them at startup (no sample data). Sign in, then turn MFA on again.
+
+**Local work against Neon.** The repo root has `neon.ts` (the branch policy) and a
+gitignored `.neon` link. `neon checkout dev --create` makes a development branch (it
+expires after 7 days, per `neon.ts`), and `neon env pull` writes its `DATABASE_URL` and
+`DATABASE_URL_UNPOOLED` to the root `.env.local`. The API does not read that file by
+itself (so a local run never touches production by accident): export the two variables
+before starting it.
+
+**Pull requests.** `.github/workflows/neon-pr-branches.yml` gives each pull request its own
+Neon branch, `preview/pr-<number>-<branch>`, and deletes it when the PR closes (or after
+14 days). It needs the repository variable `NEON_PROJECT_ID` and the secret `NEON_API_KEY`,
+which Neon's GitHub integration set.
+
+The test suite runs against PostgreSQL too: `TEST_DATABASE_URL=postgresql://… pytest`.
+It drops and recreates every table, so use a throwaway branch, never `production`.
 
 ## MFA Setup
 
@@ -278,12 +341,13 @@ The TipTap-powered editor supports:
 | Key | Default | Description |
 |-----|---------|-------------|
 | `SECRET_KEY` | random | **Change in production** — used to sign JWTs |
-| `DATABASE_URL` | sqlite:///./cms.db | SQLite path |
+| `DATABASE_URL` | sqlite:///./cms.db | SQLite locally. **Production: a PostgreSQL URL** (`postgresql://…` or `postgres://…`), because a SQLite file inside a free Render container is wiped on every deploy and restart |
+| `DATABASE_URL_UNPOOLED` | empty | Neon's direct URL, used to create the tables at startup; empty means `DATABASE_URL` |
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | 15 | Access token lifetime |
 | `REFRESH_TOKEN_EXPIRE_DAYS` | 7 | Refresh token lifetime |
 | `DEBUG` | false | `true` locally for /docs and SQL logging; never in production |
-| `ADMIN_EMAIL` | none | Seed admin email (required by `seed.py`) |
-| `ADMIN_PASSWORD` | none | Seed admin password, 12+ characters (required by `seed.py`) |
+| `ADMIN_EMAIL` | none | First admin's email: used by `seed.py`, and at every API start to recreate the admin if the database has none |
+| `ADMIN_PASSWORD` | none | That admin's password, 12 to 72 bytes. Only used to create a missing admin; it never changes an existing account |
 | `ALLOWED_ORIGINS` | localhost:5173 | Comma-separated CORS origins |
 | `UPLOAD_DIR` | uploads | Directory for media files |
 | `EMAILS_ENABLED` | false | Set to `true` + fill SMTP_ vars |

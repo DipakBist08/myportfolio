@@ -1,0 +1,38 @@
+name: Announce new blog articles
+
+# Emails newsletter subscribers about any article newly added to the blog's
+# RSS feed (https://blog.dipakbist.com.np/rss.xml). The CMS API remembers what
+# it has announced, so running this often never sends an article twice, and
+# articles marked `draft: true` are not in the feed. The endpoint is public and
+# needs no secret; see cms/backend/app/api/public/announcements.py.
+
+on:
+  schedule:
+    - cron: "17 * * * *" # every hour
+  push:
+    branches: [main]
+    paths: ["blog/content/**"]
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: announce-new-articles
+  cancel-in-progress: false
+
+jobs:
+  announce:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Wait for Vercel to publish the new article
+        if: github.event_name == 'push'
+        run: sleep 300
+
+      - name: Ask the CMS API to announce new articles
+        # The free Render instance can take about a minute to wake up.
+        run: |
+          curl --fail-with-body --silent --show-error \
+            --retry 4 --retry-delay 30 --retry-all-errors --max-time 120 \
+            -X POST https://api.dipakbist.com.np/api/public/announcements/check
+          echo

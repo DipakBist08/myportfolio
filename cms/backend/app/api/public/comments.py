@@ -4,11 +4,15 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy.orm import Session, joinedload
 
 from sqlalchemy.exc import IntegrityError
+from typing import Optional
 
 from app.core.reactions import attach_reactions, reaction_counts
+from app.config import settings
+from app.core.readers import check_origin, current_reader
 from app.core.visitor import client_ip, visitor_hash
 from app.database import get_db
 from app.models.comment import Comment
+from app.models.reader import CommentAuthor, Reader
 from app.models.traffic import CommentReaction
 from app.schemas.comment import CommentCreate, CommentOut, ReactionIn, ReactionOut
 
@@ -19,24 +23,41 @@ _reaction_attempts: dict[str, list[float]] = defaultdict(list)
 _REACTION_LIMIT = 30
 _REACTION_WINDOW = 60.0
 
-# Rate limit: 5 comments per IP per 5 minutes
+# Rate limit: 5 comments per reader (and per address) per 5 minutes
 _comment_attempts: dict[str, list[float]] = defaultdict(list)
 _RATE_LIMIT = 5
 _RATE_WINDOW = 300.0
 
 
-def _check_rate_limit(ip: str) -> None:
+def _check_rate_limit(*keys: str) -> None:
     now = time.monotonic()
     window = now - _RATE_WINDOW
-    attempts = [t for t in _comment_attempts[ip] if t > window]
-    if len(attempts) >= _RATE_LIMIT:
+    recent = {key: [t for t in _comment_attempts[key] if t > window] for key in keys}
+    if any(len(attempts) >= _RATE_LIMIT for attempts in recent.values()):
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
             detail="Too many comments. Please wait a few minutes.",
             headers={"Retry-After": "300"},
         )
-    attempts.append(now)
-    _comment_attempts[ip] = attempts
+    for key, attempts in recent.items():
+        _comment_attempts[key] = attempts + [now]
+
+
+def attach_authors(db: Session, comments: list[Comment]) -> None:
+    """Set .author_picture on each comment and reply written by a signed-in
+    reader (from their Google account), "" on older comments."""
+    everything = [c for comment in comments for c in [comment, *(getattr(comment, "replies", None) or [])]]
+    ids = [c.id for c in everything]
+    pictures: dict[int, str] = {}
+    if ids:
+        pictures = dict(
+            db.query(CommentAuthor.comment_id, Reader.picture)
+            .join(Reader, Reader.id == CommentAuthor.reader_id)
+            .filter(CommentAuthor.comment_id.in_(ids))
+            .all()
+        )
+    for c in everything:
+        c.author_picture = pictures.get(c.id) or ""
 
 
 @router.get("", response_model=list[CommentOut])
@@ -58,6 +79,7 @@ def get_comments(request: Request, slug: str = Query(...), db: Session = Depends
     for c in comments:
         c.replies = [r for r in c.replies if r.is_approved]
     attach_reactions(db, comments, voter=visitor_hash(request))
+    attach_authors(db, comments)
     return comments
 
 
@@ -106,11 +128,33 @@ def react(comment_id: int, body: ReactionIn, request: Request, db: Session = Dep
 
 
 @router.post("", response_model=CommentOut, status_code=status.HTTP_201_CREATED)
-def post_comment(body: CommentCreate, request: Request, db: Session = Depends(get_db)):
-    """Submit a new comment or reply."""
-    # The real visitor's address: behind the hosting proxy, the socket peer is
-    # the proxy, so a per-peer limit would throttle every commenter at once.
-    _check_rate_limit(client_ip(request))
+def post_comment(
+    body: CommentCreate,
+    request: Request,
+    reader: Optional[Reader] = Depends(current_reader),
+    db: Session = Depends(get_db),
+):
+    """Submit a new comment or reply.
+
+    With Google sign-in on, only a signed-in reader may post, under the name on
+    their Google account (the email is kept private). Until GOOGLE_CLIENT_ID is
+    set, comments are posted with a name and email as before, so turning the
+    feature on later needs no code change."""
+    check_origin(request)
+    if settings.reader_sign_in_enabled:
+        if reader is None:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Sign in with Google to do that.")
+        author_name, author_email = reader.name, reader.email
+    else:
+        reader = None
+        if not body.author_name or not body.author_email:
+            raise HTTPException(status_code=422, detail="Name and email are required")
+        author_name, author_email = body.author_name, str(body.author_email)
+
+    # Per reader, and per real visitor address (behind the hosting proxy the
+    # socket peer is the proxy, so a per-peer limit would throttle everyone).
+    keys = [f"ip:{client_ip(request)}"] + ([f"reader:{reader.id}"] if reader else [])
+    _check_rate_limit(*keys)
 
     # Validate parent exists and belongs to same post
     if body.parent_id is not None:
@@ -125,13 +169,17 @@ def post_comment(body: CommentCreate, request: Request, db: Session = Depends(ge
     comment = Comment(
         post_slug=body.post_slug,
         parent_id=body.parent_id,
-        author_name=body.author_name,
-        author_email=body.author_email,
+        author_name=author_name,
+        author_email=author_email,
         content=body.content,
         is_approved=True,
     )
     db.add(comment)
+    db.flush()
+    if reader is not None:
+        db.add(CommentAuthor(comment_id=comment.id, reader_id=reader.id))
     db.commit()
     db.refresh(comment)
     comment.replies = []
+    comment.author_picture = (reader.picture or "") if reader else ""
     return comment
