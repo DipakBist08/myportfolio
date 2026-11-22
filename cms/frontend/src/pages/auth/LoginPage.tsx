@@ -23,6 +23,9 @@ export default function LoginPage() {
   const { setTokens } = useAuthStore()
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
+  // The API sleeps when idle (free Render instance) and takes about 50 s to
+  // wake, so a slow first sign-in says why instead of spinning silently.
+  const [slow, setSlow] = useState(false)
 
   const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -30,8 +33,10 @@ export default function LoginPage() {
 
   const onSubmit = async (data: FormData) => {
     setLoading(true)
+    setSlow(false)
+    const slowNote = setTimeout(() => setSlow(true), 5_000)
     try {
-      const res = await api.post<TokenResponse>('/api/v1/auth/login', data)
+      const res = await api.post<TokenResponse>('/api/v1/auth/login', data, { timeout: 90_000 })
       if (res.data.requires_mfa && res.data.temp_token) {
         // Store temp token, navigate to MFA page
         sessionStorage.setItem('mfa_temp_token', res.data.temp_token)
@@ -42,8 +47,13 @@ export default function LoginPage() {
       toast.success('Welcome back!')
       navigate('/dashboard')
     } catch (err: any) {
-      toast.error(err.response?.data?.detail || 'Login failed')
+      const detail = err.response?.data?.detail
+      if (typeof detail === 'string') toast.error(detail)
+      else if (!err.response) toast.error("Couldn't reach the server. Check your connection and try again.")
+      else toast.error('Sign-in failed. Try again.')
     } finally {
+      clearTimeout(slowNote)
+      setSlow(false)
       setLoading(false)
     }
   }
@@ -115,6 +125,10 @@ export default function LoginPage() {
               {loading ? <Loader2 size={16} className="animate-spin mr-2" /> : null}
               Sign In
             </Button>
+            {/* Space is reserved so the note does not push the card when it appears. */}
+            <p className="text-xs text-slate-400 text-center min-h-[2.5em]" role="status" aria-live="polite">
+              {slow ? 'Waking up the server. The first sign-in after a quiet spell can take up to a minute.' : ''}
+            </p>
           </form>
 
           <p className="text-center text-xs text-slate-500 mt-6">
