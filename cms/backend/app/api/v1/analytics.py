@@ -84,6 +84,16 @@ def dashboard_stats(
     }
 
 
+def _local_day(column, tz_offset: int, dialect: str):
+    """The calendar day of `column` (naive UTC) on the admin's clock, as
+    'YYYY-MM-DD' text, in SQLite (local development) and PostgreSQL (a
+    persistent DATABASE_URL). SQLite's date(col, '+N minutes') does not exist
+    in PostgreSQL."""
+    if dialect == "sqlite":
+        return func.date(column, f"{tz_offset:+d} minutes")
+    return func.to_char(column + timedelta(minutes=tz_offset), "YYYY-MM-DD")
+
+
 @router.get("/traffic")
 def traffic(
     days: int = Query(30, ge=1, le=365),
@@ -93,8 +103,7 @@ def traffic(
 ):
     """Visitors and page views for the portfolio and the blog (page_views),
     plus per-post views, readers, comments and reactions for the blog."""
-    shift = f"{tz_offset:+d} minutes"
-    local_day = func.date(PageView.created_at, shift)
+    local_day = _local_day(PageView.created_at, tz_offset, db.get_bind().dialect.name)
     today = (utcnow() + timedelta(minutes=tz_offset)).date()
     first_day = today - timedelta(days=days - 1)
 

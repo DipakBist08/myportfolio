@@ -12,7 +12,10 @@ from pathlib import Path
 import pytest
 
 _DB = Path(tempfile.mkdtemp(prefix="cms-tests-")) / "test.db"
-os.environ["DATABASE_URL"] = f"sqlite:///{_DB}"
+# TEST_DATABASE_URL runs the suite against another database, e.g. a throwaway
+# PostgreSQL. Every test drops and recreates all tables there, so never point
+# it at a database you want to keep.
+os.environ["DATABASE_URL"] = os.environ.get("TEST_DATABASE_URL") or f"sqlite:///{_DB}"
 os.environ["SECRET_KEY"] = "test-secret-" + "0123456789abcdef" * 4
 os.environ["DEBUG"] = "false"
 os.environ["UPLOAD_DIR"] = str(_DB.parent / "uploads")
