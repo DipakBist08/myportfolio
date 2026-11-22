@@ -111,21 +111,38 @@ so the next sign-in still asks for the authenticator code.
 
 ---
 
-## Production database (do this once)
+## Production database: Neon PostgreSQL
 
 On Render's free plan there is no persistent disk, so `DATABASE_URL=sqlite:///./cms.db`
 loses every account, comment, clap and subscriber on each deploy and restart (on
-22/11/2026 this deleted the only admin). Use a free PostgreSQL instead:
+22/11/2026 this deleted the only admin). Production uses **Neon** (project
+`nameless-scene-82381240`, default branch `production`, AWS us-east-1).
 
-1. Create a free database at https://neon.tech (or Supabase) and copy its connection
-   string (`postgresql://user:password@host/dbname?sslmode=require`).
-2. Render → the API service → Environment → set `DATABASE_URL` to it. Render redeploys;
-   the tables are created at startup.
-3. Keep `ADMIN_EMAIL` and `ADMIN_PASSWORD` set there: if the database ever has no admin,
-   the API creates one from them at startup (no sample data). Sign in, then turn MFA on again.
+| Variable | Which Neon URL | Used for |
+|---|---|---|
+| `DATABASE_URL` | pooled (host ends in `-pooler`) | all API queries |
+| `DATABASE_URL_UNPOOLED` | direct (no `-pooler`) | creating the tables at startup (`create_all`), as Neon advises for schema work |
 
-The test suite runs against PostgreSQL too: `TEST_DATABASE_URL=postgresql://… pytest`
-(it drops and recreates every table, so use a throwaway database).
+1. **Render** → the API service → Environment: set both variables to the `production`
+   branch's URLs (Neon console → Connect, or `neon connection-string production --pooled`
+   and `neon connection-string production`). Render redeploys; the tables are created at startup.
+2. Keep `ADMIN_EMAIL` and `ADMIN_PASSWORD` set there: if the database has no admin, the API
+   creates one from them at startup (no sample data). Sign in, then turn MFA on again.
+
+**Local work against Neon.** The repo root has `neon.ts` (the branch policy) and a
+gitignored `.neon` link. `neon checkout dev --create` makes a development branch (it
+expires after 7 days, per `neon.ts`), and `neon env pull` writes its `DATABASE_URL` and
+`DATABASE_URL_UNPOOLED` to the root `.env.local`. The API does not read that file by
+itself (so a local run never touches production by accident): export the two variables
+before starting it.
+
+**Pull requests.** `.github/workflows/neon-pr-branches.yml` gives each pull request its own
+Neon branch, `preview/pr-<number>-<branch>`, and deletes it when the PR closes (or after
+14 days). It needs the repository variable `NEON_PROJECT_ID` and the secret `NEON_API_KEY`,
+which Neon's GitHub integration set.
+
+The test suite runs against PostgreSQL too: `TEST_DATABASE_URL=postgresql://… pytest`.
+It drops and recreates every table, so use a throwaway branch, never `production`.
 
 ## MFA Setup
 
@@ -325,6 +342,7 @@ The TipTap-powered editor supports:
 |-----|---------|-------------|
 | `SECRET_KEY` | random | **Change in production** — used to sign JWTs |
 | `DATABASE_URL` | sqlite:///./cms.db | SQLite locally. **Production: a PostgreSQL URL** (`postgresql://…` or `postgres://…`), because a SQLite file inside a free Render container is wiped on every deploy and restart |
+| `DATABASE_URL_UNPOOLED` | empty | Neon's direct URL, used to create the tables at startup; empty means `DATABASE_URL` |
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | 15 | Access token lifetime |
 | `REFRESH_TOKEN_EXPIRE_DAYS` | 7 | Refresh token lifetime |
 | `DEBUG` | false | `true` locally for /docs and SQL logging; never in production |

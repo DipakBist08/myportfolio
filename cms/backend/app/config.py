@@ -18,6 +18,11 @@ class Settings(BaseSettings):
 
     # Database
     DATABASE_URL: str = "sqlite:///./cms.db"
+    # Neon: DATABASE_URL is the pooled connection (app traffic) and
+    # DATABASE_URL_UNPOOLED the direct one, used to create the tables at
+    # startup (schema changes should not go through the pooler). Both come
+    # from `neon env pull`; empty means DATABASE_URL is used for both.
+    DATABASE_URL_UNPOOLED: str = ""
 
     # JWT
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
