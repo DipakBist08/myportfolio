@@ -124,3 +124,4 @@ cms/frontend/vite.config.d.ts
 
 # ── Portfolio build output (scripts/build-site.sh) ────────
 site/
+.neon

@@ -8,7 +8,7 @@ from pathlib import Path
 import logging
 
 from app.config import settings
-from app.database import engine, Base, SessionLocal
+from app.database import engine, schema_engine, Base, SessionLocal
 from app.api.v1.router import router as v1_router
 from app.api.public.router import router as public_router
 
@@ -48,7 +48,7 @@ def _ensure_admin() -> None:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    Base.metadata.create_all(bind=engine)
+    Base.metadata.create_all(bind=schema_engine)
     _ensure_admin()
     _purge_expired_tokens()
     if not settings.emails_enabled:
