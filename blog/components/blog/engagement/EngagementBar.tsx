@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import { compactCount } from './api'
 import { usePostEngagement } from './PostEngagement'
 import { useReader } from './ReaderContext'
@@ -29,102 +29,46 @@ export function ResponseIcon({ className = 'h-5 w-5' }: { className?: string }) 
   )
 }
 
-const HOLD_DELAY_MS = 380
-const HOLD_EVERY_MS = 130
-
-/** The clap button with its total, the reader's own count as a "+N" bubble,
- *  and Undo. Press for one clap, or hold to keep clapping (up to the limit). */
+/** The clap button with the post's total. One clap per reader (the owner's
+ *  rule, 22/11/2026): press to clap, press again to take the clap back. */
 function ClapButton({ size }: { size: 'md' | 'lg' }) {
-  const { claps, myClaps, maxClaps, clap, undo, error } = usePostEngagement()
-  const [bubble, setBubble] = useState(0) // changes key to replay the bubble
-  const [atLimit, setAtLimit] = useState(false)
-  const holdTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const holdEvery = useRef<ReturnType<typeof setInterval> | null>(null)
-  const held = useRef(false)
-  const clapRef = useRef(clap)
-  clapRef.current = clap
-
-  const stopHold = () => {
-    if (holdTimer.current) clearTimeout(holdTimer.current)
-    if (holdEvery.current) clearInterval(holdEvery.current)
-    holdTimer.current = null
-    holdEvery.current = null
-  }
-  useEffect(() => stopHold, [])
-
-  const once = () => {
-    const ok = clapRef.current()
-    setAtLimit(!ok)
-    if (!ok) stopHold()
-    setBubble((b) => b + 1)
-  }
-
-  const mine = myClaps > 0
+  const { claps, clapped, toggleClap, error } = usePostEngagement()
+  const [pop, setPop] = useState(0) // changes key to replay the clap animation
   const big = size === 'lg'
-  const label = mine
-    ? `Clap for this article. You clapped ${myClaps} of ${maxClaps} times${claps !== null ? `; ${claps} claps in all` : ''}.`
-    : `Clap for this article${claps !== null ? ` (${claps} claps so far)` : ''}`
+  const total = claps !== null ? ` ${claps} clap${claps === 1 ? '' : 's'} so far.` : ''
+  const label = clapped
+    ? `Clap for this article: you clapped. Press again to take your clap back.${total}`
+    : `Clap for this article.${total}`
 
   return (
     <div className="relative inline-flex items-center gap-1">
       <button
         type="button"
         aria-label={label}
-        aria-pressed={mine}
-        title={atLimit ? `${maxClaps} claps is the most one reader can give` : 'Clap (hold to keep clapping)'}
+        aria-pressed={clapped}
+        title={clapped ? 'You clapped. Press again to take it back.' : 'Clap'}
         onClick={() => {
-          if (held.current) { held.current = false; return }
-          once()
+          if (!clapped) setPop((n) => n + 1)
+          toggleClap()
         }}
-        onPointerDown={(e) => {
-          if (e.button !== 0) return
-          held.current = false
-          holdTimer.current = setTimeout(() => {
-            held.current = true
-            once()
-            holdEvery.current = setInterval(once, HOLD_EVERY_MS)
-          }, HOLD_DELAY_MS)
-        }}
-        onPointerUp={stopHold}
-        onPointerLeave={stopHold}
-        onPointerCancel={stopHold}
-        onContextMenu={(e) => e.preventDefault()}
         className={`group relative inline-flex select-none items-center justify-center rounded-full border transition-[color,border-color,background-color,transform] duration-150 active:scale-95 motion-reduce:active:scale-100 ${
           big ? 'h-12 w-12' : 'h-10 w-10'
         } ${
-          mine
+          clapped
             ? 'border-primary/50 bg-primary/10 text-primary-light'
             : 'border-line text-muted hover:border-line-strong hover:text-ink'
         }`}
-        style={{ touchAction: 'manipulation', WebkitTouchCallout: 'none' }}
+        style={{ touchAction: 'manipulation' }}
       >
-        <ClapIcon className={big ? 'h-6 w-6' : 'h-5 w-5'} />
-        {bubble > 0 && mine && (
-          <span
-            key={bubble}
-            aria-hidden="true"
-            className="clap-bubble pointer-events-none absolute -top-9 left-1/2 flex h-8 min-w-8 -translate-x-1/2 items-center justify-center rounded-full bg-primary px-2 font-mono text-xs font-semibold text-white"
-          >
-            +{myClaps}
-          </span>
-        )}
+        <span key={pop} className={pop > 0 && clapped ? 'clap-pop inline-flex' : 'inline-flex'}>
+          <ClapIcon className={big ? 'h-6 w-6' : 'h-5 w-5'} />
+        </span>
       </button>
       <span className="min-w-[2ch] font-mono text-sm tabular-nums text-muted" aria-hidden="true">
         {claps !== null && claps > 0 ? compactCount(claps) : ''}
       </span>
-      {mine && (
-        <button
-          type="button"
-          onClick={() => { setAtLimit(false); undo() }}
-          className="ml-1 rounded-full px-2 py-1 text-xs text-subtle underline-offset-2 transition-colors hover:text-ink hover:underline"
-          aria-label={`Undo your ${myClaps} clap${myClaps === 1 ? '' : 's'}`}
-        >
-          Undo
-        </button>
-      )}
       <span role="status" aria-live="polite" className="sr-only">
-        {mine ? `You clapped ${myClaps} time${myClaps === 1 ? '' : 's'}.` : ''}
-        {atLimit ? ` ${maxClaps} claps is the most one reader can give.` : ''}
+        {clapped ? 'You clapped for this article.' : ''}
       </span>
       {error && <span role="alert" className="absolute left-0 top-full mt-1 whitespace-nowrap text-xs text-fail">{error}</span>}
     </div>

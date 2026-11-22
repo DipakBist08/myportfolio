@@ -132,36 +132,52 @@ def test_clapping_needs_a_sign_in(client):
     assert r.json()["detail"] == "Sign in with Google to do that."
 
 
-def test_claps_add_up_per_reader_up_to_fifty_and_the_post_shows_the_total(client, google):
+def test_each_reader_claps_once_and_the_post_counts_readers(client, google):
+    """The owner's rule (22/11/2026): one clap per reader; clapping again changes nothing."""
     asha = sign_in(client, google, sub="1", ip="192.0.2.1")
     ravi = sign_in(client, google, sub="2", ip="192.0.2.2")
 
-    assert clap(client, asha, 3).json() == {"slug": "a-post", "claps": 3, "clappers": 1, "my_claps": 3, "max_claps": 50}
-    assert clap(client, asha, 2).json()["my_claps"] == 5
-    assert clap(client, ravi, 1).json() == {"slug": "a-post", "claps": 6, "clappers": 2, "my_claps": 1, "max_claps": 50}
-    assert clap(client, asha, 50).json()["my_claps"] == 50  # capped at 50
-    assert clap(client, asha, 1).json()["claps"] == 51
+    assert clap(client, asha).json() == {"slug": "a-post", "claps": 1, "clappers": 1, "my_claps": 1, "max_claps": 1}
+    for _ in range(5):
+        assert clap(client, asha).json()["claps"] == 1  # still one clap from Asha
+    no_count = client.post("/api/public/claps", json={"slug": "a-post"}, headers=ravi)  # count is optional
+    assert no_count.json() == {"slug": "a-post", "claps": 2, "clappers": 2, "my_claps": 1, "max_claps": 1}
 
     assert client.get("/api/public/claps", params={"slug": "a-post"}).json() == {
-        "slug": "a-post", "claps": 51, "clappers": 2, "my_claps": 0, "max_claps": 50,
+        "slug": "a-post", "claps": 2, "clappers": 2, "my_claps": 0, "max_claps": 1,
     }
     assert client.get("/api/public/claps", params={"slug": "a-post"}, headers=ravi).json()["my_claps"] == 1
     assert client.get("/api/public/claps", params={"slug": "a-post"}).headers["cache-control"] == "no-store"
 
 
-def test_a_reader_can_take_their_claps_back(client, google):
+def test_claps_saved_before_the_one_clap_rule_count_once(client, google):
+    """Rows from the earlier Medium-style version (up to 50 per reader) count as one clap."""
+    asha = sign_in(client, google, sub="1", ip="192.0.2.1")
+    db = SessionLocal()
+    db.add(PostClap(post_slug="a-post", reader_id=db.query(Reader).one().id, count=33))
+    db.commit()
+    db.close()
+    assert client.get("/api/public/claps", params={"slug": "a-post"}, headers=asha).json() == {
+        "slug": "a-post", "claps": 1, "clappers": 1, "my_claps": 1, "max_claps": 1,
+    }
+    assert client.get("/api/public/engagement", params={"slugs": "a-post"}).json()["posts"]["a-post"]["claps"] == 1
+    assert clap(client, asha).json()["claps"] == 1
+
+
+def test_a_reader_can_take_their_clap_back(client, google):
     asha = sign_in(client, google, sub="1", ip="192.0.2.1")
     ravi = sign_in(client, google, sub="2", ip="192.0.2.2")
-    clap(client, asha, 4)
-    clap(client, ravi, 2)
+    clap(client, asha)
+    clap(client, ravi)
     r = client.delete("/api/public/claps", params={"slug": "a-post"}, headers=asha)
-    assert r.json() == {"slug": "a-post", "claps": 2, "clappers": 1, "my_claps": 0, "max_claps": 50}
+    assert r.json() == {"slug": "a-post", "claps": 1, "clappers": 1, "my_claps": 0, "max_claps": 1}
+    assert clap(client, asha).json()["claps"] == 2  # and clap again
 
 
 def test_bad_clap_requests_are_refused(client, google):
     asha = sign_in(client, google)
     assert clap(client, asha, 0).status_code == 422
-    assert clap(client, asha, 51).status_code == 422
+    assert clap(client, asha, 2).status_code == 422  # one clap per reader
     assert clap(client, asha, 1, slug="../etc/passwd").status_code == 422
     assert client.get("/api/public/claps", params={"slug": "Not A Slug"}).status_code == 422
 
@@ -271,8 +287,8 @@ def test_deleting_a_comment_removes_its_author_link(client, google, admin_header
 def test_engagement_gives_claps_comments_and_readers_for_several_posts(client, google):
     asha = sign_in(client, google, sub="1", ip="192.0.2.1")
     ravi = sign_in(client, google, sub="2", ip="192.0.2.2")
-    clap(client, asha, 5, slug="post-one")
-    clap(client, ravi, 2, slug="post-one")
+    clap(client, asha, slug="post-one")
+    clap(client, ravi, slug="post-one")
     top = comment(client, asha, slug="post-one").json()["id"]
     comment(client, ravi, "Reply", parent_id=top, slug="post-one")
     for ip in ("203.0.113.1", "203.0.113.2", "203.0.113.1"):
@@ -281,7 +297,7 @@ def test_engagement_gives_claps_comments_and_readers_for_several_posts(client, g
 
     r = client.get("/api/public/engagement", params={"slugs": "post-one,post-two"})
     assert r.json() == {"posts": {
-        "post-one": {"claps": 7, "comments": 2, "readers": 2},
+        "post-one": {"claps": 2, "comments": 2, "readers": 2},
         "post-two": {"claps": 0, "comments": 0, "readers": 0},
     }}
 
@@ -293,9 +309,9 @@ def test_engagement_refuses_bad_or_too_many_slugs(client):
     assert client.get("/api/public/engagement", params={"slugs": many}).status_code == 422
 
 
-def test_a_reader_leaving_takes_their_claps_with_them(client, google):
+def test_a_reader_leaving_takes_their_clap_with_them(client, google):
     asha = sign_in(client, google)
-    clap(client, asha, 3)
+    clap(client, asha)
     db = SessionLocal()
     db.delete(db.query(Reader).one())
     db.commit()

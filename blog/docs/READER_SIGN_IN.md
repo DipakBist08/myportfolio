@@ -1,6 +1,6 @@
 # Claps, responses and Google sign-in
 
-Every post has a Medium-style clap button, a responses (comments) section and
+Every post has a clap button (one clap per reader), a responses (comments) section and
 "Recommended from Dipak Bist QA Blog". Reading needs nothing. Clapping,
 responding and replying need a Google sign-in.
 
@@ -8,7 +8,7 @@ responding and replying need a Google sign-in.
 | --- | --- |
 | Sign-in dialog (Google Identity Services, loaded only when it opens) | `components/blog/engagement/SignInDialog.tsx` |
 | Who is signed in, one dialog per page | `components/blog/engagement/ReaderContext.tsx` |
-| Clap totals, the reader's claps (max 50), undo; response count | `components/blog/engagement/PostEngagement.tsx` |
+| Clap totals and the reader's one clap (press again to take it back); response count | `components/blog/engagement/PostEngagement.tsx` |
 | Clap/response/share bars (top and bottom of the post) | `components/blog/engagement/EngagementBar.tsx` |
 | Follow on LinkedIn (byline, side column, author box) | `components/blog/engagement/FollowOnLinkedIn.tsx` |
 | Recommended from (topic match + claps/responses/readers) | `components/blog/engagement/RecommendedPosts.tsx`, `getRecommendationCandidates` in `lib/blog/utils.ts` |
@@ -56,8 +56,9 @@ with it.
   with the blog's requests (`credentials: 'include'`). Writes also check the
   `Origin` header. Vercel preview URLs are a different site, so sign-in does
   not work there.
-- Claps: up to 50 per reader per post, sent in bursts (one request after the
-  reader pauses); hold the button to keep clapping; Undo removes them.
+- Claps: one per reader per post (the owner's rule, 22/11/2026). Press to clap,
+  press again to take it back; the post shows how many readers clapped. Quick
+  presses send only the last choice, one request at a time.
 - Responses use the Google name and picture; the email stays private. Comments
   from before sign-in was required still show under the name they were posted with.
 - Recommended from: the build lists every other post by topic match (cluster 4,

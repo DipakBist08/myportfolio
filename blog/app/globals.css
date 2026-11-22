@@ -444,20 +444,15 @@
   }
 }
 
-/* The "+N" bubble over the clap button (components/blog/engagement/EngagementBar.tsx). */
-@keyframes clap-bubble {
-  0% { opacity: 0; transform: translate(-50%, 10px) scale(0.8); }
-  18% { opacity: 1; transform: translate(-50%, 0) scale(1); }
-  75% { opacity: 1; transform: translate(-50%, -2px) scale(1); }
-  100% { opacity: 0; transform: translate(-50%, -10px) scale(1); }
+/* The clap button's icon pops once when the reader claps (EngagementBar). */
+@keyframes clap-pop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.25) rotate(-8deg); }
+  100% { transform: scale(1); }
 }
-@keyframes clap-bubble-fade {
-  0%, 75% { opacity: 1; }
-  100% { opacity: 0; }
-}
-.clap-bubble {
-  animation: clap-bubble 1s var(--ease-out, ease-out) forwards;
+.clap-pop {
+  animation: clap-pop 0.35s var(--ease-out, ease-out);
 }
 @media (prefers-reduced-motion: reduce) {
-  .clap-bubble { animation: clap-bubble-fade 1s linear forwards; }
+  .clap-pop { animation: none; }
 }

@@ -30,8 +30,9 @@ class Reader(Base):
 
 
 class PostClap(Base):
-    """One reader's claps for one post: 1 to MAX_CLAPS, like Medium.
-    Clapping again adds to the row; undoing deletes it."""
+    """One reader's clap for one post. A reader claps once (count is 1; rows
+    saved before 22/11/2026 may hold more and still count once); taking the
+    clap back deletes the row."""
 
     __tablename__ = "post_claps"
     __table_args__ = (UniqueConstraint("post_slug", "reader_id", name="uq_post_clap_reader"),)

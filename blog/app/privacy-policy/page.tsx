@@ -46,8 +46,8 @@ export default function PrivacyPolicyPage() {
           <strong>Responses and claps.</strong> To post a response (a comment) or a reply, or to clap for an article,
           you sign in with Google (see <a href="#google-sign-in">Signing in with Google</a>). Your response is stored with
           the name, email address and profile picture from your Google account. Your name, picture and response are
-          shown publicly; your email address is not. Claps are stored as a number per article for your account; only
-          the total is shown. Until Google sign-in is switched on, a response is posted with a name and email address
+          shown publicly; your email address is not. A clap is stored per article for your account (one each, which you
+          can take back); only the total is shown. Until Google sign-in is switched on, a response is posted with a name and email address
           instead (the name is shown, the email is not), and those responses keep the name and email given then.
         </li>
         <li>

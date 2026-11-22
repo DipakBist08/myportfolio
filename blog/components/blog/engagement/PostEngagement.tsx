@@ -7,16 +7,15 @@ import { useReader } from './ReaderContext'
 type ClapSummary = { slug: string; claps: number; clappers: number; my_claps: number; max_claps: number }
 
 interface EngagementState {
-  /** Total claps for the post; null until the API answers (or if it can't be reached). */
+  /** Readers who clapped for the post; null until the API answers (or if it can't be reached). */
   claps: number | null
-  myClaps: number
-  maxClaps: number
+  /** Whether this reader has clapped (one clap per reader). */
+  clapped: boolean
   /** Responses (comments and replies), reported by the responses section. */
   responses: number | null
   setResponses: (n: number) => void
-  /** One clap. Asks the reader to sign in first if needed. Returns false at the limit. */
-  clap: () => boolean
-  undo: () => Promise<void>
+  /** Clap, or take the clap back. Asks the reader to sign in first if needed. */
+  toggleClap: () => void
   error: string
 }
 
@@ -28,22 +27,26 @@ export function usePostEngagement(): EngagementState {
   return value
 }
 
-const FLUSH_AFTER_MS = 600
+const SEND_AFTER_MS = 300
 
 /** Claps and the response count for one post, shared by the clap bars at the
- *  top and bottom of the article. A burst of claps is sent as one request once
- *  the reader pauses; the numbers change at once and are corrected by the
- *  API's answer (or rolled back if it fails). */
+ *  top and bottom of the article. One clap per reader (the owner's rule,
+ *  22/11/2026): the button claps, and pressing it again takes the clap back.
+ *  The button changes at once; the reader's last choice is sent once they
+ *  stop pressing, one request at a time, so quick presses can't count twice
+ *  or arrive out of order. A failed request rolls back to the API's state. */
 export function PostEngagementProvider({ slug, children }: { slug: string; children: React.ReactNode }) {
   const { reader, requireSignIn, sessionExpired } = useReader()
   const [summary, setSummary] = useState<ClapSummary | null>(null)
-  const [unsent, setUnsent] = useState(0)
+  /** The reader's choice while it is not yet confirmed by the API. */
+  const [wanted, setWanted] = useState<boolean | null>(null)
   const [responses, setResponses] = useState<number | null>(null)
   const [error, setError] = useState('')
-  const pendingRef = useRef(0)
+  const wantedRef = useRef<boolean | null>(null)
+  const inFlight = useRef(false)
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const maxClaps = summary?.max_claps ?? 50
-  const myClaps = (summary?.my_claps ?? 0) + unsent
+  const savedClap = (summary?.my_claps ?? 0) > 0
+  const clapped = wanted ?? savedClap
 
   // Load the totals, and again when the reader signs in or out (their own claps).
   useEffect(() => {
@@ -54,69 +57,63 @@ export function PostEngagementProvider({ slug, children }: { slug: string; child
     return () => { alive = false }
   }, [slug, reader?.id])
 
-  const flush = useCallback(async () => {
+  /* Sends the reader's latest choice: a clap (POST) or taking it back
+     (DELETE). Only one request is out at a time; a choice made meanwhile is
+     sent when it returns. */
+  const send: () => Promise<void> = useCallback(async () => {
     timer.current = null
-    const count = pendingRef.current
-    if (count < 1) return
-    pendingRef.current = 0
+    const want = wantedRef.current
+    if (want === null || inFlight.current) return
+    inFlight.current = true
     try {
-      const data = await api<ClapSummary>('/api/public/claps', { method: 'POST', body: JSON.stringify({ slug, count }) })
+      const data = want
+        ? await api<ClapSummary>('/api/public/claps', { method: 'POST', body: JSON.stringify({ slug }) })
+        : await api<ClapSummary>(`/api/public/claps?slug=${encodeURIComponent(slug)}`, { method: 'DELETE' })
       setSummary(data)
-      setUnsent(pendingRef.current) // claps made while this request was out
-    } catch (err) {
-      setUnsent(pendingRef.current)
-      if (err instanceof ApiError && err.status === 401) {
-        sessionExpired('clap')
-        return
+      if (wantedRef.current === want) {
+        wantedRef.current = null
+        setWanted(null)
       }
-      setError(err instanceof Error ? err.message : 'Could not save your claps.')
+    } catch (err) {
+      wantedRef.current = null
+      setWanted(null)
+      if (err instanceof ApiError && err.status === 401) sessionExpired('clap')
+      else setError(err instanceof Error ? err.message : 'Could not save your clap.')
+    } finally {
+      inFlight.current = false
     }
+    if (wantedRef.current !== null && !timer.current) void send()
   }, [slug, sessionExpired])
 
   useEffect(() => () => { if (timer.current) clearTimeout(timer.current) }, [])
 
-  const addOne = useCallback(() => {
+  const choose = useCallback((want: boolean) => {
     setError('')
-    pendingRef.current += 1
-    setUnsent((n) => n + 1)
+    wantedRef.current = want
+    setWanted(want)
     if (timer.current) clearTimeout(timer.current)
-    timer.current = setTimeout(flush, FLUSH_AFTER_MS)
-  }, [flush])
+    timer.current = setTimeout(() => { void send() }, SEND_AFTER_MS)
+  }, [send])
 
-  const clap = useCallback(() => {
+  const toggleClap = useCallback(() => {
     if (!reader) {
-      requireSignIn('clap', addOne)
-      return true
+      requireSignIn('clap', () => choose(true))
+      return
     }
-    if (myClaps >= maxClaps) return false
-    addOne()
-    return true
-  }, [reader, requireSignIn, addOne, myClaps, maxClaps])
+    choose(!clapped)
+  }, [reader, requireSignIn, choose, clapped])
 
-  const undo = useCallback(async () => {
-    if (timer.current) clearTimeout(timer.current)
-    timer.current = null
-    pendingRef.current = 0
-    setUnsent(0)
-    setError('')
-    try {
-      setSummary(await api<ClapSummary>(`/api/public/claps?slug=${encodeURIComponent(slug)}`, { method: 'DELETE' }))
-    } catch (err) {
-      if (err instanceof ApiError && err.status === 401) return sessionExpired('clap')
-      setError(err instanceof Error ? err.message : 'Could not undo your claps.')
-    }
-  }, [slug, sessionExpired])
+  // The total shown includes the reader's unconfirmed choice.
+  const claps = summary ? summary.claps - (savedClap ? 1 : 0) + (clapped ? 1 : 0) : null
 
   const value = useMemo<EngagementState>(() => ({
-    claps: summary ? summary.claps + unsent : null,
-    myClaps,
-    maxClaps,
+    claps,
+    clapped,
     responses,
     setResponses,
-    clap,
-    undo,
+    toggleClap,
     error,
-  }), [summary, unsent, myClaps, maxClaps, responses, clap, undo, error])
+  }), [claps, clapped, responses, toggleClap, error])
 
   return <EngagementContext.Provider value={value}>{children}</EngagementContext.Provider>
 }

@@ -105,7 +105,7 @@ export default function RecommendedPosts({
                   </span>
                   <span>{post.readingTime}</span>
                   {n && n.claps > 0 && (
-                    <span className="inline-flex items-center gap-1" title={`${n.claps} claps`}>
+                    <span className="inline-flex items-center gap-1" title={`${n.claps} clap${n.claps === 1 ? '' : 's'}`}>
                       <ClapIcon className="h-4 w-4" />
                       <span className="sr-only">Claps:</span> {compactCount(n.claps)}
                     </span>

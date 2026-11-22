@@ -1,12 +1,14 @@
 """Claps for blog posts, and the numbers the blog's recommendation cards show.
 
-GET    /api/public/claps?slug=...          {slug, claps, clappers, my_claps}
-POST   /api/public/claps  {slug, count}    add `count` claps (signed-in readers; at most MAX_CLAPS each)
-DELETE /api/public/claps?slug=...          take back all of the reader's claps
+GET    /api/public/claps?slug=...          {slug, claps, clappers, my_claps, max_claps}
+POST   /api/public/claps  {slug}           clap for the post (signed-in readers; once each)
+DELETE /api/public/claps?slug=...          take the reader's clap back
 GET    /api/public/engagement?slugs=a,b    {"posts": {slug: {claps, comments, readers}}}
 
-Like Medium, one reader can clap up to MAX_CLAPS times for a post, and the
-post shows the total. Clapping needs a Google sign-in (app.core.readers).
+One clap per reader per post (the owner's rule, 22/11/2026): clapping again
+changes nothing, and the post's total is the number of readers who clapped.
+Rows saved earlier with a count above 1 still count once. Clapping needs a
+Google sign-in (app.core.readers).
 """
 from __future__ import annotations
 
@@ -29,12 +31,12 @@ from app.models.traffic import PageView
 
 router = APIRouter(tags=["Public – Engagement"])
 
-MAX_CLAPS = 50
+MAX_CLAPS = 1
 MAX_SLUGS = 24
 SLUG = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 NO_STORE = {"Cache-Control": "no-store"}
 
-# A clap burst is sent as one request; 60 requests a minute per reader is far more than a person makes.
+# Clapping and taking it back: 60 requests a minute per reader is far more than a person makes.
 _clap_attempts: dict[int, list[float]] = defaultdict(list)
 _CLAP_LIMIT = 60
 _CLAP_WINDOW = 60.0
@@ -48,7 +50,7 @@ def _valid_slug(slug: str) -> str:
 
 class ClapIn(BaseModel):
     slug: str
-    count: int = Field(ge=1, le=MAX_CLAPS)
+    count: int = Field(default=1, ge=1, le=MAX_CLAPS)  # kept for older clients; always 1
 
     @field_validator("slug")
     @classmethod
@@ -59,19 +61,14 @@ class ClapIn(BaseModel):
 
 
 def clap_summary(db: Session, slug: str, reader: Optional[Reader]) -> dict:
-    total, clappers = (
-        db.query(func.coalesce(func.sum(PostClap.count), 0), func.count(PostClap.id))
-        .filter(PostClap.post_slug == slug)
-        .one()
-    )
+    # One clap per reader: the total is the number of readers who clapped.
+    clappers = db.query(func.count(PostClap.id)).filter(PostClap.post_slug == slug).scalar() or 0
     mine = 0
     if reader is not None:
-        mine = (
-            db.query(PostClap.count)
-            .filter(PostClap.post_slug == slug, PostClap.reader_id == reader.id)
-            .scalar()
-        ) or 0
-    return {"slug": slug, "claps": int(total), "clappers": int(clappers), "my_claps": int(mine), "max_claps": MAX_CLAPS}
+        mine = int(
+            db.query(PostClap.id).filter(PostClap.post_slug == slug, PostClap.reader_id == reader.id).first() is not None
+        )
+    return {"slug": slug, "claps": int(clappers), "clappers": int(clappers), "my_claps": mine, "max_claps": MAX_CLAPS}
 
 
 @router.get("/claps")
@@ -97,14 +94,14 @@ def add_claps(body: ClapIn, response: Response, reader: Reader = Depends(require
     def apply() -> None:
         row = db.query(PostClap).filter(PostClap.post_slug == body.slug, PostClap.reader_id == reader.id).first()
         if row is None:
-            db.add(PostClap(post_slug=body.slug, reader_id=reader.id, count=min(body.count, MAX_CLAPS)))
+            db.add(PostClap(post_slug=body.slug, reader_id=reader.id, count=1))
         else:
-            row.count = min(row.count + body.count, MAX_CLAPS)
+            row.count = 1  # already clapped: still one clap
         db.commit()
 
     try:
         apply()
-    except IntegrityError:  # two bursts from the same reader raced; the second adds to the first
+    except IntegrityError:  # two requests from the same reader raced; the row exists now
         db.rollback()
         apply()
 
@@ -136,8 +133,8 @@ def engagement(slugs: str = Query(..., max_length=MAX_SLUGS * 201), db: Session 
     for slug in wanted:
         _valid_slug(slug)
 
-    claps = dict(
-        db.query(PostClap.post_slug, func.sum(PostClap.count))
+    claps = dict(  # readers who clapped: one clap each
+        db.query(PostClap.post_slug, func.count(PostClap.id))
         .filter(PostClap.post_slug.in_(wanted))
         .group_by(PostClap.post_slug)
         .all()
