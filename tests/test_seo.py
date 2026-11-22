@@ -16,6 +16,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 PERSON_ID = "https://dipakbist.com.np/#person"
+PORTRAIT_ID = "https://dipakbist.com.np/#portrait"
+PORTRAIT_URL = "https://dipakbist.com.np/assets/dipak-bist-software-qa-engineer.webp"
+CARD_URL = "https://dipakbist.com.np/assets/og-dipak-bist.png"
 # His profiles, exactly as he gave them (18/11/2026). LinkedIn and GitHub first:
 # they carry the most professional weight.
 PROFILES = (
@@ -98,10 +101,17 @@ def test_structured_data_names_one_person_with_the_blogs_author_id():
                   "Python", "Pytest", "Selenium", "API Testing", "Postman", "AI-Assisted QA", "Performance Testing"):
         assert skill in person["knowsAbout"], skill
     assert person["worksFor"] == {"@type": "Organization", "name": "Sterling Wells"}
-    # His real portrait, published under a name that says who it is.
-    image = person["image"]
-    assert image == "https://dipakbist.com.np/assets/dipak-bist-software-qa-engineer.webp"
-    assert (ROOT / image.removeprefix("https://dipakbist.com.np/")).is_file()
+    # His real portrait, published under a name that says who it is, as an
+    # ImageObject node of its own so the ProfilePage can name it too.
+    assert person["image"] == {"@id": PORTRAIT_ID}
+    portrait = next(n for n in nodes if n.get("@id") == PORTRAIT_ID)
+    assert portrait["@type"] == "ImageObject"
+    assert portrait["url"] == portrait["contentUrl"] == PORTRAIT_URL
+    assert (ROOT / PORTRAIT_URL.removeprefix("https://dipakbist.com.np/")).is_file()
+    (w, h), _ = _webp_size_and_chunks((ROOT / PORTRAIT_URL.removeprefix("https://dipakbist.com.np/")).read_bytes())
+    assert (portrait["width"], portrait["height"]) == (w, h)
+    assert portrait["caption"].startswith("Dipak Bist, Software QA Engineer")
+    assert portrait["creator"] == {"@id": PERSON_ID}
 
 
 def _webp_size_and_chunks(data: bytes) -> tuple[tuple[int, int], set[str]]:
@@ -166,6 +176,7 @@ def test_every_reference_in_the_graph_points_at_a_node_in_it():
     assert refs and refs <= ids, f"dangling references: {sorted(refs - ids)}"
     by_type = {n["@type"]: n for n in nodes}
     assert by_type["ProfilePage"]["mainEntity"] == {"@id": PERSON_ID}
+    assert by_type["ProfilePage"]["primaryImageOfPage"] == {"@id": PORTRAIT_ID}
     assert by_type["WebSite"]["publisher"] == {"@id": PERSON_ID}
     assert by_type["Blog"]["@id"] == "https://blog.dipakbist.com.np/#blog"
     assert by_type["Organization"]["founder"] == {"@id": PERSON_ID}
@@ -179,6 +190,25 @@ def test_head_tells_search_engines_what_this_page_is():
     robots = [m["content"] for m in p.meta if m.get("name") == "robots"]
     assert robots == ["index, follow, max-image-preview:large"]
     assert not [m for m in p.meta if m.get("name") == "keywords"], "no meta keywords"
+
+
+def test_link_preview_shows_his_portrait_card():
+    """Bing, Facebook, LinkedIn and X show og:image / twitter:image beside the link. Since
+    22/11/2026 that is a card with his portrait (tools/og/og-image.html), under a new file
+    name because /assets/ is cached as immutable for a year."""
+    p = page()
+    meta = {m.get("name") or m.get("property"): m.get("content") for m in p.meta}
+    assert meta["og:image"] == meta["twitter:image"] == CARD_URL
+    card = (ROOT / CARD_URL.removeprefix("https://dipakbist.com.np/")).read_bytes()
+    (w, h), _ = _png_size_and_chunks(card)
+    assert (meta["og:image:width"], meta["og:image:height"]) == (str(w), str(h)) == ("1200", "630")
+    assert meta["og:image:type"] == "image/png"
+    assert len(card) <= 300 * 1024, "WhatsApp drops link-preview images over about 300 KB"
+    assert meta["og:image:alt"] == meta["twitter:image:alt"]
+    assert meta["og:image:alt"].startswith("Dipak Bist, Software QA Engineer")
+    source = (ROOT / "tools" / "og" / "og-image.html").read_text(encoding="utf-8")
+    assert 'src="/assets/dipak-bist-software-qa-engineer.webp"' in source
+    assert not (ROOT / "assets" / "og-image.png").exists(), "the old card is gone; nothing links to it"
 
 
 def test_title_and_description_fit_a_search_result():
@@ -280,6 +310,17 @@ def test_sitemap_lists_only_this_sites_pages():
     root = ET.parse(ROOT / "sitemap.xml").getroot()
     locs = [e.text.strip() for e in root.findall("s:url/s:loc", ns)]
     assert locs == ["https://dipakbist.com.np/"]
+
+
+def test_sitemap_lists_the_pictures_of_him_for_image_search():
+    import xml.etree.ElementTree as ET
+
+    ns = {"s": "http://www.sitemaps.org/schemas/sitemap/0.9", "image": "http://www.google.com/schemas/sitemap-image/1.1"}
+    root = ET.parse(ROOT / "sitemap.xml").getroot()
+    images = [e.text.strip() for e in root.findall("s:url/image:image/image:loc", ns)]
+    assert images == [PORTRAIT_URL, CARD_URL]
+    for url in images:
+        assert (ROOT / url.removeprefix("https://dipakbist.com.np/")).is_file(), url
 
 
 def test_robots_txt_lets_crawlers_in_and_names_the_sitemap():

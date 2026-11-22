@@ -1,6 +1,6 @@
 <!doctype html>
 <!--
-  Source of assets/og-image.png, the portfolio's link-preview image (1200x630).
+  Source of assets/og-dipak-bist.png, the portfolio's link-preview image (1200x630).
   Render it from the repository root with:  .venv/bin/python tools/og/render.py
   The renderer fails on unloaded fonts, touching or overlapping text, text near
   an edge, or a file over 300 KB. The code and result lines quote the hero's
@@ -46,9 +46,25 @@
      greyscale, with no coloured fringes in the downscaled previews. */
   .row, .name, .title, .panel { position: absolute; left: 94px; will-change: transform; }
 
+  /* His portrait (the site's 800px photo) in the empty top-right corner, so
+     search results and link previews show who the page is about. A 280px
+     circle from x=826 to the content edge (1106), ending 25px above the
+     panel. object-position keeps the face, not the roof, in the circle. */
+  .portrait {
+    position: absolute;
+    top: 56px;
+    left: 826px;
+    width: 280px;
+    height: 280px;
+    border-radius: 50%;
+    object-fit: cover;
+    object-position: 50% 30%;
+    box-shadow: 0 0 0 4px var(--color-bg), 0 0 0 6px var(--color-accent), var(--shadow-lg);
+  }
+
   .row {
     top: 80px;
-    width: 1012px;
+    width: 680px;
     display: flex;
     justify-content: space-between;
     align-items: baseline;
@@ -66,10 +82,13 @@
 
   .mark .b { color: var(--color-accent-text); }
 
-  /* 20px keeps its ink right of x=915, so the centre square crop shows no fragment of it */
+  /* The domain sits at the right of the panel's head, like an editor's
+     title bar, because the portrait took its old place in the top row. */
   .domain {
+    margin-left: auto;
     font-size: 20px;
     font-weight: 500;
+    line-height: 1;
     color: var(--color-text-muted);
   }
 
@@ -183,14 +202,15 @@
 
   <div class="row">
     <p class="mark"><span class="b">&lt;</span>DipakBist<span class="b">/&gt;</span></p>
-    <p class="domain">dipakbist.com.np</p>
   </div>
+
+  <img class="portrait" src="/assets/dipak-bist-software-qa-engineer.webp" alt="" width="280" height="280">
 
   <h1 class="name">Dipak Bist</h1>
   <p class="title">Software QA Engineer</p>
 
   <section class="panel">
-    <div class="panel__head"><p class="file">test_login.py</p></div>
+    <div class="panel__head"><p class="file">test_login.py</p><p class="domain">dipakbist.com.np</p></div>
 <pre class="code"><span class="step" data-quote><svg class="check" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.25 4.25L19 7"/></svg>    page.get_by_role(<span class="str">"button"</span>, name=<span class="str">"Sign in"</span>).click()</span>
 <span class="step" data-quote><svg class="check" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.25 4.25L19 7"/></svg>    expect(page).to_have_title(<span class="str">"Dashboard"</span>)</span></pre>
     <p class="run"><span data-quote-result>test_login.py::test_login[chromium] <span class="passed">PASSED</span></span><span class="pct">[100%]</span></p>

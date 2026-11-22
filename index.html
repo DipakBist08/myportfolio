@@ -20,7 +20,8 @@
     <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
     <link rel="manifest" href="assets/site.webmanifest">
 
-    <!-- Open Graph. assets/og-image.png is a 1200x630 typographic card rendered from the site's own styles. -->
+    <!-- Open Graph. assets/og-dipak-bist.png is a 1200x630 card with his portrait, rendered from the
+         site's own styles by tools/og/render.py. Bing, Facebook, LinkedIn and X show it beside the link. -->
     <meta property="og:type" content="profile">
     <meta property="og:site_name" content="Dipak Bist">
     <meta property="og:url" content="https://dipakbist.com.np/">
@@ -30,10 +31,11 @@
     <meta property="og:title" content="Dipak Bist | Software QA Engineer in Nepal">
     <meta property="og:description"
         content="Dipak Bist, Software QA Engineer in Kathmandu, Nepal with 4+ years in web, mobile and SaaS testing: Playwright, Python, API testing and AI-assisted QA.">
-    <meta property="og:image" content="https://dipakbist.com.np/assets/og-image.png">
+    <meta property="og:image" content="https://dipakbist.com.np/assets/og-dipak-bist.png">
+    <meta property="og:image:type" content="image/png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
-    <meta property="og:image:alt" content="Dipak Bist, Software QA Engineer">
+    <meta property="og:image:alt" content="Dipak Bist, Software QA Engineer in Kathmandu, Nepal">
 
     <!-- Twitter card -->
     <meta name="twitter:card" content="summary_large_image">
@@ -42,7 +44,8 @@
     <meta name="twitter:title" content="Dipak Bist | Software QA Engineer in Nepal">
     <meta name="twitter:description"
         content="Dipak Bist, Software QA Engineer in Kathmandu, Nepal with 4+ years in web, mobile and SaaS testing: Playwright, Python, API testing and AI-assisted QA.">
-    <meta name="twitter:image" content="https://dipakbist.com.np/assets/og-image.png">
+    <meta name="twitter:image" content="https://dipakbist.com.np/assets/og-dipak-bist.png">
+    <meta name="twitter:image:alt" content="Dipak Bist, Software QA Engineer in Kathmandu, Nepal">
 
     <!-- Structured data: one connected graph. The Person's @id is the one the
          blog's posts name as their author (blog.dipakbist.com.np), so search
@@ -59,7 +62,7 @@
           "jobTitle": "Software QA Engineer",
           "description": "Software QA Engineer based in Kathmandu, Nepal, with 4+ years in software quality assurance: manual and functional testing, test automation with Playwright and Python, API testing, SaaS platform testing and AI-assisted Quality Engineering.",
           "url": "https://dipakbist.com.np/",
-          "image": "https://dipakbist.com.np/assets/dipak-bist-software-qa-engineer.webp",
+          "image": { "@id": "https://dipakbist.com.np/#portrait" },
           "email": "mailto:dipakbeest@gmail.com",
           "sameAs": [
             "https://www.linkedin.com/in/dipakbist/",
@@ -102,6 +105,18 @@
           "memberOf": { "@id": "https://www.dreamersyouthclub.org.np/#organization" }
         },
         {
+          "@type": "ImageObject",
+          "@id": "https://dipakbist.com.np/#portrait",
+          "url": "https://dipakbist.com.np/assets/dipak-bist-software-qa-engineer.webp",
+          "contentUrl": "https://dipakbist.com.np/assets/dipak-bist-software-qa-engineer.webp",
+          "width": 800,
+          "height": 800,
+          "caption": "Dipak Bist, Software QA Engineer, Kathmandu, Nepal",
+          "creditText": "Dipak Bist",
+          "creator": { "@id": "https://dipakbist.com.np/#person" },
+          "copyrightNotice": "© Dipak Bist"
+        },
+        {
           "@type": "WebSite",
           "@id": "https://dipakbist.com.np/#website",
           "url": "https://dipakbist.com.np/",
@@ -115,7 +130,9 @@
           "url": "https://dipakbist.com.np/",
           "name": "Dipak Bist — Software QA Engineer",
           "isPartOf": { "@id": "https://dipakbist.com.np/#website" },
-          "mainEntity": { "@id": "https://dipakbist.com.np/#person" }
+          "mainEntity": { "@id": "https://dipakbist.com.np/#person" },
+          "primaryImageOfPage": { "@id": "https://dipakbist.com.np/#portrait" },
+          "image": "https://dipakbist.com.np/assets/og-dipak-bist.png"
         },
         {
           "@type": "Blog",
@@ -799,7 +816,7 @@
                         <a class="btn btn--secondary btn--large" href="https://www.linkedin.com/in/dipakbist/" target="_blank" rel="me noopener noreferrer"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg> Connect on LinkedIn</a>
                     </div>
                     <p class="contact__direct">Or copy my address directly: <code class="contact__email">dipakbeest@gmail.com</code> <button type="button" class="btn btn--secondary copy-btn" id="copy-email" data-copy="dipakbeest@gmail.com"><svg class="icon" viewBox="0 0 256 256" aria-hidden="true"><path d="M216,32H88a8,8,0,0,0-8,8V80H40a8,8,0,0,0-8,8V216a8,8,0,0,0,8,8H168a8,8,0,0,0,8-8V176h40a8,8,0,0,0,8-8V40A8,8,0,0,0,216,32ZM160,208H48V96H160Zm48-48H176V88a8,8,0,0,0-8-8H96V48H208Z"/></svg> Copy</button><span id="copy-status" class="visually-hidden" role="status" aria-live="polite"></span></p>
-                    <p class="contact__direct contact__profiles">Also on <a href="https://www.linkedin.com/in/dipakbist/" target="_blank" rel="me noopener noreferrer">LinkedIn</a>, <a href="https://github.com/DipakBist08" target="_blank" rel="me noopener noreferrer">GitHub</a>, <a href="https://www.facebook.com/dipak.beesta" target="_blank" rel="me noopener noreferrer">Facebook</a>, <a href="https://www.instagram.com/dipak.beest/" target="_blank" rel="me noopener noreferrer">Instagram</a> and <a href="https://x.com/Deepak_B_08" target="_blank" rel="me noopener noreferrer">X</a>.</p>
+                    <p class="contact__direct contact__profiles">Also on <a href="https://www.linkedin.com/in/dipakbist/" target="_blank" rel="me noopener noreferrer">LinkedIn</a> (dipakbist), <a href="https://github.com/DipakBist08" target="_blank" rel="me noopener noreferrer">GitHub</a> (DipakBist08), <a href="https://www.facebook.com/dipak.beesta" target="_blank" rel="me noopener noreferrer">Facebook</a> (dipak.beesta), <a href="https://www.instagram.com/dipak.beest/" target="_blank" rel="me noopener noreferrer">Instagram</a> (@dipak.beest) and <a href="https://x.com/Deepak_B_08" target="_blank" rel="me noopener noreferrer">X</a> (@Deepak_B_08).</p>
                 </div>
                 <form id="contact-form" class="contact__form" data-reveal action="https://formsubmit.co/dipakbeest@gmail.com" method="POST" novalidate aria-labelledby="contact-form-title">
                     <h3 id="contact-form-title" class="contact__form-title">Send a message</h3>

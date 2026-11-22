@@ -454,7 +454,7 @@ def test_custom_404_page(pg: Page):
 
 
 def test_link_preview_card_quotes_the_hero_verbatim(pg: Page):
-    """The link-preview image (tools/og/og-image.html -> assets/og-image.png)
+    """The link-preview image (tools/og/og-image.html -> assets/og-dipak-bist.png)
     shows two lines of the hero's test_login.py and its result line. If the
     hero changes, this fails until the card is updated and re-rendered."""
     card = (Path(__file__).resolve().parent.parent / "tools" / "og" / "og-image.html").read_text(encoding="utf-8")
