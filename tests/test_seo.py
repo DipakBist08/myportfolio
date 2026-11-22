@@ -195,9 +195,13 @@ def test_head_tells_search_engines_what_this_page_is():
 def test_link_preview_shows_his_portrait_card():
     """Bing, Facebook, LinkedIn and X show og:image / twitter:image beside the link. Since
     22/11/2026 that is a card with his portrait (tools/og/og-image.html), under a new file
-    name because /assets/ is cached as immutable for a year."""
+    name because /assets/ is cached as immutable for a year. The earlier card stays
+    published as the second og:image (owner, 22/11/2026: add, don't remove)."""
     p = page()
-    meta = {m.get("name") or m.get("property"): m.get("content") for m in p.meta}
+    # The first value of each tag: platforms read the first og:image and its properties.
+    meta = {}
+    for m in p.meta:
+        meta.setdefault(m.get("name") or m.get("property"), m.get("content"))
     assert meta["og:image"] == meta["twitter:image"] == CARD_URL
     card = (ROOT / CARD_URL.removeprefix("https://dipakbist.com.np/")).read_bytes()
     (w, h), _ = _png_size_and_chunks(card)
@@ -208,7 +212,36 @@ def test_link_preview_shows_his_portrait_card():
     assert meta["og:image:alt"].startswith("Dipak Bist, Software QA Engineer")
     source = (ROOT / "tools" / "og" / "og-image.html").read_text(encoding="utf-8")
     assert 'src="/assets/dipak-bist-software-qa-engineer.webp"' in source
-    assert not (ROOT / "assets" / "og-image.png").exists(), "the old card is gone; nothing links to it"
+    # The earlier card, second, with its own size and alt text, and still on disk.
+    images = [m["content"] for m in p.meta if m.get("property") == "og:image"]
+    assert images == [CARD_URL, "https://dipakbist.com.np/assets/og-image.png"]
+    (w, h), _ = _png_size_and_chunks((ROOT / "assets" / "og-image.png").read_bytes())
+    assert (w, h) == (1200, 630)
+    alts = [m["content"] for m in p.meta if m.get("property") == "og:image:alt"]
+    assert alts == ["Dipak Bist, Software QA Engineer in Kathmandu, Nepal", "Dipak Bist, Software QA Engineer"]
+
+
+def test_the_briefs_qa_keywords_are_in_the_page_and_its_data():
+    """Owner, 22/11/2026: add every QA keyword from the SEO brief (Part 9) that describes his
+    work, without removing anything. They live in the Person's knowsAbout and job title, and
+    in plain words in About; each is backed by text the page already had."""
+    person = next(n for n in graph() if n.get("@type") == "Person")
+    for topic in ("Manual Testing", "Functional Testing", "Risk-Based Testing", "Exploratory Testing",
+                  "Regression Testing", "Cross-Browser Testing", "Page Object Model", "Test Automation Frameworks",
+                  "REST API Testing", "Python Requests", "JSON Schema Validation", "API Authentication Testing",
+                  "AI-Assisted QA", "Claude Code", "AI in Software Testing", "AI Test Case Generation",
+                  "AI-Assisted Test Automation", "AI Feature Testing", "Load Testing", "Performance Testing",
+                  "Database Testing", "Database Validation", "SQL"):
+        assert topic in person["knowsAbout"], topic
+    job = person["hasOccupation"]
+    assert job["name"] == person["jobTitle"] == "Software QA Engineer"
+    assert {"QA Engineer", "Software Tester", "Software Quality Assurance Engineer"} <= set(job["alternateName"])
+    html = (ROOT / "index.html").read_text(encoding="utf-8")
+    about = re.search(r'id="about".*?</section>', html, re.S).group(0)
+    text = " ".join(re.sub(r"<[^>]+>", " ", about).split())
+    for phrase in ("Dipak Bist", "software tester and QA engineer in Nepal", "regression", "cross-browser",
+                   "authentication", "database testing", "AI test case generation", "AI feature testing"):
+        assert phrase in text, phrase
 
 
 def test_title_and_description_fit_a_search_result():
