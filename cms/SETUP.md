@@ -15,13 +15,26 @@
 
 ### 1 — Clone & configure
 
-```bash
-cd cms/backend
-cp .env.example .env        # Edit values (SECRET_KEY, ADMIN_EMAIL, etc.)
+Create `cms/backend/.env` (git ignores it). Only `SECRET_KEY` is required;
+everything else has a default in `backend/app/config.py`:
 
-cd ../frontend
-cp .env.example .env        # Edit VITE_API_URL if needed
+```bash
+# cms/backend/.env
+SECRET_KEY=            # python3 -c "import secrets; print(secrets.token_hex(32))"
+DEBUG=true             # local only: turns on /docs and SQL logging
+ADMIN_EMAIL=           # first admin, created by `python seed.py`
+ADMIN_PASSWORD=
+# Optional
+# DATABASE_URL=sqlite:///./cms.db
+# ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000
+# RESEND_API_KEY=      # without it, no emails are sent
+# BACKEND_URL=http://localhost:8000
+# BLOG_URL=https://blog.dipakbist.com.np
+# GOOGLE_CLIENT_ID=    # reader Google sign-in on the blog
 ```
+
+The admin app needs only the API address, and defaults to `http://localhost:8000`.
+To point it elsewhere, create `cms/frontend/.env.local` with `VITE_API_URL=...`.
 
 ### 2 — Backend
 
@@ -65,9 +78,8 @@ There are no default credentials.
 ```bash
 cd cms
 
-# Copy and configure env files
-cp backend/.env.example backend/.env
-cp frontend/.env.example frontend/.env
+# Create backend/.env first (see Quick Start, step 1).
+# Set VITE_API_URL for the admin app's build if the API is not on localhost:8000.
 
 # Build & start
 docker-compose up -d --build
