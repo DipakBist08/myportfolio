@@ -58,12 +58,18 @@ class Settings(BaseSettings):
 
     # URLs
     FRONTEND_URL: str = "http://localhost:5173"
+    # The CMS admin site. Password-reset emails link here, so it must be the
+    # real address (set CMS_URL=http://localhost:5173 in a local .env).
+    CMS_URL: str = "https://cms.dipakbist.com.np"
     BACKEND_URL: str = "http://localhost:8000"
     # Public blog root, used to build post links in announcement emails.
     BLOG_URL: str = "https://blog.dipakbist.com.np"
 
     # MFA
     MFA_ISSUER: str = "QA Portfolio CMS"
+
+    # How long a "Forgot password?" email link works.
+    PASSWORD_RESET_EXPIRE_MINUTES: int = 30
 
     @model_validator(mode="after")
     def validate_secret_key(self) -> "Settings":

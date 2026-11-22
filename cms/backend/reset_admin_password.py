@@ -1,10 +1,11 @@
 """
 Reset a CMS admin password directly against the database.
 
-Needed because there is no self-service recovery in this CMS: /api/v1/auth has
-login, refresh, logout, MFA and change-password, but change-password requires an
-active session — and seed.py deliberately skips a user that already exists, so
-re-seeding will not overwrite a forgotten password.
+The sign-in page's "Forgot password?" link is the normal way back in. This
+script is the fallback for when that cannot work: email sending is off
+(RESEND_API_KEY unset), the inbox is lost, or the authenticator app is lost
+too. seed.py deliberately skips a user that already exists, so re-seeding will
+not overwrite a forgotten password.
 
 The new password is read from a hidden prompt (or the ADMIN_NEW_PASSWORD env var
 for non-interactive use) so it never lands in shell history or in this file.
