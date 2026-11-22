@@ -189,9 +189,18 @@ def test_title_and_description_fit_a_search_result():
     p = page()
     meta = {m.get("name") or m.get("property"): m.get("content") for m in p.meta}
     assert 120 <= len(meta["description"]) <= 160, len(meta["description"])
-    assert meta["description"].startswith("Software QA Engineer with 4+ years")
+    # Starts with the name people search for (owner's choice, 22/11/2026).
+    assert meta["description"].startswith("Dipak Bist, Software QA Engineer in Kathmandu, Nepal with 4+ years")
     assert meta["og:title"] == meta["twitter:title"] == title
-    assert meta["og:description"] == meta["twitter:description"]
+    assert meta["og:description"] == meta["twitter:description"] == meta["description"]
+
+
+def test_about_section_names_the_person():
+    """Visible text, not only the title and schema, should say who this is."""
+    html = (ROOT / "index.html").read_text(encoding="utf-8")
+    prose = html[html.index('<div class="about__prose"'):]
+    first = re.sub(r"<[^>]+>", "", prose[prose.index("<p>"):prose.index("</p>")])
+    assert first.startswith("I am Dipak Bist, a Software Quality Assurance Engineer in Kathmandu, Nepal, with over four years")
 
 
 def test_every_profile_is_linked_in_the_footer_and_contact_section():

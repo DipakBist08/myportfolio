@@ -335,6 +335,41 @@ function GoogleComingSoon() {
   )
 }
 
+// ── While the API says whether sign-in is on ─────────────────────────────────
+/** The API sleeps when idle (free Render instance) and takes up to a minute to
+ *  wake. Until it answers, show a placeholder, never the "Coming soon"
+ *  fallback: that appeared during every wake-up even with sign-in switched on. */
+function SignInWaiting() {
+  const [slow, setSlow] = useState(false)
+  useEffect(() => {
+    const timer = setTimeout(() => setSlow(true), 5000)
+    return () => clearTimeout(timer)
+  }, [])
+  return (
+    <div>
+      <div className="h-[7.5rem] animate-pulse rounded-lg bg-surface-card light:bg-black/5" aria-hidden="true" />
+      <p role="status" aria-live="polite" className="mt-3 min-h-[1.25rem] text-xs text-muted">
+        {slow ? 'Loading sign-in. The comments server can take up to a minute to wake up.' : ''}
+      </p>
+    </div>
+  )
+}
+
+function ResponsesUnreachable() {
+  return (
+    <div role="alert" className="flex flex-wrap items-center gap-x-3 gap-y-2">
+      <p className="text-sm text-muted">Couldn&apos;t reach the comments server, so responses can&apos;t be posted right now.</p>
+      <button
+        type="button"
+        onClick={() => window.location.reload()}
+        className="min-h-10 rounded-full border border-line-strong px-4 text-sm font-medium text-ink transition-colors hover:border-primary"
+      >
+        Try again
+      </button>
+    </div>
+  )
+}
+
 // ── What a signed-out reader sees instead of the form ──────────────────────────
 function SignInPrompt() {
   const { ready, requireSignIn } = useReader()
@@ -372,8 +407,10 @@ interface CommentItemProps {
 }
 
 function CommentItem({ comment, postSlug, onReplyAdded, onReaction }: CommentItemProps) {
-  const { reader, available, requireSignIn } = useReader()
+  const { reader, ready, available, unreachable, requireSignIn } = useReader()
   const [showReplyForm, setShowReplyForm] = useState(false)
+  // Replying waits until the API has said whether sign-in is on.
+  const canReply = ready && !unreachable
   const openReply = () => (available ? requireSignIn('reply', () => setShowReplyForm(true)) : setShowReplyForm(true))
 
   return (
@@ -395,7 +432,8 @@ function CommentItem({ comment, postSlug, onReplyAdded, onReaction }: CommentIte
           <button
             type="button"
             onClick={() => (showReplyForm ? setShowReplyForm(false) : openReply())}
-            className="min-h-8 text-xs text-muted transition-colors hover:text-ink"
+            disabled={!canReply && !showReplyForm}
+            className="min-h-8 text-xs text-muted transition-colors hover:text-ink disabled:cursor-wait disabled:opacity-60"
             aria-expanded={showReplyForm}
           >
             {showReplyForm ? 'Cancel reply' : '↩ Reply'}
@@ -469,7 +507,7 @@ const countAll = (list: Comment[]) => list.reduce((n, c) => n + 1 + c.replies.le
  *  reply, needs a Google sign-in (ReaderProvider). Until sign-in is switched on
  *  (no Google client ID here or on the API), the name-and-email form is used. */
 export default function CommentSection({ postSlug, postTitle = '' }: { postSlug: string; postTitle?: string }) {
-  const { reader, available, signOut } = useReader()
+  const { reader, ready, available, unreachable, signOut } = useReader()
   const { setResponses } = usePostEngagement()
   const [comments, setComments] = useState<Comment[]>([])
   const [loading, setLoading] = useState(true)
@@ -537,10 +575,15 @@ export default function CommentSection({ postSlug, postTitle = '' }: { postSlug:
               <button type="button" onClick={signOut} className="text-primary-light underline-offset-2 hover:underline">Sign out</button>
             </p>
           </>
+        ) : !ready ? (
+          <SignInWaiting />
         ) : available ? (
           <SignInPrompt />
+        ) : unreachable ? (
+          <ResponsesUnreachable />
         ) : (
           <>
+            {/* Only when the API says sign-in is off (no Google client ID). */}
             <GoogleComingSoon />
             {submitted && <p role="status" className="mb-3 text-sm text-pass">✓ Response posted. Thanks for adding to the discussion.</p>}
             <AnonymousForm postSlug={postSlug} onSuccess={handleNewComment} />
