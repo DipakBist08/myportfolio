@@ -87,7 +87,7 @@ The portfolio (`js/visit.js`) and the blog (`components/blog/PageViewTracker.tsx
 
 ## Content rules
 
-Every number, employer, date, title, link and description is the owner's own copy, carried over verbatim. Projects without a public link say so in plain words ("Repository not public yet", "Internal work, no public link") rather than show a fake link. Open items for Dipak are left as HTML comments (higher-resolution portrait, REST framework repository URL, QADocs artefacts, whether to list other AI tools). Social links are LinkedIn, GitHub and Instagram only, as confirmed by the owner on 12/11/2026.
+Every number, employer, date, title, link and description is the owner's own copy, carried over verbatim. Projects without a public link say so in plain words ("Repository not public yet", "Internal work, no public link") rather than show a fake link. Open items for Dipak are left as HTML comments (REST framework repository URL, QADocs artefacts, whether to list other AI tools). Social links are LinkedIn, GitHub and Instagram only, as confirmed by the owner on 12/11/2026.
 
 ## Running the tests (pytest + Playwright, Python)
 

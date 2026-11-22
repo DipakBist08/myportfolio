@@ -104,6 +104,49 @@ def test_structured_data_names_one_person_with_the_blogs_author_id():
     assert (ROOT / image.removeprefix("https://dipakbist.com.np/")).is_file()
 
 
+def _webp_size_and_chunks(data: bytes) -> tuple[tuple[int, int], set[str]]:
+    """Width, height and chunk names of a WebP file (RIFF container), read without Pillow."""
+    assert data[:4] == b"RIFF" and data[8:12] == b"WEBP", "not a WebP file"
+    chunks, size, pos = set(), None, 12
+    while pos + 8 <= len(data):
+        name, length = data[pos:pos + 4].decode("latin-1"), int.from_bytes(data[pos + 4:pos + 8], "little")
+        body = data[pos + 8:pos + 8 + length]
+        chunks.add(name)
+        if name == "VP8X":
+            size = (int.from_bytes(body[4:7], "little") + 1, int.from_bytes(body[7:10], "little") + 1)
+        elif name == "VP8 " and size is None:
+            size = (int.from_bytes(body[6:8], "little") & 0x3FFF, int.from_bytes(body[8:10], "little") & 0x3FFF)
+        elif name == "VP8L" and size is None:
+            bits = int.from_bytes(body[1:5], "little")
+            size = ((bits & 0x3FFF) + 1, ((bits >> 14) & 0x3FFF) + 1)
+        pos += 8 + length + (length & 1)
+    return size, chunks
+
+
+def _png_size_and_chunks(data: bytes) -> tuple[tuple[int, int], set[str]]:
+    assert data[:8] == b"\x89PNG\r\n\x1a\n", "not a PNG file"
+    chunks, pos = set(), 8
+    while pos + 8 <= len(data):
+        length, name = int.from_bytes(data[pos:pos + 4], "big"), data[pos + 4:pos + 8].decode("latin-1")
+        chunks.add(name)
+        pos += 12 + length
+    return (int.from_bytes(data[16:20], "big"), int.from_bytes(data[20:24], "big")), chunks
+
+
+def test_portraits_are_large_enough_and_carry_no_camera_or_location_data():
+    """Search engines want a Person image of 800px or more, and the blog shows the same
+    face in a 96px circle (288px on a 3x phone). Phone photos also record where they were
+    taken (EXIF/XMP GPS), so neither published copy may carry EXIF, XMP or text chunks."""
+    (w, h), chunks = _webp_size_and_chunks((ROOT / "assets/dipak-bist-software-qa-engineer.webp").read_bytes())
+    assert w == h and w >= 800, (w, h)
+    assert not chunks & {"EXIF", "XMP "}, chunks
+    blog = ROOT / "blog/public/dipak-bist.png"
+    if blog.is_file():  # the built site/ folder has no blog
+        (w, h), chunks = _png_size_and_chunks(blog.read_bytes())
+        assert w == h and w >= 288, (w, h)
+        assert not chunks & {"eXIf", "tEXt", "iTXt", "zTXt"}, chunks
+
+
 def test_every_reference_in_the_graph_points_at_a_node_in_it():
     nodes = graph()
     ids = {n["@id"] for n in nodes}
