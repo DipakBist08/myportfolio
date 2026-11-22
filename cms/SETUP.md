@@ -111,6 +111,22 @@ so the next sign-in still asks for the authenticator code.
 
 ---
 
+## Production database (do this once)
+
+On Render's free plan there is no persistent disk, so `DATABASE_URL=sqlite:///./cms.db`
+loses every account, comment, clap and subscriber on each deploy and restart (on
+22/11/2026 this deleted the only admin). Use a free PostgreSQL instead:
+
+1. Create a free database at https://neon.tech (or Supabase) and copy its connection
+   string (`postgresql://user:password@host/dbname?sslmode=require`).
+2. Render → the API service → Environment → set `DATABASE_URL` to it. Render redeploys;
+   the tables are created at startup.
+3. Keep `ADMIN_EMAIL` and `ADMIN_PASSWORD` set there: if the database ever has no admin,
+   the API creates one from them at startup (no sample data). Sign in, then turn MFA on again.
+
+The test suite runs against PostgreSQL too: `TEST_DATABASE_URL=postgresql://… pytest`
+(it drops and recreates every table, so use a throwaway database).
+
 ## MFA Setup
 
 1. Log in → **Settings → Security → Enable MFA**
@@ -308,12 +324,12 @@ The TipTap-powered editor supports:
 | Key | Default | Description |
 |-----|---------|-------------|
 | `SECRET_KEY` | random | **Change in production** — used to sign JWTs |
-| `DATABASE_URL` | sqlite:///./cms.db | SQLite path |
+| `DATABASE_URL` | sqlite:///./cms.db | SQLite locally. **Production: a PostgreSQL URL** (`postgresql://…` or `postgres://…`), because a SQLite file inside a free Render container is wiped on every deploy and restart |
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | 15 | Access token lifetime |
 | `REFRESH_TOKEN_EXPIRE_DAYS` | 7 | Refresh token lifetime |
 | `DEBUG` | false | `true` locally for /docs and SQL logging; never in production |
-| `ADMIN_EMAIL` | none | Seed admin email (required by `seed.py`) |
-| `ADMIN_PASSWORD` | none | Seed admin password, 12+ characters (required by `seed.py`) |
+| `ADMIN_EMAIL` | none | First admin's email: used by `seed.py`, and at every API start to recreate the admin if the database has none |
+| `ADMIN_PASSWORD` | none | That admin's password, 12 to 72 bytes. Only used to create a missing admin; it never changes an existing account |
 | `ALLOWED_ORIGINS` | localhost:5173 | Comma-separated CORS origins |
 | `UPLOAD_DIR` | uploads | Directory for media files |
 | `EMAILS_ENABLED` | false | Set to `true` + fill SMTP_ vars |

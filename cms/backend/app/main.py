@@ -32,15 +32,30 @@ def _purge_expired_tokens() -> None:
         db.close()
 
 
+def _ensure_admin() -> None:
+    """Recreate the admin from ADMIN_EMAIL / ADMIN_PASSWORD if the database
+    has none (a wiped SQLite file on Render). See app/core/bootstrap.py."""
+    from app.core.bootstrap import ensure_admin
+
+    db = SessionLocal()
+    try:
+        ensure_admin(db)
+    except Exception:  # never stop the API from starting
+        logging.exception("Could not check for an admin account at startup")
+    finally:
+        db.close()
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     Base.metadata.create_all(bind=engine)
+    _ensure_admin()
     _purge_expired_tokens()
     if not settings.emails_enabled:
         logging.warning("RESEND_API_KEY is not set: confirmation emails and newsletters will not be sent.")
     logging.info(f"🚀  {settings.APP_NAME} started in {settings.APP_ENV} mode")
     yield
-    # shutdown — nothing to tear down for SQLite
+    # shutdown — nothing to tear down
 
 
 app = FastAPI(
