@@ -3,6 +3,8 @@ import { useAuthStore } from '@/store/auth'
 import AdminLayout from '@/components/layout/AdminLayout'
 import LoginPage from '@/pages/auth/LoginPage'
 import MFAVerifyPage from '@/pages/auth/MFAVerifyPage'
+import ForgotPasswordPage from '@/pages/auth/ForgotPasswordPage'
+import ResetPasswordPage from '@/pages/auth/ResetPasswordPage'
 import DashboardPage from '@/pages/DashboardPage'
 import PostsPage from '@/pages/PostsPage'
 import PostEditorPage from '@/pages/PostEditorPage'
@@ -35,6 +37,8 @@ export default function App() {
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/mfa" element={<MFAVerifyPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route
           path="/*"
           element={

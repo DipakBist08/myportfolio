@@ -93,6 +93,24 @@ docker-compose exec backend python seed.py
 
 ---
 
+## Forgotten password
+
+On the sign-in page, choose **Forgot password?** and enter the admin email. If it
+belongs to an active account, the API emails a link to `CMS_URL/reset-password`
+(through Resend, so `RESEND_API_KEY` must be set). The link works once, expires
+after `PASSWORD_RESET_EXPIRE_MINUTES` (30), and stops working as soon as the
+password changes. Setting a new password signs out every session; MFA stays on,
+so the next sign-in still asks for the authenticator code.
+
+- `CMS_URL` must be the admin site's address. It defaults to
+  `https://cms.dipakbist.com.np`; set `CMS_URL=http://localhost:5173` in a local `.env`.
+- Locally, with `DEBUG=true` and no `RESEND_API_KEY`, the link is written to the
+  API log instead of being emailed.
+- If email is not working, or the authenticator app is lost too, use
+  `python reset_admin_password.py` (add `--clear-mfa`) from the backend host.
+
+---
+
 ## MFA Setup
 
 1. Log in → **Settings → Security → Enable MFA**

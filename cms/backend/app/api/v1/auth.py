@@ -1,8 +1,10 @@
 """
 Auth routes:  login → (MFA verify) → tokens  |  refresh  |  logout  |  profile
+              forgot password → email link → reset password
 """
+import hmac
 from datetime import datetime, timedelta, timezone
-from fastapi import APIRouter, Depends, HTTPException, status, Response, Request
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status, Response, Request
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -12,17 +14,21 @@ from app.schemas.auth import (
     LoginRequest, MFAVerifyRequest, MFASetupRequest, MFASetupResponse,
     MFAEnableRequest, MFAConfirmRequest, TokenResponse, RefreshRequest,
     PasswordChangeRequest, UserProfile, UserUpdate,
+    ForgotPasswordRequest, ResetPasswordRequest,
 )
 from app.core.security import (
     verify_password, verify_password_or_dummy, create_access_token,
     create_temp_token, create_mfa_setup_token, create_refresh_token,
     hash_token, decode_token_safe, generate_mfa_secret, generate_qr_code,
-    verify_totp, verify_totp_once,
+    verify_totp, verify_totp_once, hash_password,
+    create_password_reset_token, password_fingerprint,
 )
 from app.core.throttle import (
     PASSWORD_FAILURES, MFA_FAILURES, USED_MFA_TOKENS,
+    RESET_REQUESTS_PER_ACCOUNT, RESET_REQUESTS_PER_IP, USED_RESET_TOKENS,
     account_key, ip_key, user_key,
 )
+from app.core.email import send_password_reset_email
 from app.core.visitor import client_ip
 from app.config import settings
 
@@ -236,8 +242,67 @@ def change_password(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    from app.core.security import hash_password
     _check_password(current_user, body.current_password, request)
     current_user.hashed_password = hash_password(body.new_password)
     db.commit()
     return {"detail": "Password updated"}
+
+
+# ── Forgot / reset password ───────────────────────────────────────────────────
+
+RESET_SENT = ("If that email belongs to an account, a reset link is on its way. "
+              "Check your inbox and spam folder.")
+RESET_LINK_INVALID = "This reset link is invalid, already used or expired. Request a new one."
+
+
+@router.post("/forgot-password")
+def forgot_password(
+    body: ForgotPasswordRequest,
+    request: Request,
+    background: BackgroundTasks,
+    db: Session = Depends(get_db),
+):
+    """Email a one-time reset link. The answer is the same whether or not the
+    address has an account, and the email is sent after the answer, so neither
+    the reply nor its timing reveals which emails exist."""
+    keys_account, keys_ip = account_key(body.email), ip_key(client_ip(request))
+    RESET_REQUESTS_PER_ACCOUNT.check(keys_account)
+    RESET_REQUESTS_PER_IP.check(keys_ip)
+    RESET_REQUESTS_PER_ACCOUNT.fail(keys_account)
+    RESET_REQUESTS_PER_IP.fail(keys_ip)
+
+    user = db.query(User).filter(User.email == body.email).first()
+    if user and user.is_active:
+        token = create_password_reset_token(user.id, user.hashed_password)
+        # The token rides in the fragment, which browsers never send to a
+        # server, so it stays out of access logs and Referer headers.
+        url = f"{settings.CMS_URL.rstrip('/')}/reset-password#token={token}"
+        background.add_task(send_password_reset_email, user.email, user.full_name or "", url)
+    return {"detail": RESET_SENT}
+
+
+@router.post("/reset-password")
+def reset_password(body: ResetPasswordRequest, db: Session = Depends(get_db)):
+    """Set a new password from an emailed link. Signs out every session, keeps
+    MFA as it was, and does not sign in: the next sign-in still asks for the
+    authenticator code when MFA is on."""
+    # 400 rather than 401, so the admin app does not treat it as an expired session.
+    invalid = HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=RESET_LINK_INVALID)
+    payload = decode_token_safe(body.token)
+    if not payload or payload.get("type") != "password_reset" or not payload.get("jti"):
+        raise invalid
+    user = db.query(User).filter(User.id == int(payload["sub"])).first()
+    if (not user or not user.is_active
+            or not hmac.compare_digest(str(payload.get("pwd", "")), password_fingerprint(user.hashed_password))):
+        raise invalid
+    if not USED_RESET_TOKENS.claim(payload["jti"], float(payload["exp"])):
+        raise invalid
+
+    user.hashed_password = hash_password(body.new_password)
+    db.query(RefreshToken).filter(
+        RefreshToken.user_id == user.id, RefreshToken.is_revoked == False,  # noqa: E712
+    ).update({RefreshToken.is_revoked: True}, synchronize_session=False)
+    db.commit()
+    # A locked-out owner who just proved control of the inbox may sign in now.
+    PASSWORD_FAILURES.reset(account_key(user.email))
+    return {"detail": "Password updated. Sign in with your new password."}
