@@ -128,7 +128,8 @@ test.describe('navigation and actions', () => {
         await page.getByRole('link', { name: /view my work/i }).click();
         await expect(page.locator('#projects')).toBeInViewport({ ratio: 0.05 });
         const links = page.locator('#projects a.project__link');
-        await expect(links).toHaveCount(5);
+        // 4 since the owner removed the Dreamer's Youth Club card (23/11/2026).
+        await expect(links).toHaveCount(4);
         for (const link of await links.all()) {
             await expect(link).toHaveAttribute('href', /^https:\/\//);
             await expect(link).toHaveAttribute('rel', /noopener/);

@@ -179,7 +179,11 @@ def test_every_reference_in_the_graph_points_at_a_node_in_it():
     assert by_type["ProfilePage"]["primaryImageOfPage"] == {"@id": PORTRAIT_ID}
     assert by_type["WebSite"]["publisher"] == {"@id": PERSON_ID}
     assert by_type["Blog"]["@id"] == "https://blog.dipakbist.com.np/#blog"
-    assert by_type["Organization"]["founder"] == {"@id": PERSON_ID}
+    # The owner removed Dreamer's Youth Club from the portfolio on 23/11/2026:
+    # no Organization node, no memberOf, no project card.
+    assert "Organization" not in by_type
+    html = (ROOT / "index.html").read_text(encoding="utf-8")
+    assert "dreamersyouthclub" not in html.lower() and "Dreamer's Youth Club" not in html
 
 
 def test_head_tells_search_engines_what_this_page_is():
