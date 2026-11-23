@@ -82,8 +82,8 @@ export default function AboutPage() {
 
       <h3>Projects</h3>
       <p>
-        The worked projects FigsFlow, AakashTel and Moru-Digital Wallet, plus a REST API Testing Framework, a BDD Test
-        Framework and the Dreamer&apos;s Youth Club website, each described under{' '}
+        The worked projects FigsFlow, AakashTel and Moru-Digital Wallet, plus a REST API Testing Framework and a BDD Test
+        Framework, each described under{' '}
         <ExternalLink href={`${AUTHOR.url}#projects`}>Projects</ExternalLink> on my portfolio.
       </p>
 

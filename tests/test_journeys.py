@@ -260,8 +260,9 @@ def test_view_my_work_lands_on_real_safe_links(pg: Page):
     pg.get_by_role("link", name=re.compile("view my work", re.I)).click()
     expect(pg.locator("#projects")).to_be_in_viewport(ratio=0.05)
     links = pg.locator("#projects a.project__link")
-    expect(links).to_have_count(5)
-    for i in range(5):
+    # 4 since the owner removed the Dreamer's Youth Club card (23/11/2026).
+    expect(links).to_have_count(4)
+    for i in range(4):
         link = links.nth(i)
         expect(link).to_have_attribute("href", re.compile(r"^https://"))
         expect(link).to_have_attribute("rel", re.compile("noopener"))
