@@ -74,6 +74,12 @@ export interface Post extends PostFrontmatter {
 
 export interface PostMeta extends PostFrontmatter {
   readingTime: string
+  /** Where the post comes from: a file in content/blog, or the CMS. */
+  source?: 'file' | 'cms'
+  /** How the body is written: MDX (files, Markdown CMS posts) or HTML (rich-text CMS posts). */
+  format?: 'mdx' | 'html'
+  /** The CMS's SEO title, when it differs from the headline. */
+  seoTitle?: string
 }
 
 export interface GroupedByTag {

@@ -1,7 +1,7 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { getAllPostsMeta } from '@/lib/blog/mdx'
+import { getAllPostsMeta } from '@/lib/blog/posts'
 import { getAllTags, sortPostsByDate, slugify } from '@/lib/blog/utils'
 import { AUTHOR_LD, BASE_URL, SITE_NAME } from '@/lib/blog/site'
 import { pageMetadata } from '@/lib/blog/metadata'
@@ -15,16 +15,19 @@ interface Params {
 }
 
 export async function generateStaticParams() {
-  const tags = getAllTags(getAllPostsMeta())
+  const tags = getAllTags(await getAllPostsMeta())
   return tags.map((tag) => ({ tag: slugify(tag) }))
 }
 
-export const dynamicParams = false
+// A tag first used by a post published in the CMS is rendered on demand;
+// a slug that is no tag is still a 404 (notFound below).
+export const dynamicParams = true
+export const revalidate = 60
 
 const MIN_POSTS_TO_INDEX = 3 // same threshold as app/sitemap.ts
 
-function resolveTag(slug: string) {
-  const allPosts = getAllPostsMeta()
+async function resolveTag(slug: string) {
+  const allPosts = await getAllPostsMeta()
   const allTags = getAllTags(allPosts)
   const label = allTags.find((t) => slugify(t) === slug)
   const posts = sortPostsByDate(allPosts.filter((p) => p.tags.some((t) => slugify(t) === slug)))
@@ -32,7 +35,7 @@ function resolveTag(slug: string) {
 }
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
-  const { label, posts } = resolveTag(params.tag)
+  const { label, posts } = await resolveTag(params.tag)
   if (!label) return {}
   return pageMetadata({
     title: `Articles tagged ${label}`,
@@ -46,7 +49,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 }
 
 export default async function TagPage({ params }: Params) {
-  const { allTags, label, posts } = resolveTag(params.tag)
+  const { allTags, label, posts } = await resolveTag(params.tag)
   if (!label) notFound()
   const tagLabel = label
   const tagUrl = `${BASE_URL}/blog/tag/${params.tag}`

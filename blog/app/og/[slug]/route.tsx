@@ -1,19 +1,21 @@
 import { ImageResponse } from 'next/og'
-import { getAllSlugs, getPostBySlug } from '@/lib/blog/mdx'
+import { getAllSlugs, getPostBySlug } from '@/lib/blog/posts'
 import { AUTHOR } from '@/lib/blog/site'
 
 /* A 1200x630 share card for every post, drawn from the post's own title and
-   category. Generated once at build time as a static PNG: no stock photo, no
-   request-time rendering. Linked from each post's og:image and twitter:image. */
+   category. Generated at build time as a static PNG (no stock photo); a post
+   published in the CMS later gets its card on first request, then cached and
+   refreshed hourly. Linked from each post's og:image and twitter:image. */
 export const dynamic = 'force-static'
-export const dynamicParams = false
+export const dynamicParams = true
+export const revalidate = 3600
 
-export function generateStaticParams() {
-  return getAllSlugs().map((slug) => ({ slug }))
+export async function generateStaticParams() {
+  return (await getAllSlugs()).map((slug) => ({ slug }))
 }
 
-export function GET(_request: Request, { params }: { params: { slug: string } }) {
-  const post = getPostBySlug(params.slug)
+export async function GET(_request: Request, { params }: { params: { slug: string } }) {
+  const post = await getPostBySlug(params.slug)
   const title = post?.meta.title ?? 'Dipak Bist QA Blog'
   const category = post?.meta.category ?? 'QA Engineering'
   const titleSize = title.length > 70 ? 54 : title.length > 45 ? 62 : 72

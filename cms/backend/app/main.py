@@ -46,10 +46,30 @@ def _ensure_admin() -> None:
         db.close()
 
 
+def _import_blog_articles() -> None:
+    """Copy the blog's original MDX articles into the CMS once (app/core/blog_import.py)."""
+    from app.core.blog_import import import_blog_articles
+
+    db = SessionLocal()
+    try:
+        import_blog_articles(db)
+    except Exception:  # never stop the API from starting
+        db.rollback()
+        logging.exception("Could not import the blog articles at startup")
+    finally:
+        db.close()
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     Base.metadata.create_all(bind=schema_engine)
+    try:
+        from app.core.schema_upgrade import add_missing_columns
+        add_missing_columns(schema_engine)
+    except Exception:
+        logging.exception("Could not add missing columns at startup")
     _ensure_admin()
+    _import_blog_articles()
     _purge_expired_tokens()
     if not settings.emails_enabled:
         logging.warning("RESEND_API_KEY is not set: confirmation emails and newsletters will not be sent.")

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
-import { getAllPostsMeta } from '@/lib/blog/mdx'
+import { getAllPostsMeta } from '@/lib/blog/posts'
 import BlogPageContent, { BlogPageView } from '@/components/blog/BlogPageContent'
 import { AUTHOR_LD, BASE_URL, HOME_DESCRIPTION, HOME_TITLE, HOME_URL, SITE_DESCRIPTION, SITE_LANGUAGE, SITE_NAME } from '@/lib/blog/site'
 import { pageMetadata } from '@/lib/blog/metadata'
@@ -19,8 +19,11 @@ const websiteLd = {
   publisher: AUTHOR_LD,
 }
 
-export default function BlogPage() {
-  const allPosts = getAllPostsMeta()
+// Refreshed in the background at most once a minute, so CMS posts appear without a redeploy.
+export const revalidate = 60
+
+export default async function BlogPage() {
+  const allPosts = await getAllPostsMeta()
 
   return (
     <>

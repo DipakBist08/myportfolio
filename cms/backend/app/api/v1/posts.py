@@ -20,6 +20,7 @@ from app.schemas.post import (
 from app.core.notifications import announce_post_if_enabled
 from app.utils.slug import unique_slug, estimate_reading_time
 import bleach
+import json
 
 router = APIRouter(prefix="/posts", tags=["Admin – Posts"])
 
@@ -43,6 +44,22 @@ ALLOWED_ATTRS = {
 
 def _sanitize(html: str) -> str:
     return bleach.clean(html, tags=ALLOWED_TAGS, attributes=ALLOWED_ATTRS, strip=True)
+
+
+def _store_content(content: str, content_format: str) -> str:
+    """Rich-text HTML is sanitised. Markdown (MDX) is stored exactly as
+    written: bleach would strip its components (<Callout>, <QAChecklist>...).
+    The blog compiles it with dangerous JavaScript blocked."""
+    if not content:
+        return ""
+    return content if content_format == "mdx" else _sanitize(content)
+
+
+def _meta_json(meta) -> str:
+    if meta is None:
+        return ""
+    data = meta if isinstance(meta, dict) else meta.model_dump()
+    return json.dumps(data, ensure_ascii=False)
 
 
 def _get_or_404(post_id: int, db: Session) -> Post:
@@ -110,7 +127,7 @@ def create_post(
     current_user: User = Depends(get_current_user),
 ):
     slug = unique_slug(body.slug or body.title, Post, db)
-    sanitized_content = _sanitize(body.content) if body.content else ""
+    sanitized_content = _store_content(body.content, body.content_format)
 
     post = Post(
         title=body.title,
@@ -131,9 +148,13 @@ def create_post(
         scheduled_at=body.scheduled_at,
         author_id=current_user.id,
         reading_time=estimate_reading_time(body.content_text or body.content),
+        content_format=body.content_format,
+        blog_meta=_meta_json(body.blog_meta),
     )
     if body.status == PostStatus.PUBLISHED:
-        post.published_at = datetime.now(timezone.utc)
+        post.published_at = body.published_at or datetime.now(timezone.utc)
+    elif body.published_at:
+        post.published_at = body.published_at
 
     if body.tag_ids:
         post.tags = db.query(Tag).filter(Tag.id.in_(body.tag_ids)).all()
@@ -177,8 +198,14 @@ def update_post(
     data = body.model_dump(exclude_none=True)
     tag_ids = data.pop("tag_ids", None)
 
+    final_format = data.get("content_format", post.content_format or "html")
     if "content" in data:
-        data["content"] = _sanitize(data["content"])
+        data["content"] = _store_content(data["content"], final_format)
+    elif "content_format" in data and final_format == "html" and post.content:
+        # Switched from Markdown to rich text: what is stored must be safe HTML.
+        data["content"] = _sanitize(post.content)
+    if "blog_meta" in data:
+        data["blog_meta"] = _meta_json(data["blog_meta"])
     if "content_text" in data:
         data["reading_time"] = estimate_reading_time(data["content_text"])
     if "slug" in data:
@@ -189,7 +216,7 @@ def update_post(
     just_published = (
         new_status == PostStatus.PUBLISHED and post.status != PostStatus.PUBLISHED
     )
-    if just_published:
+    if just_published and "published_at" not in data:
         data["published_at"] = datetime.now(timezone.utc)
 
     for k, v in data.items():
